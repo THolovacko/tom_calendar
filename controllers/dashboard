@@ -1,0 +1,15 @@
+#! /home/ubuntu/.rbenv/versions/2.7.1/bin/ruby
+
+puts "Content-type: text/html\n\n"
+
+
+# apache environment variables
+ENV.keys.each {|key| puts key.to_s + "\n"}
+puts ENV['REQUEST_URI']
+
+
+# stdin for handling post requests
+ARGF.each do |line|
+    puts line
+end
+
