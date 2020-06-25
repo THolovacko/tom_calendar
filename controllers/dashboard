@@ -2,6 +2,8 @@
 
 puts "Content-type: text/html\n\n"
 
+puts '<h1>the dashboard</h1>'
+puts '<p>'
 
 # apache environment variables
 ENV.keys.each {|key| puts key.to_s + "\n"}
@@ -14,4 +16,7 @@ ARGF.each do |line|
 end
 
 puts ARGF.size
+
+
+puts '</p>'
 
