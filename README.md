@@ -2,7 +2,7 @@
 
 * Ubuntu 20.04 LTS (GNU/Linux 5.4.0-1017-aws x86_64)
 * ruby 2.7.1p83 (2020-03-31 revision a0c7c23c9c)
-- aws-sdk (3.0.1) gem
+** aws-sdk (3.0.1) gem
 * Apache/2.4.41
 * AWS DynamoDB
 
