@@ -11,3 +11,8 @@
 * clone repo in server directory then give it read and execute permissions for configured apache user
 * enable apache cgi mods then add `ScriptAlias "/" "/decided/path/tom_calendar/controllers/"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
+* set apache user environment variables
+	* AWS_ACCESS_KEY_ID
+	* AWS_SECRET_ACCESS_KEY
+	* AWS_SDK_CONFIG_OPT_OUT
+* create tables in DynamoDB (will list tables later)

@@ -1,13 +1,17 @@
 #! /usr/bin/ruby
 
+require 'aws-sdk-dynamodb'
+
+
+
 puts "Content-type: text/html\n\n"
 
 puts '<h1>the dashboard</h1>'
 puts '<p>'
 
 # apache environment variables
-ENV.keys.each {|key| puts key.to_s + "\n"}
-puts ENV['REQUEST_URI']
+#ENV.keys.each {|key| puts key.to_s + "\n"}
+#puts ENV['REQUEST_URI']
 
 
 # stdin for handling post requests
@@ -15,7 +19,14 @@ ARGF.each do |line|
     puts line
 end
 
-puts ARGF.size
+
+
+dynamoDB = Aws::DynamoDB::Resource.new(region: 'us-east-2')
+
+dynamoDB.tables.each do |t|
+  puts "Name:    #{t.name}"
+  puts "#Items:  #{t.item_count}"
+end
 
 
 puts '</p>'
