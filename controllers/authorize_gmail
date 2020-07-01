@@ -1,0 +1,46 @@
+#! /usr/bin/ruby
+
+require 'aws-sdk-dynamodb'
+
+puts 'Content-type: text/html'
+
+# apache environment variables
+#ENV.keys.each {|key| puts key.to_s + "\n"}
+#puts "REQUEST_URI: #{ENV['REQUEST_URI']}"
+
+# use regex to parse "code" param from query string
+authorization_code = ENV['QUERY_STRING']
+
+
+# stdin for handling post requests
+ARGF.each do |line|
+    puts "line: #{line}"
+end
+
+
+#dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+item = {
+	creator_username: 'tom',
+  title: "test_event #{Time.now}",
+}
+
+params = {
+	table_name: 'Events',
+  #item: item
+	key: { creator_username: 'tom',
+         title: 'test_event 2020-07-01 12:04:41 +0000'
+  }
+}
+
+# add item
+=begin
+begin
+  dynamodb.put_item(params)
+  puts 'Added Event'
+rescue  Aws::DynamoDB::Errors::ServiceError => error
+  puts 'Unable to add Event:'
+  puts error.message
+end
+=end
+
