@@ -14,5 +14,6 @@
 * set apache user environment variables
 	* AWS_ACCESS_KEY_ID
 	* AWS_SECRET_ACCESS_KEY
+  * AWS_REGION
 	* AWS_SDK_CONFIG_OPT_OUT
 * create tables in DynamoDB (will list tables later)

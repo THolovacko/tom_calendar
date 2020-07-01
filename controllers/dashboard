@@ -21,13 +21,57 @@ end
 
 
 
-dynamoDB = Aws::DynamoDB::Resource.new(region: 'us-east-2')
+=begin
+dynamoDB = Aws::DynamoDB::Resource.new(region: ENV['AWS_REGION'])
 
 dynamoDB.tables.each do |t|
   puts "Name:    #{t.name}"
   puts "#Items:  #{t.item_count}"
 end
+=end
+
+
+dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+item = {
+	creator_username: 'tom',
+  title: "test_event #{Time.now}",
+}
+
+params = {
+	table_name: 'Events',
+  #item: item
+	key: { creator_username: 'tom',
+         title: 'test_event 2020-07-01 12:04:41 +0000'
+  }
+}
+
+# add item
+=begin
+begin
+  dynamodb.put_item(params)
+  puts 'Added Event'
+rescue  Aws::DynamoDB::Errors::ServiceError => error
+  puts 'Unable to add Event:'
+  puts error.message
+end
+=end
+
+begin
+  result = dynamodb.get_item(params)
+
+  if result.item == nil
+    puts 'Could not find event'
+    exit 0
+  end
+
+  puts 'Found Event:'
+  puts '  Title:  ' + result.item['title']
+rescue  Aws::DynamoDB::Errors::ServiceError => error
+  puts 'Unable to find event:'
+  puts error.message
+end
+
 
 
 puts '</p>'
-
