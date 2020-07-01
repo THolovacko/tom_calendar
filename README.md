@@ -16,4 +16,6 @@
 	* AWS_SECRET_ACCESS_KEY
   * AWS_REGION
 	* AWS_SDK_CONFIG_OPT_OUT
+  * GOOGLE_OAUTH_CLIENT_ID
+  * GOOGLE_OAUTH_CLIENT_SECRET
 * create tables in DynamoDB (will list tables later)

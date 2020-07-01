@@ -1,21 +1,44 @@
 #! /usr/bin/ruby
 
 
-puts "Content-type: text/html\n\n"
-
-puts '<h1>the index page</h1>'
-puts '<p>'
-
-puts '<a href="https://tomcalendar.com/dashboard">Dashboard</a>'
-
 # apache environment variables
 #puts ENV['REQUEST_URI']
 
-
 # stdin for post requests
-ARGF.each do |line|
-    puts line
-end
+#ARGF.each do |line|
+#    puts line
+#end
 
 
-puts '</p>'
+
+# if user is logged in redirect to dashboard
+# else render login html (there is no signup due to using gmail)
+
+
+# render login page
+puts 'Content-type: text/html'
+
+puts %(
+<html lang="en">
+  <head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+  </head>
+  <body>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <script>
+      function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log("Email: " + profile.getEmail());
+
+        var id_token = googleUser.getAuthResponse().id_token;
+        console.log("ID Token: " + id_token);
+      }
+    </script>
+  </body>
+</html>
+)
+
+
+
