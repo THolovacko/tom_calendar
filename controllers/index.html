@@ -15,18 +15,23 @@
 # else render login html (there is no signup due to using gmail)
 
 
+#<script src="https://apis.google.com/js/platform.js?onload=tomtest" async defer></script>
+
 # render login page
 puts 'Content-type: text/html'
 
 puts %(
 <html lang="en">
   <head>
-    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-scope" content="profile email https://www.googleapis.com/auth/calendar">
     <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body>
     <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+		<a href="https://tomcalendar.com" onclick="signOut();">Sign out</a>
+		<a href="https://tomcalendar.com" onclick="reset_stuff();">reset</a>
+
     <script>
       function onSignIn(googleUser) {
         var profile = googleUser.getBasicProfile();
@@ -34,6 +39,22 @@ puts %(
 
         var id_token = googleUser.getAuthResponse().id_token;
         console.log("ID Token: " + id_token);
+      }
+
+			function signOut() {
+				var auth2 = gapi.auth2.getAuthInstance();
+				auth2.signOut().then(function () {
+				console.log('User signed out.');
+				});
+			}
+
+			function reset_stuff() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.disconnect();
+      }
+
+      function tomtest() {
+        console.log("tomtest ran")
       }
     </script>
   </body>
