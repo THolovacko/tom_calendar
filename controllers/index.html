@@ -15,17 +15,12 @@
 # else render login html (there is no signup due to using gmail)
 
 
-#<div id=glogin class="g-signin2" data-onsuccess="onSignIn" data-longtitle=true data-theme="dark"></div>
-
-
 # render login page
 puts 'Content-type: text/html'
 
 puts %(
 <html lang="en">
   <head>
-    <meta name="google-signin-scope" content="profile email https://www.googleapis.com/auth/calendar">
-    <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
   <body>
@@ -42,7 +37,9 @@ puts %(
           });
 
           element = document.getElementById('glogin');
-          auth2.attachClickHandler(element, {}, onSignUp, onFailure);
+          
+          element.onclick = onSignUp;
+          //auth2.attachClickHandler(element, {}, onSignUp, onFailure);
         });
       }
 
