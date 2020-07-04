@@ -11,11 +11,12 @@
 
 
 
-# if user is logged in redirect to dashboard
+# if user is logged in redirect to dashboard (and has given permssions to access gmail and google calendar)
 # else render login html (there is no signup due to using gmail)
 
 
-#<script src="https://apis.google.com/js/platform.js?onload=tomtest" async defer></script>
+#<div id=glogin class="g-signin2" data-onsuccess="onSignIn" data-longtitle=true data-theme="dark"></div>
+
 
 # render login page
 puts 'Content-type: text/html'
@@ -25,20 +26,36 @@ puts %(
   <head>
     <meta name="google-signin-scope" content="profile email https://www.googleapis.com/auth/calendar">
     <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
   <body>
-    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <button class="button" id=glogin>Sign in with Google</button>
     <a href="https://tomcalendar.com" onclick="signOut();">Sign out</a>
     <a href="https://tomcalendar.com" onclick="reset_stuff();">reset</a>
 
     <script>
-      function onSignIn(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        console.log("Email: " + profile.getEmail());
+      function init() {
+        gapi.load('auth2', function(){
+          auth2 = gapi.auth2.init({
+            client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
+            scope: 'profile email https://www.googleapis.com/auth/calendar'
+          });
 
-        var id_token = googleUser.getAuthResponse().id_token;
-        console.log("ID Token: " + id_token);
+          element = document.getElementById('glogin');
+          auth2.attachClickHandler(element, {}, onSignUp, onFailure);
+        });
+      }
+
+      function onSignUp() {
+        auth2.grantOfflineAccess().then(onSignIn);
+      }
+
+      function onFailure() {
+        console.log('failed')
+      }
+
+      function onSignIn(authResponse) {
+        console.log(JSON.stringify(authResponse));
       }
 
       function signOut() {
@@ -51,10 +68,6 @@ puts %(
       function reset_stuff() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.disconnect();
-      }
-
-      function tomtest() {
-        console.log("tomtest ran")
       }
     </script>
   </body>
