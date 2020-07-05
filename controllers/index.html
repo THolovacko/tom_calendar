@@ -16,25 +16,20 @@
 
 
 
-#<link rel="stylesheet" href="../dist/buttons.min.css">
-
 # render login page
 puts "Content-type: text/html\n\n"
 
 puts %(
 <html lang="en">
   <head>
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png">
+    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
   <body>
-    <button class="googleButton" id=googleLogin onclick="onSignUp()">
-      <span class="icon"></span>
-      <span class="buttonText">Sign in with Google</span>
-    </button>
+    <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
     <a href="https://tomcalendar.com" onclick="signOut();">Sign out</a>
     <a href="https://tomcalendar.com" onclick="reset_stuff();">reset</a>
-
     <script>
       function init() {
         gapi.load('auth2', function(){
@@ -44,68 +39,60 @@ puts %(
           });
         });
       }
-
       function onSignUp() {
         auth2.grantOfflineAccess().then(onSignIn);
       }
-
       function onFailure() {
         console.log('failed')
       }
-
       function onSignIn(authResponse) {
         console.log(JSON.stringify(authResponse));
       }
-
       function signOut() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.signOut().then(function () {
         console.log('User signed out.');
         });
       }
-
       function reset_stuff() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.disconnect();
       }
     </script>
-
-		<style type="text/css">
-			.googleButton {
-				display: inline-block;
-				background-color: #4285F4
-				color: #4285F4;
-				width: 200px;
-				border-radius: 5px;
-				border: thin solid #888;
-				box-shadow: 1px 1px 1px blue;
-				white-space: nowrap;
-			}
-			.googleButton:hover {
-				cursor: pointer;
-			}
-			span.label {
-				font-family: serif;
-				font-weight: normal;
-			}
-			span.icon {
-				background: url('https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg');
-				display: inline-block;
-				vertical-align: middle;
-				width: 42px;
-				height: 42px;
-			}
-			span.buttonText {
-				display: inline-block;
-				vertical-align: middle;
-				background-color: #4285F4
-				//padding-left: 42px;
-				//padding-right: 42px;
-				font-size: 14px;
-				font-weight: bold;
-				font-family: 'Roboto', sans-serif;
-			}
-		</style>
+    <style type="text/css">
+      .googleButton {
+        display: inline-block;
+        width: 250px;
+        height: 60px;
+        white-space: nowrap;
+        border: none;
+        background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
+        background-size: cover;
+        border-radius: 3px;
+      }
+      .googleButton:hover {
+        cursor: pointer;
+        display: inline-block;
+        width: 250px;
+        height: 60px;
+        white-space: nowrap;
+        border: none;
+        background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png') no-repeat;
+        background-size: cover;
+        border-radius: 3px;
+      }
+      .googleButton:active {
+        cursor: pointer;
+        display: inline-block;
+        width: 250px;
+        height: 60px;
+        white-space: nowrap;
+        border: none;
+        background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
+        background-size: cover;
+        border-radius: 3px;
+      }
+    </style>
   </body>
 </html>
 )
