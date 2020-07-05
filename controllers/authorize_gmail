@@ -3,7 +3,7 @@
 require 'aws-sdk-dynamodb'
 
 #puts 'Content-type: text/html'
-puts "Content-type: text/html\n\n"
+#puts "Content-type: text/html\n\n"
 
 # apache environment variables
 #ENV.keys.each {|key| puts key.to_s + "\n"}
@@ -12,14 +12,14 @@ puts "Content-type: text/html\n\n"
 # use regex to parse "code" param from query string
 authorization_code = ENV['QUERY_STRING']
 
-puts authorization_code
+#puts authorization_code
 
 #puts ENV['HTTP_COOKIE']
 
 # stdin for handling post requests
-ARGF.each do |line|
-    puts "line: #{line}"
-end
+#ARGF.each do |line|
+#    puts "line: #{line}"
+#end
 
 
 =begin

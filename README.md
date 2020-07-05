@@ -9,6 +9,7 @@
 # Setup
 
 * clone repo in server directory then give it read and execute permissions for configured apache user
+* add `Alias "/public" "/decided/path/tom_calendar/public/"` to apache virtual host config
 * enable apache cgi mods then add `ScriptAlias "/" "/decided/path/tom_calendar/controllers/"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
 * set apache user environment variables

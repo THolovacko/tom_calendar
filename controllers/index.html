@@ -15,16 +15,23 @@
 # else render login html (there is no signup due to using gmail)
 
 
+
+#<link rel="stylesheet" href="../dist/buttons.min.css">
+
 # render login page
-puts 'Content-type: text/html'
+puts "Content-type: text/html\n\n"
 
 puts %(
 <html lang="en">
   <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
   <body>
-    <button class="button" id=glogin>Sign in with Google</button>
+    <button class="googleButton" id=googleLogin onclick="onSignUp()">
+      <span class="icon"></span>
+      <span class="buttonText">Sign in with Google</span>
+    </button>
     <a href="https://tomcalendar.com" onclick="signOut();">Sign out</a>
     <a href="https://tomcalendar.com" onclick="reset_stuff();">reset</a>
 
@@ -35,11 +42,6 @@ puts %(
             client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
             scope: 'profile email https://www.googleapis.com/auth/calendar'
           });
-
-          element = document.getElementById('glogin');
-          
-          element.onclick = onSignUp;
-          //auth2.attachClickHandler(element, {}, onSignUp, onFailure);
         });
       }
 
@@ -67,6 +69,43 @@ puts %(
         auth2.disconnect();
       }
     </script>
+
+		<style type="text/css">
+			.googleButton {
+				display: inline-block;
+				background-color: #4285F4
+				color: #4285F4;
+				width: 200px;
+				border-radius: 5px;
+				border: thin solid #888;
+				box-shadow: 1px 1px 1px blue;
+				white-space: nowrap;
+			}
+			.googleButton:hover {
+				cursor: pointer;
+			}
+			span.label {
+				font-family: serif;
+				font-weight: normal;
+			}
+			span.icon {
+				background: url('https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg');
+				display: inline-block;
+				vertical-align: middle;
+				width: 42px;
+				height: 42px;
+			}
+			span.buttonText {
+				display: inline-block;
+				vertical-align: middle;
+				background-color: #4285F4
+				//padding-left: 42px;
+				//padding-right: 42px;
+				font-size: 14px;
+				font-weight: bold;
+				font-family: 'Roboto', sans-serif;
+			}
+		</style>
   </body>
 </html>
 )
