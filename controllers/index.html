@@ -22,9 +22,10 @@ puts "Content-type: text/html\n\n"
 puts %(
 <html lang="en">
   <head>
-    <link rel="preload" href="favicon.ico>">
+    <link rel="preload" as="image" href="favicon.ico">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
   <body>
@@ -37,22 +38,42 @@ puts %(
           auth2 = gapi.auth2.init({
             client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
             scope: 'profile email https://www.googleapis.com/auth/calendar'
-          });
+          }).then(function(then_init) {console.log("Signed in: " + auth2.isSignedIn)}, function(error) {});
         });
       }
       function onSignUp() {
         auth2.grantOfflineAccess().then(onSignIn);
       }
-      function onFailure() {
-        console.log('failed')
-      }
       function onSignIn(authResponse) {
         console.log(JSON.stringify(authResponse));
+        if (authResponse['code']) {
+          // cache same-site cookie for auto login?
+          var auth2 = gapi.auth2.getAuthInstance();
+          console.log("is_signed_in on sign in: " + auth2.isSignedIn);
+
+          // Send the code to the server
+          $.ajax({
+            type: 'POST',
+            url: 'https://tomcalendar.com/authorize_gmail',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            contentType: 'application/octet-stream; charset=utf-8',
+            success: function(result) {
+              console.log("ajax result" + JSON.stringify(result))
+            },
+            processData: false,
+            data: authResponse['code']
+          });
+        } else {
+          // There was an error.
+          console.log("Didn't find code in authResponse");
+        }
       }
       function signOut() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.signOut().then(function () {
-        console.log('User signed out.');
+          console.log('User signed out.');
         });
       }
       function reset_stuff() {
