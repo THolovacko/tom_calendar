@@ -2,8 +2,6 @@
 
 require_relative '../lib/tom_calendar.rb'
 
-#puts 'Content-type: text/html'
-
 # apache environment variables
 #ENV.keys.each {|key| puts key.to_s + "\n"}
 #puts "REQUEST_URI: #{ENV['REQUEST_URI']}"
@@ -14,15 +12,35 @@ require_relative '../lib/tom_calendar.rb'
 #end
 
 
+
+
+
+# check header for valid X-Requested-With?
+# get user_id?
+
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-TomCalendarTokenStore.new(dynamodb)
+
+google_authorizer = get_google_authorizer(dynamodb)
+credentials = google_authorizer.get_credentials(user_id)
+
+if credentials.nil?
+  # use regex to parse "code" param from query string (ENV['QUERY_STRING'] is everything after the '?' in URI)
+  # !!! simple gsub won't work if getting user id token stuff alo in query string
+  authorization_code = ENV['QUERY_STRING'].gsub('code=','')
+
+  credentials = authorizer.get_and_store_credentials_from_code(user_id: user_id, code: authorization_code)
+end
+
+if credentials.nil?
+  # return failure message
+else
+  # return success message
+end
 
 
 puts "Content-type: text/html\n\n"
-authorization_code = ENV['QUERY_STRING']
 puts authorization_code
 
-# use regex to parse "code" param from query string
 
 
 
@@ -54,4 +72,3 @@ rescue  Aws::DynamoDB::Errors::ServiceError => error
   puts error.message
 end
 =end
-
