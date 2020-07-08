@@ -8,7 +8,7 @@ require_relative '../lib/tom_calendar.rb'
 
 
 
-# check header for valid X-Requested-With?
+# @remember: check header for valid X-Requested-With?
 
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
@@ -30,7 +30,8 @@ if credentials.nil?
   user_email = user_data['email']
   credentials.access_token
   credentials.refresh_token
-  # @current: store credentials
+
+  # @current: google_authorizer.store_credentials(user_id, credentials)
 end
 
 if credentials.nil?
