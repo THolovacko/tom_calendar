@@ -1,17 +1,11 @@
 #! /usr/bin/ruby
 
 
-# apache environment variables
-#puts ENV['REQUEST_URI']
-
-# stdin for post requests
-#ARGF.each do |line|
-#    puts line
-#end
+# @remember: need to look into same-site cookie warning from edge for login
 
 
 
-# if user has valid refresh token in db then redirect to dashboard
+# if user has valid refresh token in db then redirect to dashboard (users should be redirected to this page when refresh token is expired)
 # else render login html (there is no signup due to using gmail)
 
 
@@ -30,8 +24,8 @@ puts %(
   </head>
   <body>
     <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
-    <a href="https://tomcalendar.com" onclick="signOut();">Sign out</a>
-    <a href="https://tomcalendar.com" onclick="reset_stuff();">reset</a>
+    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
+    <a href="https://tomcalendar.com" onclick="reset_stuff()">reset</a>
     <script>
       function init() {
         gapi.load('auth2', function(){

@@ -1,11 +1,14 @@
 #! /usr/bin/ruby
 
+require 'jwt'
 require_relative '../lib/tom_calendar.rb'
+
+# @remember: need submit consent screen for OAuth verification
+# @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
+
 
 
 # check header for valid X-Requested-With?
-
-user_id = 'default'
 
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
@@ -15,8 +18,19 @@ credentials = nil#google_authorizer.get_credentials(user_id)
 if credentials.nil?
   authorization_code = ARGF.first
 
-  #credentials = google_authorizer.get_and_store_credentials_from_code(user_id: user_id, code: authorization_code)
-  credentials = google_authorizer.get_credentials_from_code(user_id: user_id, code: authorization_code)
+  credentials = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
+  user_data = JWT.decode(credentials.id_token, nil, false).first
+  puts "Content-type: text/html\n\nfailed iss" unless user_data['iss'] == 'https://accounts.google.com'
+  puts "Content-type: text/html\n\nfailed aud" unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
+  puts "Content-type: text/html\n\nfailed exp" unless user_data['exp'] > 0
+
+  # @remember: need to unauthorize if fail
+
+  user_id = user_data['sub']
+  user_email = user_data['email']
+  credentials.access_token
+  credentials.refresh_token
+  # @current: store credentials
 end
 
 if credentials.nil?
@@ -24,7 +38,7 @@ if credentials.nil?
   puts 'failed'
 else
   puts "Content-type: text/html\n\n"
-  puts "access_token: #{credentials.access_token}!!!!!!!!!refresh_token: #{credentials.refresh_token}!!!!!!!!!!!!!!!!id_token: #{credentials.id_token}"
+  puts "success"
 end
 
 
