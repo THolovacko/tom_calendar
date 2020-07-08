@@ -2,73 +2,30 @@
 
 require_relative '../lib/tom_calendar.rb'
 
-# apache environment variables
-#ENV.keys.each {|key| puts key.to_s + "\n"}
-#puts "REQUEST_URI: #{ENV['REQUEST_URI']}"
-
-# stdin for handling post requests
-#ARGF.each do |line|
-#    puts "line: #{line}"
-#end
-
-
-
-
 
 # check header for valid X-Requested-With?
-# get user_id?
+
+user_id = 'default'
 
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
 google_authorizer = get_google_authorizer(dynamodb)
-credentials = google_authorizer.get_credentials(user_id)
+credentials = nil#google_authorizer.get_credentials(user_id)
 
 if credentials.nil?
-  # use regex to parse "code" param from query string (ENV['QUERY_STRING'] is everything after the '?' in URI)
-  # !!! simple gsub won't work if getting user id token stuff alo in query string
-  authorization_code = ENV['QUERY_STRING'].gsub('code=','')
+  authorization_code = ARGF.first
 
-  credentials = authorizer.get_and_store_credentials_from_code(user_id: user_id, code: authorization_code)
+  #credentials = google_authorizer.get_and_store_credentials_from_code(user_id: user_id, code: authorization_code)
+  credentials = google_authorizer.get_credentials_from_code(user_id: user_id, code: authorization_code)
 end
 
 if credentials.nil?
-  # return failure message
+  puts "Content-type: text/html\n\n"
+  puts 'failed'
 else
-  # return success message
+  puts "Content-type: text/html\n\n"
+  puts "access_token: #{credentials.access_token}!!!!!!!!!refresh_token: #{credentials.refresh_token}!!!!!!!!!!!!!!!!id_token: #{credentials.id_token}"
 end
 
 
-puts "Content-type: text/html\n\n"
-puts authorization_code
 
-
-
-
-
-
-
-=begin
-dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-
-item = {
-	creator_username: 'tom',
-  title: "test_event #{Time.now}",
-}
-
-params = {
-	table_name: 'Events',
-  #item: item
-	key: { creator_username: 'tom',
-         title: 'test_event 2020-07-01 12:04:41 +0000'
-  }
-}
-
-# add item
-begin
-  dynamodb.put_item(params)
-  puts 'Added Event'
-rescue  Aws::DynamoDB::Errors::ServiceError => error
-  puts 'Unable to add Event:'
-  puts error.message
-end
-=end

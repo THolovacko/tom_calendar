@@ -11,7 +11,7 @@
 
 
 
-# if user is logged in redirect to dashboard (and has given permssions to access gmail and google calendar)
+# if user has valid refresh token in db then redirect to dashboard
 # else render login html (there is no signup due to using gmail)
 
 
@@ -37,11 +37,13 @@ puts %(
         gapi.load('auth2', function(){
           auth2 = gapi.auth2.init({
             client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
-            scope: 'profile email https://www.googleapis.com/auth/calendar'
+            scope: 'profile email https://www.googleapis.com/auth/calendar',
+            redirect_uri: 'postmessage'
           }).then(function(then_init) {console.log("Signed in: " + auth2.isSignedIn)}, function(error) {});
         });
       }
       function onSignUp() {
+        var auth2 = gapi.auth2.getAuthInstance();
         auth2.grantOfflineAccess().then(onSignIn);
       }
       function onSignIn(authResponse) {
@@ -49,7 +51,7 @@ puts %(
         if (authResponse['code']) {
           // cache same-site cookie for auto login?
           var auth2 = gapi.auth2.getAuthInstance();
-          console.log("is_signed_in on sign in: " + auth2.isSignedIn);
+          console.log("is_signed_in on sign in: " + JSON.stringify(auth2.isSignedIn));
 
           // Send the code to the server
           $.ajax({
