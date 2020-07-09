@@ -25,7 +25,7 @@ puts %(
   <body>
     <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
     <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
-    <a href="https://tomcalendar.com" onclick="reset_stuff()">reset</a>
+    <a href="https://tomcalendar.com" onclick="revoke()">revoke</a>
     <script>
       function init() {
         gapi.load('auth2', function(){
@@ -56,7 +56,9 @@ puts %(
             },
             contentType: 'application/octet-stream; charset=utf-8',
             success: function(result) {
-              console.log("ajax result" + JSON.stringify(result))
+              console.log("ajax result" + JSON.stringify(result));
+              var fail_regex = /failed/;
+              if ( fail_regex.test(JSON.stringify(result)) ) {revoke()};
             },
             processData: false,
             data: authResponse['code']
@@ -72,7 +74,7 @@ puts %(
           console.log('User signed out.');
         });
       }
-      function reset_stuff() {
+      function revoke() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.disconnect();
       }

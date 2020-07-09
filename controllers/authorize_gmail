@@ -1,46 +1,26 @@
 #! /usr/bin/ruby
 
-require 'jwt'
 require_relative '../lib/tom_calendar.rb'
 
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 
+begin
+  # @remember: check header for valid X-Requested-With?
 
-
-# @remember: check header for valid X-Requested-With?
-
-dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-
-google_authorizer = get_google_authorizer(dynamodb)
-credentials = nil#google_authorizer.get_credentials(user_id)
-
-if credentials.nil?
+  dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_authorizer  = get_google_authorizer(dynamodb)
   authorization_code = ARGF.first
+  credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
+  user_data          = decode_google_id_token(credentials.id_token)
 
-  credentials = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
-  user_data = JWT.decode(credentials.id_token, nil, false).first
-  puts "Content-type: text/html\n\nfailed iss" unless user_data['iss'] == 'https://accounts.google.com'
-  puts "Content-type: text/html\n\nfailed aud" unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
-  puts "Content-type: text/html\n\nfailed exp" unless user_data['exp'] > 0
-
-  # @remember: need to unauthorize if fail
-
-  user_id = user_data['sub']
-  user_email = user_data['email']
-  credentials.access_token
-  credentials.refresh_token
-
-  # @current: google_authorizer.store_credentials(user_id, credentials)
+  google_authorizer.store_credentials(user_data['sub'], credentials)
+rescue
+  credentials = nil
 end
 
 if credentials.nil?
-  puts "Content-type: text/html\n\n"
-  puts 'failed'
+  puts "Content-type: text/html\n\nfailed"
 else
-  puts "Content-type: text/html\n\n"
-  puts "success"
+  puts "Content-type: text/html\n\nsuccess"
 end
-
-
-
