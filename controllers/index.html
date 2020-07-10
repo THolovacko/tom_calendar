@@ -33,7 +33,7 @@ puts %(
             client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
             scope: 'profile email https://www.googleapis.com/auth/calendar',
             redirect_uri: 'postmessage'
-          }).then(function(then_init) {console.log("Signed in: " + auth2.isSignedIn)}, function(error) {});
+          }).then(function(then_init) {}, function(error) {});
         });
       }
       function onSignUp() {
@@ -66,6 +66,7 @@ puts %(
         } else {
           // There was an error.
           console.log("Didn't find code in authResponse");
+          revoke();
         }
       }
       function signOut() {

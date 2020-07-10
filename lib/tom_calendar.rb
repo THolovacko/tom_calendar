@@ -14,7 +14,7 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
 
   def store(id, token)
     item = JSON.parse(token)
-    item[:username] = id
+    item[:id] = id
     
     params = {
       table_name: 'GoogleTokens',
@@ -22,7 +22,7 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
     }
 
     begin
-      dynamodb.put_item(params)
+      @dynamodb.put_item(params)
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       raise "Unable to add token: #{item.to_s}"
     end
@@ -31,11 +31,11 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
   def load(id)
     params = {
       table_name: 'GoogleTokens',
-      key: { username: id }
+      key: { id: id }
     }
 
     begin
-      item = dynamodb.get_item(params).item
+      item = @dynamodb.get_item(params).item
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       raise "Unable to get token for id: #{id}"
     end
@@ -46,11 +46,11 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
   def delete(id)
     params = {
       table_name: 'GoogleTokens',
-      key: { username: id }
+      key: { id: id }
     }
 
     begin
-      dynamodb.delete_item(params)
+      @dynamodb.delete_item(params)
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       raise "Unable to delete token for id: #{id}"
     end

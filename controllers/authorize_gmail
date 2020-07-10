@@ -15,12 +15,13 @@ begin
   user_data          = decode_google_id_token(credentials.id_token)
 
   google_authorizer.store_credentials(user_data['sub'], credentials)
-rescue
+rescue Exception => e
   credentials = nil
+  error = "#{e.message}---#{e.backtrace.inspect}"
 end
 
 if credentials.nil?
-  puts "Content-type: text/html\n\nfailed"
+  print "Content-type: text/html\n\nfailed"
 else
-  puts "Content-type: text/html\n\nsuccess"
+  print "Content-type: text/html\n\nsuccess"
 end
