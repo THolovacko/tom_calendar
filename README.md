@@ -22,4 +22,6 @@
   * AWS_SDK_CONFIG_OPT_OUT
   * GOOGLE_OAUTH_CLIENT_ID
   * GOOGLE_OAUTH_CLIENT_SECRET
+  * SESSION_HASH_LEFT_PADDING (arbitrary sized random string)
+  * SESSION_HASH_RIGHT_PADDING (arbitrary sized random string)
 * create tables in DynamoDB (will list tables later)
