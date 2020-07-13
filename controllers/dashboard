@@ -19,7 +19,7 @@ ARGF.each do |line|
     puts line
 end
 
-
+puts ENV['HTTP_COOKIE']
 
 =begin
 dynamoDB = Aws::DynamoDB::Resource.new(region: ENV['AWS_REGION'])

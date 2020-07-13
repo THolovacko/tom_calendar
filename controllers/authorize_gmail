@@ -5,22 +5,13 @@ require_relative '../lib/tom_calendar.rb'
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 # @remember: delete session when user signs out (sign out and remove authorization are different)
-# @test: authorizer refreshes tokens when intialized?
-
-
-=begin hash idea
-  set env variables session_hash_left_padding and session_hash_right_padding
-  for session table use padding to sha256 hash ip address, google_user_id, then timestamp + randomn number (as randomn password)
-    google_user_id+password = session_id
-    randomn password gets frequently reset (maybe each login)
-    if someone tries to access a valid ip_address and google_user_id but invalid password then force reset by removing any valid session_data for that user_id
-  use session_id to get google_user_id and tokens and whatever needed for a session
-=end
+# @test:     authorizer refreshes tokens when intialized?
 
 
 begin
   # @remember: check header for valid X-Requested-With?
   
+  # create google tokens and session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
   authorization_code = ARGF.first
@@ -29,13 +20,17 @@ begin
 
   google_authorizer.store_credentials(user_data['sub'], credentials)
 
-  # @current: create session
+  ip_hash        = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
+  google_id_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{user_data['sub']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
+  password_hash  = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{Time.now}#{rand}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
+  session_id     = { google_id_hash: google_id_hash, password_hash: password_hash }
 
-  # get ip address then hash
-  # hash google user id
-  # hash a password by getting timestamp and random number
-  # create item and send to databse
+  session_params = {
+    table_name: 'Sessions',
+    item: { ip_hash: ip_hash, google_id_hash: google_id_hash, password_hash: password_hash, google_id: user_data['sub'] }
+  }
 
+  dynamodb.put_item(session_params)
 rescue Exception => e
   credentials = nil
   error = "#{e.message}:#{e.backtrace.inspect}"
@@ -44,5 +39,5 @@ end
 if credentials.nil?
   print "Content-type: text/html\n\nfailed: #{error}"
 else
-  print "Content-type: text/html\n\nsuccess"
+  print "Content-type: application/json\n\n#{session_id.to_json}"
 end

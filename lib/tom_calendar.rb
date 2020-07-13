@@ -4,6 +4,7 @@ require 'googleauth/web_user_authorizer'
 require 'googleauth/token_store'
 require 'jwt'
 require 'json'
+require 'digest'
 
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze
 

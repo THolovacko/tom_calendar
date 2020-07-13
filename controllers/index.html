@@ -1,13 +1,15 @@
 #! /usr/bin/ruby
 
+# @optimize: requiring library and/or sha256 is taking pretty long
 
-# @remember: need to look into same-site cookie warning from edge for login
-
-
+#require_relative '../lib/tom_calendar.rb'
 
 # if session found and can use tokens then redirect to dashboard with param set to not check login (becasue by default dashboard checks logion and redirects to login page if not logged in)
 # else render login html (there is no signup due to using gmail)
 
+# @current: check for session
+session_id = ENV['HTTP_COOKIE'] # need to regex then JSON.parse
+#request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
 
 
 # render login page
@@ -41,30 +43,27 @@ puts %(
         auth2.grantOfflineAccess().then(onSignIn);
       }
       function onSignIn(authResponse) {
-        console.log(JSON.stringify(authResponse));
         if (authResponse['code']) {
-          // cache same-site cookie for auto login?
           var auth2 = gapi.auth2.getAuthInstance();
-          console.log("is_signed_in on sign in: " + JSON.stringify(auth2.isSignedIn));
 
           // Send the code to the server
           $.ajax({
             type: 'POST',
             url: 'https://tomcalendar.com/authorize_gmail',
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            },
             contentType: 'application/octet-stream; charset=utf-8',
             success: function(result) {
-              console.log("ajax result" + JSON.stringify(result));
               var fail_regex = /failed/;
-              if ( fail_regex.test(JSON.stringify(result)) ) {revoke()};
+              if ( fail_regex.test(JSON.stringify(result)) ) {
+                console.log(result)
+                revoke();
+              } else {
+                document.cookie = "session_id=" + JSON.stringify(result) + ";secure";
+              }
             },
             processData: false,
             data: authResponse['code']
           });
         } else {
-          // There was an error.
           console.log("Didn't find code in authResponse");
           revoke();
         }
@@ -74,6 +73,7 @@ puts %(
         auth2.signOut().then(function () {
           console.log('User signed out.');
         });
+        // remove session in db
       }
       function revoke() {
         var auth2 = gapi.auth2.getAuthInstance();
