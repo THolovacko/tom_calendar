@@ -9,6 +9,9 @@ puts "Content-type: text/html\n\n"
 puts '<h1>the dashboard</h1>'
 puts '<p>'
 
+# @current: setup dashboard with logout and user settings with unauthorize
+
+
 # apache environment variables
 #ENV.keys.each {|key| puts key.to_s + "\n"}
 #puts ENV['REQUEST_URI']
@@ -19,7 +22,12 @@ ARGF.each do |line|
     puts line
 end
 
-puts ENV['HTTP_COOKIE']
+#cookies = ENV['HTTP_COOKIE'].split(';')
+#cookies.each { |cookie| session_id = cookie.sub('session_id=','').strip if cookie.match?('session_id') }
+#puts seesion_id
+#puts cookies.to_s
+session_id = ENV['HTTP_COOKIE'].split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+puts session_id
 
 =begin
 dynamoDB = Aws::DynamoDB::Resource.new(region: ENV['AWS_REGION'])
@@ -65,8 +73,8 @@ begin
     exit 0
   end
 
-  puts 'Found Event:'
-  puts '  Title:  ' + result.item['title']
+  #puts 'Found Event:'
+  #puts '  Title:  ' + result.item['title']
 rescue  Aws::DynamoDB::Errors::ServiceError => error
   puts 'Unable to find event:'
   puts error.message

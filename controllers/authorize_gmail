@@ -6,6 +6,7 @@ require_relative '../lib/tom_calendar.rb'
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 # @remember: delete session when user signs out (sign out and remove authorization are different)
 # @test:     authorizer refreshes tokens when intialized?
+# @test:     hashing isn't being consistent? maybe sometimes whitespace or something?
 
 
 begin

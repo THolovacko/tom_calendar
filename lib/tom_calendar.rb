@@ -41,6 +41,8 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
       raise "Unable to get token for id: #{id}"
     end
 
+    item['expiration_time_millis'] = item['expiration_time_millis'].to_i
+
     return item.to_json
   end
 
