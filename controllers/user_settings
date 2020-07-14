@@ -1,0 +1,31 @@
+#! /usr/bin/ruby
+
+
+puts "Content-type: text/html\n\n"
+puts %(
+<html lang="en">
+  <head>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+  </head>
+  <h1>user settings</h1>
+  <body>
+    <a href="https://tomcalendar.com" onclick="revoke()">unauthorize</a>
+  </body>
+  <script>
+    function init() {
+      gapi.load('auth2', function() {
+        auth2 = gapi.auth2.init({
+          client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
+          scope: 'profile email https://www.googleapis.com/auth/calendar',
+          redirect_uri: 'postmessage'
+        }).then(function(then_init) {}, function(error) {});
+      });
+    }
+    function revoke() {
+      document.cookie = "session_id=;secure";
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.disconnect();
+    }
+  </script>
+</html>
+)

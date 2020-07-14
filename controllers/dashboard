@@ -1,85 +1,51 @@
 #! /usr/bin/ruby
 
-require 'aws-sdk-dynamodb'
+require_relative '../lib/tom_calendar.rb'
+
+# @test: login with invalid cookie -> dashboard -> login
+
+cookie_session_id = get_session_id_from_cookies()
+unless cookie_session_id_is_valid?(cookie_session_id)
+  puts "Content-type: text/html\n\n"
+  puts %(
+  <html lang="en">
+    <head>
+      <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com?reset=true">
+    </head>
+  </html>
+  )
+  return
+end
 
 
-
+# render dashboard
 puts "Content-type: text/html\n\n"
-
-puts '<h1>the dashboard</h1>'
-puts '<p>'
-
-# @current: setup dashboard with logout and user settings with unauthorize
-
-
-# apache environment variables
-#ENV.keys.each {|key| puts key.to_s + "\n"}
-#puts ENV['REQUEST_URI']
-
-
-# stdin for handling post requests
-ARGF.each do |line|
-    puts line
-end
-
-#cookies = ENV['HTTP_COOKIE'].split(';')
-#cookies.each { |cookie| session_id = cookie.sub('session_id=','').strip if cookie.match?('session_id') }
-#puts seesion_id
-#puts cookies.to_s
-session_id = ENV['HTTP_COOKIE'].split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
-puts session_id
-
-=begin
-dynamoDB = Aws::DynamoDB::Resource.new(region: ENV['AWS_REGION'])
-
-dynamoDB.tables.each do |t|
-  puts "Name:    #{t.name}"
-  puts "#Items:  #{t.item_count}"
-end
-=end
-
-
-dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-
-item = {
-	creator_username: 'tom',
-  title: "test_event #{Time.now}",
-}
-
-params = {
-	table_name: 'Events',
-  #item: item
-	key: { creator_username: 'tom',
-         title: 'test_event 2020-07-01 12:04:41 +0000'
-  }
-}
-
-# add item
-=begin
-begin
-  dynamodb.put_item(params)
-  puts 'Added Event'
-rescue  Aws::DynamoDB::Errors::ServiceError => error
-  puts 'Unable to add Event:'
-  puts error.message
-end
-=end
-
-begin
-  result = dynamodb.get_item(params)
-
-  if result.item == nil
-    puts 'Could not find event'
-    exit 0
-  end
-
-  #puts 'Found Event:'
-  #puts '  Title:  ' + result.item['title']
-rescue  Aws::DynamoDB::Errors::ServiceError => error
-  puts 'Unable to find event:'
-  puts error.message
-end
-
-
-
-puts '</p>'
+puts %(
+<html lang="en">
+  <head>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+    <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
+  </head>
+  <h1>the dashboard</h1>
+  <body>
+    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
+    <a href="https://tomcalendar.com/user_settings">Settings</a>
+  </body>
+  <script>
+    function init() {
+      gapi.load('auth2', function() {
+        auth2 = gapi.auth2.init({
+          client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
+          scope: 'profile email https://www.googleapis.com/auth/calendar',
+          redirect_uri: 'postmessage'
+        }).then(function(then_init) {}, function(error) {});
+      });
+    }
+    function signOut() {
+      document.cookie = "session_id=;secure";
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.signOut();
+    }
+  </script>
+</html>
+)

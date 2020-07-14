@@ -4,50 +4,20 @@
 
 require_relative '../lib/tom_calendar.rb'
 
+# @current: get query string param reset, if true then ignore cooke_session_id and reset cookie
 
-cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = get_session_id_from_cookies()
+
 unless cookie_session_id.nil?
-  request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
-  session_id = JSON.parse(cookie_session_id)
-
-  # query for session
-  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-
-  params = {
-    table_name: 'Sessions',
-    key: { ip_hash: request_ip_hash,
-           google_id_hash: session_id['google_id_hash']
-    }
-  }
-
-  begin
-    result_item = dynamodb.get_item(params).item || {}
-    request_password_hash = result_item['password_hash']
-
-    # @remember: if password hash fails then delete session
-    # @remember: need to reset password hash
-    # @optimize: shouldn't need to validate session id twice due to redirect
-
-    unless request_password_hash != session_id['password_hash']
-      google_authorizer = get_google_authorizer(dynamodb)
-      google_credentials = google_authorizer.get_credentials(result_item['google_id'])
-      google_credentials.refresh! # @test: check if redundant and check if refresh token updates
-      
-      unless google_credentials.expired?
-        puts "Content-type: text/html\n\n"
-        puts %(
-        <html lang="en">
-          <head>
-            <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com/dashboard">
-          </head>
-        </html>
-        )
-        return
-      end
-    end
-  rescue Exception => e
-    error = "#{e.message}:#{e.backtrace.inspect}"
-  end
+  puts "Content-type: text/html\n\n"
+  puts %(
+  <html lang="en">
+    <head>
+      <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com/dashboard">
+    </head>
+  </html>
+  )
+  return
 end
 
 
@@ -65,11 +35,9 @@ puts %(
   </head>
   <body>
     <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
-    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
-    <a href="https://tomcalendar.com" onclick="revoke()">revoke</a>
     <script>
       function init() {
-        gapi.load('auth2', function(){
+        gapi.load('auth2', function() {
           auth2 = gapi.auth2.init({
             client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
             scope: 'profile email https://www.googleapis.com/auth/calendar',
@@ -110,13 +78,6 @@ puts %(
           console.log("Didn't find code in authResponse");
           revoke();
         }
-      }
-      function signOut() {
-        var auth2 = gapi.auth2.getAuthInstance();
-        auth2.signOut().then(function () {
-          console.log('User signed out.');
-        });
-        // remove session in db
       }
       function revoke() {
         var auth2 = gapi.auth2.getAuthInstance();
