@@ -4,6 +4,7 @@ require_relative '../lib/tom_calendar.rb'
 
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
+# @remember: need to be able to be signed in on mutliple devices as same user on same ip
 
 
 begin
