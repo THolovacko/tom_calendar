@@ -1,12 +1,8 @@
 #! /usr/bin/ruby
 
-# @optimize: requiring library is taking pretty long
 
-require_relative '../lib/tom_calendar.rb'
-
-# @current: get query string param reset, if true then ignore cooke_session_id and reset cookie
-
-cookie_session_id = get_session_id_from_cookies()
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id.nil?
   puts "Content-type: text/html\n\n"

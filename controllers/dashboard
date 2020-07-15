@@ -1,17 +1,21 @@
 #! /usr/bin/ruby
 
+# @optimize: requiring library is taking pretty long
 require_relative '../lib/tom_calendar.rb'
 
-# @test: login with invalid cookie -> dashboard -> login
 
 cookie_session_id = get_session_id_from_cookies()
-unless cookie_session_id_is_valid?(cookie_session_id)
+unless cookie_session_id && cookie_session_id_is_valid?(cookie_session_id)
   puts "Content-type: text/html\n\n"
   puts %(
   <html lang="en">
-    <head>
-      <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com?reset=true">
-    </head>
+    <body onload="reSignIn()"></body>
+    <script>
+      function reSignIn() {
+        document.cookie = "session_id=;secure";
+        window.location = "https://tomcalendar.com/";
+      }
+    </script>
   </html>
   )
   return

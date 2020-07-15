@@ -85,16 +85,16 @@ def cookie_session_id_is_valid?(cookie_session_id)
   request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
   session_id = JSON.parse(cookie_session_id)
 
-  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-
-  params = {
-    table_name: 'Sessions',
-    key: { ip_hash: request_ip_hash,
-           google_id_hash: session_id['google_id_hash']
-    }
-  }
-
   begin
+    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+    params = {
+      table_name: 'Sessions',
+      key: { ip_hash: request_ip_hash,
+             google_id_hash: session_id['google_id_hash']
+      }
+    }
+
     result_item = dynamodb.get_item(params).item || {}
     request_password_hash = result_item['password_hash']
 
@@ -112,6 +112,7 @@ def cookie_session_id_is_valid?(cookie_session_id)
         return true
       end
     end
+    return false
   rescue Exception => e
     error = "#{e.message}:#{e.backtrace.inspect}"
     return false
