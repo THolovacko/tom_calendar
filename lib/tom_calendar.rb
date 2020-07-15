@@ -81,7 +81,7 @@ def get_session_id_from_cookies()
   session_id
 end
 
-def cookie_session_id_is_valid?(cookie_session_id)
+def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
   session_id = JSON.parse(cookie_session_id)
 
@@ -98,13 +98,15 @@ def cookie_session_id_is_valid?(cookie_session_id)
     result_item = dynamodb.get_item(params).item || {}
     request_password_hash = result_item['password_hash']
 
-    # @remember: if password hash fails then delete session
-    # @remember: need to reset password hash
+    # @remember: should occasionally reset password hash?
 
-    unless request_password_hash != session_id['password_hash']
+    if request_password_hash != session_id['password_hash']
+      dynamodb.delete_item(params)
+      return false
+    else
       google_authorizer = get_google_authorizer(dynamodb)
       google_credentials = google_authorizer.get_credentials(result_item['google_id'])
-      google_credentials.refresh! # @test: check if redundant and check if refresh token updates
+      google_credentials.refresh!
       
       if google_credentials.expired?
         return false
@@ -112,7 +114,6 @@ def cookie_session_id_is_valid?(cookie_session_id)
         return true
       end
     end
-    return false
   rescue Exception => e
     error = "#{e.message}:#{e.backtrace.inspect}"
     return false

@@ -5,7 +5,7 @@ require_relative '../lib/tom_calendar.rb'
 
 
 cookie_session_id = get_session_id_from_cookies()
-unless cookie_session_id && cookie_session_id_is_valid?(cookie_session_id)
+unless cookie_session_id && refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   puts "Content-type: text/html\n\n"
   puts %(
   <html lang="en">

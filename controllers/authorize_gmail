@@ -4,14 +4,9 @@ require_relative '../lib/tom_calendar.rb'
 
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
-# @remember: delete session when user signs out (sign out and remove authorization are different)
-# @test:     authorizer refreshes tokens when intialized?
-# @test:     hashing isn't being consistent? maybe sometimes whitespace or something?
 
 
 begin
-  # @remember: check header for valid X-Requested-With?
-  
   # create google tokens and session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
