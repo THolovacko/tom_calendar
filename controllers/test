@@ -1,9 +1,0 @@
-#! /usr/bin/ruby --jit
-
-require 'aws-sdk-dynamodb.rb'
-require 'googleauth/client_id.rb'
-require 'googleauth/web_user_authorizer.rb'
-require 'googleauth/token_store.rb'
-require 'json.rb'
-require 'digest.rb'
-
