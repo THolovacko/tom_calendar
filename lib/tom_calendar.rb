@@ -1,8 +1,7 @@
 require 'aws-sdk-dynamodb'
-require 'googleauth'
+require 'googleauth/client_id'
 require 'googleauth/web_user_authorizer'
 require 'googleauth/token_store'
-require 'jwt'
 require 'json'
 require 'digest'
 
@@ -65,14 +64,6 @@ def get_google_authorizer(dynamodb_connection)
   token_store = DynamoDBTokenStore.new(dynamodb_connection)
   authorizer  = Google::Auth::UserAuthorizer.new(client_id, GOOGLE_PERMISSION_SCOPES, token_store, 'postmessage')
   authorizer
-end
-
-def decode_google_id_token(id_token)
-  user_data = JWT.decode(id_token, nil, false).first
-  raise 'invalid iss' unless user_data['iss'] == 'https://accounts.google.com'.freeze
-  raise 'invalid aud' unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
-  raise 'invalid exp' unless user_data['exp'] > 0
-  user_data
 end
 
 def get_session_id_from_cookies()

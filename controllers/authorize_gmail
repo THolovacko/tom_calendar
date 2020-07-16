@@ -1,5 +1,6 @@
 #! /usr/bin/ruby
 
+require 'jwt'
 require_relative '../lib/tom_calendar.rb'
 
 # @remember: need submit consent screen for OAuth verification
@@ -13,7 +14,11 @@ begin
   google_authorizer  = get_google_authorizer(dynamodb)
   authorization_code = ARGF.first
   credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
-  user_data          = decode_google_id_token(credentials.id_token)
+
+  user_data = JWT.decode(credentials.id_token, nil, false).first
+  raise 'invalid iss' unless user_data['iss'] == 'https://accounts.google.com'.freeze
+  raise 'invalid aud' unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
+  raise 'invalid exp' unless user_data['exp'] > 0
 
   google_authorizer.store_credentials(user_data['sub'], credentials)
 
