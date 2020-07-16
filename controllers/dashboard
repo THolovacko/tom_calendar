@@ -1,19 +1,10 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
 
-=begin
-@optimize: requiring library is taking pretty long:
-  real    0m0.576s
-  user    0m0.486s
-  sys     0m0.089s
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
 
-  requiring dynamodb is about .4 seconds
-=end
-
-
-cookie_session_id = get_session_id_from_cookies()
-unless cookie_session_id && refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
+unless cookie_session_id
   puts "Content-type: text/html\n\n"
   puts %(
   <html lang="en">
@@ -29,7 +20,7 @@ unless cookie_session_id && refresh_tokens_and_cookie_session_id_is_valid?(cooki
   return
 end
 
-
+# @remember: handle refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) during initial load and redirect to login if failed (delete cookie first)
 # render dashboard
 puts "Content-type: text/html\n\n"
 puts %(

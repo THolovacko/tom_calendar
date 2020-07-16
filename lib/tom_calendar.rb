@@ -5,6 +5,17 @@ require 'googleauth/token_store'
 require 'json'
 require 'digest'
 
+
+=begin
+@optimize: requiring library is taking pretty long:
+  real    0m0.576s
+  user    0m0.486s
+  sys     0m0.089s
+
+  requiring dynamodb is about .4 seconds
+=end
+
+
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze
 
 class DynamoDBTokenStore < Google::Auth::TokenStore

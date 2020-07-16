@@ -1,6 +1,26 @@
 #! /usr/bin/ruby
 
 
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  puts "Content-type: text/html\n\n"
+  puts %(
+  <html lang="en">
+    <body onload="reSignIn()"></body>
+    <script>
+      function reSignIn() {
+        document.cookie = "session_id=;secure";
+        window.location = "https://tomcalendar.com/";
+      }
+    </script>
+  </html>
+  )
+  return
+end
+
+# render user settings
 puts "Content-type: text/html\n\n"
 puts %(
 <html lang="en">
