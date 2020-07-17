@@ -27,9 +27,15 @@ puts %(
 <html lang="en">
   <head>
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
-    <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
-  <h1>the dashboard</h1>
+  <div class="navbar">
+    <i class="material-icons nav">search</span>
+    <i class="material-icons nav">explore</span>
+    <i class="material-icons nav">date_range</span>
+    <i class="material-icons nav">person</span>
+    <i class="material-icons nav">create</span>
+  </div>
   <body>
     <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
     <a href="https://tomcalendar.com/user_settings">Settings</a>
@@ -50,5 +56,34 @@ puts %(
       auth2.signOut();
     }
   </script>
+  <style>
+    .navbar {
+      width: 100%;
+      background-color: #DB4437;
+      overflow: auto;
+    }
+    .material-icons.nav {
+      font-size: 35px;
+      color: rgba(255, 255, 255, 1);
+      float: right;
+      text-align: center;
+      //padding: 12px;
+    }
+    .material-icons.nav:hover {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .navbar a:hover {
+      background-color: #000;
+    }
+    .active {
+      background-color: #4CAF50;
+    }
+    @media screen and (max-width: 500px) {
+      .navbar a {
+        float: none;
+        display: block;
+      }
+    }
+  </style>
 </html>
 )
