@@ -20,6 +20,8 @@ unless cookie_session_id
   return
 end
 
+
+
 # @remember: handle refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) during initial load and redirect to login if failed (delete cookie first)
 # render dashboard
 puts "Content-type: text/html\n\n"
@@ -57,32 +59,26 @@ puts %(
     }
   </script>
   <style>
+    html {
+      text-align: center;
+      background-color: #DB4437;
+    }
     .navbar {
       width: 100%;
-      background-color: #DB4437;
       overflow: auto;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: rgb(240, 240, 240, .25);
+      padding-top: 2px;
     }
     .material-icons.nav {
-      font-size: 35px;
+      font-size: 30px;
       color: rgba(255, 255, 255, 1);
       float: right;
       text-align: center;
-      //padding: 12px;
-    }
-    .material-icons.nav:hover {
-      color: rgba(255, 255, 255, 0.3);
-    }
-    .navbar a:hover {
-      background-color: #000;
-    }
-    .active {
-      background-color: #4CAF50;
-    }
-    @media screen and (max-width: 500px) {
-      .navbar a {
-        float: none;
-        display: block;
-      }
+      padding-left: 24px;
+      padding-bottom: 3px;
+      text-shadow: 1px 1px 1px #000000;
     }
   </style>
 </html>
