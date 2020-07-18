@@ -20,7 +20,10 @@ unless cookie_session_id
   return
 end
 
-
+=begin
+    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
+    <a href="https://tomcalendar.com/user_settings">Settings</a>
+=end
 
 # @remember: handle refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) during initial load and redirect to login if failed (delete cookie first)
 # render dashboard
@@ -31,17 +34,14 @@ puts %(
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
-  <div class="navbar">
-    <i class="material-icons nav">search</span>
-    <i class="material-icons nav">explore</span>
-    <i class="material-icons nav">date_range</span>
-    <i class="material-icons nav">person</span>
-    <i class="material-icons nav">create</span>
-  </div>
   <body>
-    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
-    <a href="https://tomcalendar.com/user_settings">Settings</a>
   </body>
+  <div class="navbar">
+    <i class="material-icons nav create">create</i>
+    <i class="material-icons nav select">person</i>
+    <i class="material-icons nav select">date_range</i>
+    <i class="material-icons nav select active">explore</i>
+  </div>
   <script>
     function init() {
       gapi.load('auth2', function() {
@@ -69,16 +69,42 @@ puts %(
       border-bottom-style: solid;
       border-width: thin;
       border-color: rgb(240, 240, 240, .25);
-      padding-top: 2px;
+      padding-bottom: 6px;
+    }
+    .material-icons {
+      cursor: pointer;
     }
     .material-icons.nav {
       font-size: 30px;
       color: rgba(255, 255, 255, 1);
       float: right;
       text-align: center;
-      padding-left: 24px;
-      padding-bottom: 3px;
+      margin-top: 6px;
+      margin-left: 12px;
+      margin-right: 12px;
+      margin-bottom: 1px;
       text-shadow: 1px 1px 1px #000000;
+    }
+    .material-icons.nav.select {
+      color: rgba(255, 255, 255, .85);
+    }
+    .material-icons.nav.select.active {
+      color: rgba(255, 255, 255, 1);
+      text-shadow: 2px 2px 1px #000000;
+    }
+    .material-icons.nav.create {
+      padding-top: 2px;
+      color: #0F9D58;
+      border-style: solid;
+      border-color: rgb(66, 133, 244, 1);
+      border-width: thin;
+      border-radius: 5px;
+      background-color: #DB4437;
+      margin-right: 32px;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-top: 2px;
+      padding-bottom: 3px;
     }
   </style>
 </html>
