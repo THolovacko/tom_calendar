@@ -34,13 +34,12 @@ puts %(
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
-  <body>
-  </body>
+  <body onload="onExplore()"></body>
   <div class="navbar">
-    <i class="material-icons nav create">create</i>
-    <i class="material-icons nav select">person</i>
-    <i class="material-icons nav select">date_range</i>
-    <i class="material-icons nav select active">explore</i>
+    <i class="material-icons nav create" id="create" onclick="onCreate()">create</i>
+    <i class="material-icons nav select" id="person" onclick="onPerson()">person</i>
+    <i class="material-icons nav select" id="view_list" onclick="onViewList()">view_list</i>
+    <i class="material-icons nav select" id="explore" onclick="onExplore()">explore</i>
   </div>
   <script>
     function init() {
@@ -56,6 +55,33 @@ puts %(
       document.cookie = "session_id=;secure";
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut();
+    }
+    function onExplore() {
+      unactivateAllNavIcons();
+      var explore_icon = document.getElementById("explore");
+      explore_icon.style.color = "rgba(255, 255, 255, 1)";
+      explore_icon.style.textShadow = "2px 2px 1px #000000";
+    }
+    function onPerson() {
+      unactivateAllNavIcons();
+      var explore_icon = document.getElementById("person");
+      explore_icon.style.color = "rgba(255, 255, 255, 1)";
+      explore_icon.style.textShadow = "2px 2px 1px #000000";
+    }
+    function onViewList() {
+      unactivateAllNavIcons();
+      var explore_icon = document.getElementById("view_list");
+      explore_icon.style.color = "rgba(255, 255, 255, 1)";
+      explore_icon.style.textShadow = "2px 2px 1px #000000";
+    }
+    function onCreate() {
+    }
+    function unactivateAllNavIcons() {
+      var all_nav_icons = document.getElementsByClassName("material-icons nav select");
+      for(var i = 0; i < all_nav_icons.length; i++){
+        all_nav_icons[i].style.color = "rgba(255, 255, 255, .7)";
+        all_nav_icons[i].style.textShadow = "1px 1px 1px #000000";
+      }
     }
   </script>
   <style>
@@ -84,13 +110,11 @@ puts %(
       margin-right: 12px;
       margin-bottom: 1px;
       text-shadow: 1px 1px 1px #000000;
+      transition: color .175s, text-shadow .175s, background-color .175s;
+      transition-timing-function: ease-out;
     }
     .material-icons.nav.select {
-      color: rgba(255, 255, 255, .85);
-    }
-    .material-icons.nav.select.active {
-      color: rgba(255, 255, 255, 1);
-      text-shadow: 2px 2px 1px #000000;
+      color: rgba(255, 255, 255, .7);
     }
     .material-icons.nav.create {
       padding-top: 2px;
