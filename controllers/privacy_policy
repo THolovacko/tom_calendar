@@ -3,6 +3,7 @@
 puts 'Content-type: text/html'
 
 puts %(
+<title>Privacy Policy</title>
 <h1>Privacy Policy for TomCalendar</h1>
 
 <p>At TomCalendar, accessible from https://tomcalendar.com, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by TomCalendar and how we use it.</p>

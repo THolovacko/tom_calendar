@@ -1,0 +1,19 @@
+#! /usr/bin/ruby
+
+
+puts "Content-type: text/html\n\n"
+puts %(
+<html lang="en">                                                 
+  <title>Page Not Found</title>                                  
+    <p>The requested URL was not found on this server.</p>                                                                
+    <style type="text/css">                                  
+      html {                                           
+        text-align: center;                      
+        background-color: #DB4437;               
+      }                                                
+    </style>                                                 
+</html>                                                          
+)
+
+
+

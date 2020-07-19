@@ -30,16 +30,21 @@ end
 puts "Content-type: text/html\n\n"
 puts %(
 <html lang="en">
+  <title>Dashboard</title>
   <head>
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
   <body onload="onExplore()"></body>
   <div class="navbar">
-    <i class="material-icons nav create" id="create" onclick="onCreate()">create</i>
-    <i class="material-icons nav select" id="person" onclick="onPerson()">person</i>
-    <i class="material-icons nav select" id="view_list" onclick="onViewList()">view_list</i>
-    <i class="material-icons nav select" id="explore" onclick="onExplore()">explore</i>
+    <i class="material-icons md-36 nav create" id="create" onclick="onCreate()">create</i>
+    <i class="material-icons md-36 nav select" id="user_dropdown" onclick="onUserDropdown()">person</i>
+    <i class="material-icons md-36 nav select" id="view_list" onclick="onViewList()">view_list</i>
+    <i class="material-icons md-36 nav select" id="explore" onclick="onExplore()">explore</i>
+  </div>
+  <div id="dropdown_content" class="user_dropdown_content">
+    <i class="material-icons drop select" id="user_settings" onClick="onUserSttings()">settings</i>
+    <i class="material-icons drop select" id="sign_out" onClick="onUserSttings()">exit_to_app</i>
   </div>
   <script>
     function init() {
@@ -62,11 +67,12 @@ puts %(
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
     }
-    function onPerson() {
-      unactivateAllNavIcons();
-      var explore_icon = document.getElementById("person");
+    function onUserDropdown() {
+      var explore_icon = document.getElementById("user_dropdown");
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
+      var dropdown_content = document.getElementById("dropdown_content");
+      dropdown_content.style.display = "inline-block";
     }
     function onViewList() {
       unactivateAllNavIcons();
@@ -82,6 +88,8 @@ puts %(
         all_nav_icons[i].style.color = "rgba(255, 255, 255, .7)";
         all_nav_icons[i].style.textShadow = "1px 1px 1px #000000";
       }
+      var dropdown_content = document.getElementById("dropdown_content");
+      dropdown_content.style.display = "none";
     }
   </script>
   <style>
@@ -90,18 +98,20 @@ puts %(
       background-color: #DB4437;
     }
     .navbar {
+      background-color: rgba(219, 68, 55, .5);
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
       border-width: thin;
       border-color: rgb(240, 240, 240, .25);
       padding-bottom: 6px;
+      position: fixed;
     }
     .material-icons {
       cursor: pointer;
     }
     .material-icons.nav {
-      font-size: 30px;
+      font-size: 36px;
       color: rgba(255, 255, 255, 1);
       float: right;
       text-align: center;
@@ -116,12 +126,15 @@ puts %(
     .material-icons.nav.select {
       color: rgba(255, 255, 255, .7);
     }
+    .user_dropdown_content {
+      display: none;
+    }
     .material-icons.nav.create {
       padding-top: 2px;
       color: #0F9D58;
       border-style: solid;
       border-color: rgb(66, 133, 244, 1);
-      border-width: thin;
+      border-width: 2px;
       border-radius: 5px;
       background-color: #DB4437;
       margin-right: 32px;
