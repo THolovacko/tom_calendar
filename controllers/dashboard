@@ -31,13 +31,13 @@ puts %(
     <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
-  <body onload="onExplore()"></body>
   <div class="navbar">
     <i class="material-icons md-36 nav create" id="create" onclick="onCreate()">create</i>
     <i class="material-icons md-36 nav select" id="user_settings" onClick="onUserSettings()">person</i>
     <i class="material-icons md-36 nav select" id="view_list" onclick="onViewList()">view_list</i>
     <i class="material-icons md-36 nav select" id="explore" onclick="onExplore()">explore</i>
   </div>
+  <body onload="onExplore()"></body>
   <script>
     function init() {
       gapi.load('auth2', function() {
@@ -52,6 +52,11 @@ puts %(
       document.cookie = "session_id=;secure";
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut();
+    }
+    function revoke() {
+      document.cookie = "session_id=;secure";
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.disconnect();
     }
     function onExplore() {
       unactivateAllNavIcons();
