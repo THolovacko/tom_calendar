@@ -20,10 +20,6 @@ unless cookie_session_id
   return
 end
 
-=begin
-    <a href="https://tomcalendar.com" onclick="signOut()">Sign out</a>
-    <a href="https://tomcalendar.com/user_settings">Settings</a>
-=end
 
 # @remember: handle refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) during initial load and redirect to login if failed (delete cookie first)
 # render dashboard
@@ -38,13 +34,9 @@ puts %(
   <body onload="onExplore()"></body>
   <div class="navbar">
     <i class="material-icons md-36 nav create" id="create" onclick="onCreate()">create</i>
-    <i class="material-icons md-36 nav select" id="user_dropdown" onclick="onUserDropdown()">person</i>
+    <i class="material-icons md-36 nav select" id="user_settings" onClick="onUserSettings()">person</i>
     <i class="material-icons md-36 nav select" id="view_list" onclick="onViewList()">view_list</i>
     <i class="material-icons md-36 nav select" id="explore" onclick="onExplore()">explore</i>
-  </div>
-  <div id="dropdown_content" class="user_dropdown_content">
-    <i class="material-icons drop select" id="user_settings" onClick="onUserSttings()">settings</i>
-    <i class="material-icons drop select" id="sign_out" onClick="onUserSttings()">exit_to_app</i>
   </div>
   <script>
     function init() {
@@ -67,12 +59,11 @@ puts %(
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
     }
-    function onUserDropdown() {
-      var explore_icon = document.getElementById("user_dropdown");
-      explore_icon.style.color = "rgba(255, 255, 255, 1)";
-      explore_icon.style.textShadow = "2px 2px 1px #000000";
-      var dropdown_content = document.getElementById("dropdown_content");
-      dropdown_content.style.display = "inline-block";
+    function onUserSettings() {
+      unactivateAllNavIcons();
+      var user_settings_icon = document.getElementById("user_settings");
+      user_settings.style.color = "rgba(255, 255, 255, 1)";
+      user_settings.style.textShadow = "2px 2px 1px #000000";
     }
     function onViewList() {
       unactivateAllNavIcons();
@@ -88,8 +79,6 @@ puts %(
         all_nav_icons[i].style.color = "rgba(255, 255, 255, .7)";
         all_nav_icons[i].style.textShadow = "1px 1px 1px #000000";
       }
-      var dropdown_content = document.getElementById("dropdown_content");
-      dropdown_content.style.display = "none";
     }
   </script>
   <style>
@@ -125,9 +114,6 @@ puts %(
     }
     .material-icons.nav.select {
       color: rgba(255, 255, 255, .7);
-    }
-    .user_dropdown_content {
-      display: none;
     }
     .material-icons.nav.create {
       padding-top: 2px;
