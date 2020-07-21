@@ -32,10 +32,11 @@ puts %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
   <div class="navbar">
-    <i class="material-icons md-36 nav create" id="create" onclick="onCreate()">create</i>
-    <i class="material-icons md-36 nav select" id="user_settings" onClick="onUserSettings()">person</i>
-    <i class="material-icons md-36 nav select" id="view_list" onclick="onViewList()">view_list</i>
-    <i class="material-icons md-36 nav select" id="explore" onclick="onExplore()">explore</i>
+    <input type="text" id="search_bar" placeholder="Search TomCalendar">
+    <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
+    <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">person</i>
+    <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">view_list</i>
+    <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
   </div>
   <body onload="onExplore()"></body>
   <script>
@@ -63,18 +64,24 @@ puts %(
       var explore_icon = document.getElementById("explore");
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
+      var search_bar = document.getElementById("search_bar");
+      search_bar.placeholder = "Search TomCalendar";
     }
     function onUserSettings() {
       unactivateAllNavIcons();
       var user_settings_icon = document.getElementById("user_settings");
       user_settings.style.color = "rgba(255, 255, 255, 1)";
       user_settings.style.textShadow = "2px 2px 1px #000000";
+      var search_bar = document.getElementById("search_bar");
+      search_bar.placeholder = "Search User Settings";
     }
     function onViewList() {
       unactivateAllNavIcons();
       var explore_icon = document.getElementById("view_list");
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
+      var search_bar = document.getElementById("search_bar");
+      search_bar.placeholder = "Search Event List";
     }
     function onCreate() {
     }
@@ -92,6 +99,7 @@ puts %(
       background-color: #DB4437;
     }
     .navbar {
+      margin: 0;
       background-color: rgba(219, 68, 55, .5);
       width: 100%;
       overflow: auto;
@@ -122,17 +130,37 @@ puts %(
     }
     .material-icons.nav.create {
       padding-top: 2px;
-      color: #0F9D58;
+      //color: #0F9D58;
+      color: #A5D6A7;
+      opacity: .8;
       border-style: solid;
-      border-color: rgb(66, 133, 244, 1);
+      //border-color: rgb(66, 133, 244, 1);
+      border-color: #43A047;
       border-width: 2px;
-      border-radius: 5px;
+      border-radius: 4px;
       background-color: #DB4437;
-      margin-right: 32px;
+      margin-right: 64px;
       padding-left: 8px;
       padding-right: 8px;
       margin-top: 2px;
       padding-bottom: 3px;
+    }
+    .navbar input[type=text] {
+      float: left;
+      padding: 8px;
+      border: solid;
+      border-radius: 50px;
+      border-width: 2px;
+      border-color: #ECEFF1;
+      width: 512;
+      margin-top: 7px;
+      margin-left: 64px;
+      font-size: 16px;
+      //background-color: rgb(255,255,255);
+      background-color: #DB4437;
+      background-image: url('searchicon.png');
+      background-position: 10px 10px;
+      background-repeat: no-repeat;
     }
   </style>
 </html>
