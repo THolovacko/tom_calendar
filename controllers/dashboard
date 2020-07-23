@@ -32,9 +32,9 @@ puts %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
   <div class="navbar">
-    <div class="nav search_bar">
+    <div class="nav search_bar" id="search_bar_test">
       <i class="material-icons md-18 search_bar" id="search">search</i>
-      <input type="text" id="search_bar" placeholder="Search TomCalendar">
+      <input type="text" id="search_bar_input" placeholder="Search TomCalendar" onfocus="onSearchFocus()"></input>
     </div>
     <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
     <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">person</i>
@@ -67,7 +67,7 @@ puts %(
       var explore_icon = document.getElementById("explore");
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
-      var search_bar = document.getElementById("search_bar");
+      var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search TomCalendar";
     }
     function onUserSettings() {
@@ -75,7 +75,7 @@ puts %(
       var user_settings_icon = document.getElementById("user_settings");
       user_settings.style.color = "rgba(255, 255, 255, 1)";
       user_settings.style.textShadow = "2px 2px 1px #000000";
-      var search_bar = document.getElementById("search_bar");
+      var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search User Settings";
     }
     function onViewList() {
@@ -83,10 +83,14 @@ puts %(
       var explore_icon = document.getElementById("view_list");
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
-      var search_bar = document.getElementById("search_bar");
+      var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search Event List";
     }
     function onCreate() {
+    }
+    function onSearchFocus() {
+      var search_bar = document.getElementById("search_bar_test");
+      search_bar.style.boxShadow = "1px 1px 1px black";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -150,25 +154,32 @@ puts %(
     .nav.search_bar {
       border: solid;
       border-radius: 25px;
-      border-width: 2px;
+      border-width: 1px;
       border-color: #ECEFF1;
       width: 512;
       height: 32;
-      margin-top: 6px;
+      margin-top: 8px;
       margin-left: 64px;
       float: left;
+      background-color: #DB4437;
+    }
+    .nav.search_bar:hover {
+      box-shadow: 2px 2px 1px black;
     }
     .nav.search_bar input[type=text] {
       float: left;
       padding: 12px;
       border: none;
-      //color: #E3F2FD;
       color: black;
-      width: 468;
-      height: 16px;
+      width: 470;
+      height: 20px;
       margin-top: 4px;
       font-size: 16px;
       background-color: #DB4437;
+    }
+    .navbar input[type=text]:focus {
+      border-color: #DB4437;
+      outline: none;
     }
     .material-icons.search_bar {
       float: left;
@@ -177,7 +188,7 @@ puts %(
       margin-right: 2px;
     }
     .navbar input::placeholder {
-      color: #B0BEC5;
+      color: black;
       opacity: .75;
     }
   </style>
