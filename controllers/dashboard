@@ -32,9 +32,9 @@ puts %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
   <div class="navbar">
-    <div class="nav search_bar" id="search_bar_test">
-      <i class="material-icons md-18 search_bar" id="search">search</i>
-      <input type="text" id="search_bar_input" placeholder="Search TomCalendar" onfocus="onSearchFocus()"></input>
+    <div class="nav search_bar">
+      <i class="material-icons md-18 search" id="search">search</i>
+      <input type="text" id="search_bar_input" placeholder="Search TomCalendar"></input>
     </div>
     <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
     <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">person</i>
@@ -88,10 +88,6 @@ puts %(
     }
     function onCreate() {
     }
-    function onSearchFocus() {
-      var search_bar = document.getElementById("search_bar_test");
-      search_bar.style.boxShadow = "1px 1px 1px black";
-    }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
       for(var i = 0; i < all_nav_icons.length; i++){
@@ -140,8 +136,6 @@ puts %(
       color: #43A047;
       border-style: solid;
       border-color: rgb(66, 133, 244, 1);
-      //border-color: #E8F5E9;
-      //border-color: #BBDEFB;
       border-width: 2px;
       border-radius: 4px;
       background-color: #DB4437;
@@ -150,6 +144,13 @@ puts %(
       padding-right: 8px;
       margin-top: 2px;
       padding-bottom: 3px;
+    }
+    .material-icons.search {
+      float: left;
+      margin-top: 4px;
+      margin-left: 8px;
+      margin-right: 2px;
+      cursor: default;
     }
     .nav.search_bar {
       border: solid;
@@ -162,9 +163,20 @@ puts %(
       margin-left: 64px;
       float: left;
       background-color: #DB4437;
+      transition: box-shadow .175s, height .175s, width .175s;
+      transition-timing-function: ease-out;
     }
     .nav.search_bar:hover {
-      box-shadow: 2px 2px 1px black;
+      box-shadow: 0px 0px 4px black;
+      border: none;
+      width: 514;
+      height: 33;
+    }
+    .nav.search_bar:focus-within {
+      box-shadow: 0px 0px 4px black;
+      border: none;
+      width: 514;
+      height: 33;
     }
     .nav.search_bar input[type=text] {
       float: left;
@@ -180,12 +192,6 @@ puts %(
     .navbar input[type=text]:focus {
       border-color: #DB4437;
       outline: none;
-    }
-    .material-icons.search_bar {
-      float: left;
-      margin-top: 4px;
-      margin-left: 8px;
-      margin-right: 2px;
     }
     .navbar input::placeholder {
       color: black;
