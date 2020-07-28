@@ -28,8 +28,9 @@ puts %(
 <html lang="en">
   <title>Dashboard</title>
   <head>
-    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
   <div class="navbar">
     <div class="nav search_bar">
@@ -41,11 +42,11 @@ puts %(
     <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">view_list</i>
     <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
   </div>
-  <body onload="onExplore()">
+  <body onload="onExplore(); init();">
     <div class="settings_page", id="settings_page">
       <i class="material-icons md-48 settings">settings</i>
       <button class="settings_btn sign_out" onclick="signOut()">Sign out</button>
-      <button class="settings_btn deactivate" onclick="confirm_revoke()">Deactivate</button>
+      <button class="settings_btn deactivate" onclick="confirmRevoke()">Deactivate</button>
     </div>
   </body>
   <script>
@@ -64,6 +65,11 @@ puts %(
       auth2.signOut();
       // @remember: this isn't working on mobile safari
       window.location = "https://tomcalendar.com/";
+    }
+    function confirmRevoke() {
+			if (window.confirm("Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?")) {
+				revoke();
+			}
     }
     function revoke() {
       document.cookie = "session_id=;secure";
@@ -120,6 +126,7 @@ puts %(
     html {
       text-align: center;
       background-color: #DB4437;
+      font-family: 'Roboto', sans-serif;
     }
     .navbar {
       margin: 0;
@@ -149,8 +156,8 @@ puts %(
       cursor: default;
     }
     .material-icons.settings {
-      font-size: 48px;
-      margin-top: 12px;
+      font-size: 64px;
+      margin-top: 18px;
       width: 100%;
     }
     .material-icons.nav {
@@ -239,23 +246,21 @@ puts %(
     .settings_btn {
       display: inline-block;
       width: 50%;
-      height: 48px;
-      margin-top: 24px;
+      height: 64px;
+      margin-top: 32px;
       font-size: 24px;
       outline: none;
       border: none;
       border-radius: 40px;
       cursor: pointer;
+      box-shadow: 0px 0px 5px black;
+      background-color: #455A64;
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      color: #ECEFF1;
     }
-    .settings_btn.sign_out {
-      background-color: white;
-      color: black;
-      box-shadow: 0px 0px 6px black;
-    }
-    .settings_btn.deactivate {
-      background-color: grey;
-      color: red;
-      box-shadow: 0px 0px 6px black;
+    .settings_btn:hover {
+      background-color: #37474F;
     }
   </style>
 </html>

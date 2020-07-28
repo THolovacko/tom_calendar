@@ -17,6 +17,7 @@ unless cookie_session_id.nil?
 end
 
 
+
 # render login page
 puts "Content-type: text/html\n\n"
 
@@ -26,12 +27,12 @@ puts %(
   <head>
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png">
-    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
-  <body>
+  <body onload="init();">
     <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
+  </body>
     <script>
       function init() {
         gapi.load('auth2', function() {
@@ -43,6 +44,7 @@ puts %(
         });
       }
       function onSignUp() {
+        // @remember: on mobile authorization prompt happens twice. Maybe becasue not a popup on mobile?
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.grantOfflineAccess().then(onSignIn);
       }
@@ -85,6 +87,7 @@ puts %(
       html {
         text-align: center;
         background-color: #DB4437;
+        font-family: 'Roboto', sans-serif;
       }
       .googleButton {
         display: inline-block;
@@ -103,7 +106,6 @@ puts %(
         height: 60px;
         white-space: nowrap;
         border: none;
-        background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png') no-repeat;
         background-size: cover;
         border-radius: 3px;
       }
@@ -113,13 +115,10 @@ puts %(
         width: 250px;
         height: 60px;
         white-space: nowrap;
-        border: none;
-        background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
         background-size: cover;
-        border-radius: 3px;
+        outline: none;
       }
     </style>
-  </body>
 </html>
 )
 
