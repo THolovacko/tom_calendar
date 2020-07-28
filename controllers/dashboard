@@ -146,11 +146,12 @@ puts %(
       top: 100px;
       text-align: center;
       margin-left: 30%;
-      padding-bottom: 150px;
+      padding-bottom: 100px;
       border: solid;
       border-radius: 25px;
       border-width: 1px;
       border-color: #ECEFF1;
+      background-color: #263238;
     }
     .material-icons {
       cursor: default;
@@ -159,6 +160,7 @@ puts %(
       font-size: 64px;
       margin-top: 18px;
       width: 100%;
+      color: #90A4AE;
     }
     .material-icons.nav {
       font-size: 36px;
