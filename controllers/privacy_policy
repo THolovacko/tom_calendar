@@ -3,6 +3,9 @@
 puts 'Content-type: text/html'
 
 puts %(
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+</head>
 <title>Privacy Policy</title>
 <h1>Privacy Policy for TomCalendar</h1>
 
@@ -94,7 +97,6 @@ html {
   font-family: 'Roboto', sans-serif;
 }
 </style>
-
 )
 
 

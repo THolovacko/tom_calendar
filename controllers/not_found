@@ -3,16 +3,21 @@
 
 puts "Content-type: text/html\n\n"
 puts %(
-<html lang="en">                                                 
-  <title>Page Not Found</title>                                  
-    <p>The requested URL was not found on this server.</p>                                                                
-    <style type="text/css">                                  
-      html {                                           
-        text-align: center;                      
-        background-color: #DB4437;               
-      }                                                
-    </style>                                                 
-</html>                                                          
+<html lang="en">
+  <title>Page Not Found</title>
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+  </head>
+  <img src="https://tomcalendar.com/public/morty.gif" alt="morty.gif" style="width:512px;height:256px;margin-top:64px;">
+  <h1>The requested URL was not found on this server</h1>
+  <style type="text/css">
+    html {
+      text-align: center;
+      background-color: #DB4437;
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</html>
 )
 
 
