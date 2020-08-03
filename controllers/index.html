@@ -16,7 +16,6 @@ unless cookie_session_id.nil?
   return
 end
 
-    #<div class="screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:80%;max-height:50%;"></div>
 
 # render login page
 puts "Content-type: text/html\n\n"
@@ -33,10 +32,10 @@ puts %(
   </head>
   <body onload="init();">
     <div class="pageTitle"><h1>TomCalendar</h1></div>
-    <div class="screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:50%;max-height:50%;float:left;"></div>
+    <div class="screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:80%;max-height:50%;"></div>
     <div class="description">
       <div class="description_creator">
-        <h1>You've earned your audience's attention, keep it</h1>
+        <h1 style="font-size: 20px;">You've earned your audience's attention, keep it</h1>
         <ul class="description_list">
           <li>Create planned and spontaneous events</li>
           <li>Replicate event changes automatically</li>
@@ -44,7 +43,7 @@ puts %(
         </ul>
       </div>
       <div class="description_viewer">
-        <h1>Stay in the know, without spam</h1>
+        <h1 style="font-size: 20px;">Stay in the know, without spam</h1>
         <ul class="description_list">
           <li>Find out when events happen</li>
           <li>Sync events with Google Calendar</li>
@@ -112,7 +111,6 @@ puts %(
     }
     h1 {
       margin: 0;
-      font-size: 28px;
     }
     ul.description_list {
       list-style-type: none;
@@ -121,27 +119,32 @@ puts %(
       margin-top: 8px;
     }
     .pageTitle {
-      margin-top: 16px;
+      margin-top: 24px;
       margin-bottom: 16px;
       font-size: 32px;
     }
     .description {
-      width: 49%;
-      float: right;
-      text-align: left;
-      margin: 0;
+      width: 100%;
     }
     .description_viewer {
       color: white;
       float: left;
+      width: 49%;
+      text-align: right;
+      margin-right: 1%;
     }
     .description_creator {
       color: black;
+      float: right;
+      width: 50%;
+      text-align: left;
     }
     .googleButton {
       width: 250px;
+      margin-left: 25%;
+      margin-right: 25%;
+      margin-top: 2%;
       height: 60px;
-      white-space: nowrap;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;
