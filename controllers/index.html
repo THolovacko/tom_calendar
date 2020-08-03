@@ -27,6 +27,7 @@ puts %(
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
@@ -37,21 +38,22 @@ puts %(
       <div class="description_creator">
         <h1 style="font-size: 20px;">You've earned your audience's attention, keep it</h1>
         <ul class="description_list">
-          <li>Create planned and spontaneous events</li>
-          <li>Replicate event changes automatically</li>
-          <li>Analyze interest for your events</li>
+          <li><i class="material-icons">create</i> Create planned and spontaneous events</li>
+          <li><i class="material-icons">update</i> Replicate event changes automatically</li>
+          <li><i class="material-icons">analytics</i> Analyze interest for your events</li>
         </ul>
       </div>
       <div class="description_viewer">
         <h1 style="font-size: 20px;">Stay in the know, without spam</h1>
         <ul class="description_list">
-          <li>Find out when events happen</li>
-          <li>Sync events with Google Calendar</li>
-          <li>Explore trending events</li>
+          <li>Find out when events happen <i class="material-icons">search</i></li>
+          <li>Sync events with Google Calendar <i class="material-icons">sync</i></li>
+          <li>Explore trending events <i class="material-icons">explore</i></li>
         </ul>
       </div>
     </div>
-    <button class="googleButton" id=googleLogin onclick="onSignUp()"></button>
+    <button class="googleButton" id=googleLogin onclick="onSignUp()"></button><br>
+    <button class="googleButton2" id=googleLogin2 onclick="onSignUp()"><img src="https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg" alt="google_logo" style="float:left;margin:0;">Sign in with Google</button>
   </body>
   <script>
     function init() {
@@ -64,7 +66,7 @@ puts %(
       });
     }
     function onSignUp() {
-      // @remember: on mobile authorization prompt happens twice. Maybe becasue not a popup on mobile?
+      // @remember: on mobile authorization prompt happens twice. Maybe because not a popup on mobile?
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.grantOfflineAccess().then(onSignIn);
     }
@@ -112,10 +114,13 @@ puts %(
     h1 {
       margin: 0;
     }
+    .material-icons {
+      font-size: 16px;
+    }
     ul.description_list {
       list-style-type: none;
       padding: 0;
-      font-size: 14px;
+      font-size: 16px;
       margin-top: 8px;
     }
     .pageTitle {
@@ -141,15 +146,30 @@ puts %(
     }
     .googleButton {
       width: 250px;
+      height: 60px;
       margin-left: 25%;
       margin-right: 25%;
-      margin-top: 2%;
-      height: 60px;
+      margin-top: 1%;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;
       border-radius: 3px;
       cursor: pointer;
+    }
+    .googleButton2 {
+      width: 256px;
+      height: 64px;
+      margin-left: 25%;
+      margin-right: 25%;
+      margin-top: 1%;
+      border: none;
+      color: #FFFFFF;
+      font-size: 20px;
+      background-color: #4285F4;
+      background-size: cover;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
     }
     .googleButton:hover {
     }
