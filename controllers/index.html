@@ -25,18 +25,18 @@ puts %(
   <title>Login</title>
   <head>
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
-    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_focus_web@2x.png">
+    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body onload="init();">
-    <div class="pageTitle"><h1>TomCalendar</h1></div>
-    <div class="screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:80%;max-height:50%;"></div>
+    <div class="firefox_hack"><img src="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png" alt="firefox_hack" style="display:none;"></div>
+    <div class="dashboard_screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:100%;max-height:50%;"></div>
     <div class="description">
       <div class="description_creator">
-        <h1 style="font-size: 20px;">You've earned your audience's attention, keep it</h1>
+        <h1 style="font-size:2vw;">You've earned your audience's attention, keep it</h1>
         <ul class="description_list">
           <li><i class="material-icons">create</i> Create planned and spontaneous events</li>
           <li><i class="material-icons">update</i> Replicate event changes automatically</li>
@@ -44,7 +44,7 @@ puts %(
         </ul>
       </div>
       <div class="description_viewer">
-        <h1 style="font-size: 20px;">Stay in the know, without spam</h1>
+        <h1 style="font-size:2vw;">Stay in the know, without spam</h1>
         <ul class="description_list">
           <li>Find out when events happen <i class="material-icons">search</i></li>
           <li>Sync events with Google Calendar <i class="material-icons">sync</i></li>
@@ -52,8 +52,7 @@ puts %(
         </ul>
       </div>
     </div>
-    <button class="googleButton" id=googleLogin onclick="onSignUp()"></button><br>
-    <button class="googleButton2" id=googleLogin2 onclick="onSignUp()"><img src="https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg" alt="google_logo" style="float:left;margin:0;">Sign in with Google</button>
+    <button class="google_button" id="google_login" onmousedown="onSignUp()"></button>
   </body>
   <script>
     function init() {
@@ -66,7 +65,7 @@ puts %(
       });
     }
     function onSignUp() {
-      // @remember: on mobile authorization prompt happens twice. Maybe because not a popup on mobile?
+      // @remember: on mobile authorization prompt happens twice. Maybe bug only happens with unverified screen?
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.grantOfflineAccess().then(onSignIn);
     }
@@ -115,18 +114,13 @@ puts %(
       margin: 0;
     }
     .material-icons {
-      font-size: 16px;
+      font-size: 1.5vw;
     }
     ul.description_list {
       list-style-type: none;
       padding: 0;
-      font-size: 16px;
+      font-size: 1.5vw;
       margin-top: 8px;
-    }
-    .pageTitle {
-      margin-top: 24px;
-      margin-bottom: 16px;
-      font-size: 32px;
     }
     .description {
       width: 100%;
@@ -144,36 +138,27 @@ puts %(
       width: 50%;
       text-align: left;
     }
-    .googleButton {
+    .google_button {
       width: 250px;
       height: 60px;
       margin-left: 25%;
       margin-right: 25%;
-      margin-top: 1%;
+      margin-top: 2%;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;
       border-radius: 3px;
       cursor: pointer;
+      transition: background .175s;
+      transition-timing-function: ease-out;
     }
-    .googleButton2 {
-      width: 256px;
-      height: 64px;
-      margin-left: 25%;
-      margin-right: 25%;
-      margin-top: 1%;
-      border: none;
-      color: #FFFFFF;
-      font-size: 20px;
-      background-color: #4285F4;
+    .google_button:hover {
+      background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
       background-size: cover;
-      border-radius: 3px;
-      cursor: pointer;
-      font-family: 'Roboto', sans-serif;
     }
-    .googleButton:hover {
-    }
-    .googleButton:active {
+    .google_button:active {
+      background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
+      background-size: cover;
     }
   </style>
 </html>
