@@ -63,7 +63,6 @@ puts %(
       document.cookie = "session_id=;secure";
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut();
-      // @remember: this isn't working on mobile safari
       window.location = "https://tomcalendar.com/";
     }
     function confirmRevoke() {
