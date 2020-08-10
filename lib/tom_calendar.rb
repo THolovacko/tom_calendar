@@ -79,8 +79,32 @@ end
 
 def get_session_id_from_cookies()
   session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+  return nil unless session_id
   return nil if session_id == ''
-  session_id
+  return JSON.parse(session_id)
+end
+
+def get_google_id(request_ip_hash, session_id, dynamodb=nil)
+  begin
+    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION']) unless dynamodb
+    params = {
+      table_name: 'Sessions',
+      key: { ip_hash: request_ip_hash,
+             google_id_hash: session_id['google_id_hash']
+      }
+    }
+
+    result_item = dynamodb.get_item(params).item || {}
+    request_password_hash = result_item['password_hash']
+    if request_password_hash == session_id['password_hash']
+      return result_item['google_id']
+    else
+      return nil
+    end
+  rescue Exception => e
+    #error = "#{e.message}:#{e.backtrace.inspect}"
+    return nil
+  end
 end
 
 def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)

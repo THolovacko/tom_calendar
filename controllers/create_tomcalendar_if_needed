@@ -1,12 +1,63 @@
 #! /usr/bin/ruby
 
 require_relative '../lib/tom_calendar.rb'
+require "google/apis/calendar_v3"
 
 result = { needed_to_create: false }
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
-# @current: create tomcalendar unless already created
+# @current: create tomcalendar unless already created (about to review and test)
+
+return false unless cookie_session_id
+print "Content-type: application/json\n\n#{result.to_json}" unless cookie_session_id
+request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
+session_id = JSON.parse(cookie_session_id)
+
+dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+google_id = get_google_id(request_ip_hash, session_id, dynamodb)
+service = Google::Apis::CalendarV3::CalendarService.new
+service.client_options.application_name = 'TomCalendar'.freeze # @remember: is this arbitrary?
+google_authorizer = get_google_authorizer(dynamodb)
+service.authorization = google_authorizer.get_credentials(google_id)
+
+begin
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    key: { google_id: google_id }
+  }
+
+  result_item = dynamodb.get_item(params).item || {}
+  google_calendar_id = result_item['google_calendar_id']
+rescue Exception => e
+  raise "#{e.message}:#{e.backtrace.inspect}"
+end
+
+if google_calendar_id
+  begin
+    google_calendar = service.get_calendar(google_calendar_id)
+  rescue
+    google_calendar = nil
+  end
+end
+
+unless google_calendar_id
+  google_calendar = Google::Apis::CalendarV3::Calendar.new(summary: 'TomCalendar') # @remember: should probably set timezone?
+  google_calendar = service.insert_calendar(google_calendar)
+
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    item: JSON.parse({ google_id: google_id, google_calendar_id: google_calendar.id })
+  }
+
+  begin
+    dynamodb.put_item(params)
+  rescue  Aws::DynamoDB::Errors::ServiceError => error
+    raise "Unable to add token: #{item.to_s}"
+  end
+
+  # fill calendar with any needed events
+end
 
 print "Content-type: application/json\n\n#{result.to_json}"
