@@ -11,7 +11,6 @@ unless cookie_session_id
     <body onload="reSignIn()"></body>
     <script>
       function reSignIn() {
-        document.cookie = "session_id=;secure";
         window.location = "https://tomcalendar.com/";
       }
     </script>
@@ -21,7 +20,6 @@ unless cookie_session_id
 end
 
 
-# @remember: handle refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) during initial load and redirect to login if failed (delete cookie first)
 # render dashboard
 puts "Content-type: text/html\n\n"
 puts %(
@@ -29,6 +27,7 @@ puts %(
   <title>Dashboard</title>
   <head>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" async defer></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
@@ -51,6 +50,32 @@ puts %(
   </body>
   <script>
     function init() {
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/validate_tokens_and_load_initial_content',
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+          if (result["is_valid"]) {
+            console.log(JSON.stringify(result));
+
+            // handle initial data load
+
+            $.ajax({
+              type: 'POST',
+              url: 'https://tomcalendar.com/create_tomcalendar_if_needed',
+              contentType: 'application/octet-stream; charset=utf-8',
+              processData: false,
+              data: ''
+            });
+          } else {
+            document.cookie = "session_id=;secure";
+            window.location = "https://tomcalendar.com/";
+          }
+        },
+        processData: false,
+        data: ''
+      });
+
       gapi.load('auth2', function() {
         auth2 = gapi.auth2.init({
           client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',

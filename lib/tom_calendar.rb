@@ -84,6 +84,7 @@ def get_session_id_from_cookies()
 end
 
 def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
+  return false unless cookie_session_id
   request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
   session_id = JSON.parse(cookie_session_id)
 

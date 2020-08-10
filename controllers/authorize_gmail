@@ -13,6 +13,7 @@ begin
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
   authorization_code = ARGF.first
+  raise 'invalid authorization code' unless authorization_code
   credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
 
   user_data = JWT.decode(credentials.id_token, nil, false).first
@@ -35,7 +36,7 @@ begin
   dynamodb.put_item(session_params)
 rescue Exception => e
   credentials = nil
-  error = "#{e.message}:#{e.backtrace.inspect}"
+  error = "#{e.message}"
 end
 
 if credentials.nil?
