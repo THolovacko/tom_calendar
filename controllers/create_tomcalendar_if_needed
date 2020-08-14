@@ -3,7 +3,7 @@
 require_relative '../lib/tom_calendar.rb'
 require "google/apis/calendar_v3"
 
-# @current: test more thorougly
+# @current: test more thoroughly
 
 result = { needed_to_create: false }
 
