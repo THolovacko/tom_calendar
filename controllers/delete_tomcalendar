@@ -3,9 +3,7 @@
 require_relative '../lib/tom_calendar.rb'
 require "google/apis/calendar_v3"
 
-# @current: test more thorougly
-
-result = { needed_to_create: false }
+result = { deleted_calendar: false }
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -38,37 +36,22 @@ rescue Exception => e
   return
 end
 
-# confirm google calendar exists
+# delete google calendar if exists
 if google_calendar_id
-  begin
-    google_calendar = service.get_calendar(google_calendar_id)
-  rescue Google::Apis::ClientError => e # handles 404 (missing calendar) error
-    google_calendar = nil
-  else # other exceptions
-    print "Content-type: text/html\n\nGoogle Server or Authorization Error"
-    return
-  end
-end
-
-# create google calendar if missing
-unless google_calendar_id
-  google_calendar = Google::Apis::CalendarV3::Calendar.new(summary: 'TomCalendar') # @remember: should probably set timezone?
-  google_calendar = service.insert_calendar(google_calendar)
+  service.delete_calendar(google_calendar_id)
 
   params = {
     table_name: 'GoogleCalendarIDs',
-    item: { google_id: google_id, google_calendar_id: google_calendar.id }
+    key: { google_id: google_id }
   }
 
   begin
-    dynamodb.put_item(params)
+    dynamodb.delete_item(params)
   rescue  Aws::DynamoDB::Errors::ServiceError => error
-    service.delete_calendar(google_calendar_id) # @test: force raise service error in begin scope
-    print "Content-type: text/html\n\nUnable to add item: #{item.to_s}"
-    return
+    raise "Unable to delete item: #{item.to_s}"
   end
 
-  result[:needed_to_create] = true
+  result[:deleted_calendar] = true
 end
 
 print "Content-type: application/json\n\n#{result.to_json}"
