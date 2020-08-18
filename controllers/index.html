@@ -1,12 +1,14 @@
 #! /usr/bin/ruby
 
+# @remember: mention users can forget about dates, timzones, etc... in description?
+
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id.nil?
-  puts "Content-type: text/html\n\n"
-  puts %(
+  print "Content-type: text/html\n\n"
+  print %(
   <html lang="en">
     <head>
       <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com/dashboard">
@@ -18,9 +20,9 @@ end
 
 
 # render login page
-puts "Content-type: text/html\n\n"
+print "Content-type: text/html\n\n"
 
-puts %(
+print %(
 <html lang="en">
   <title>Login</title>
   <head>

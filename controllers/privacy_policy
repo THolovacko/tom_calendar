@@ -1,8 +1,8 @@
 #! /usr/bin/ruby
 
-puts 'Content-type: text/html'
+print "Content-type: text/html\n\n"
 
-puts %(
+print %(
 <head>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
 </head>

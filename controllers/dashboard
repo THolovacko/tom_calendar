@@ -5,8 +5,8 @@ cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  puts "Content-type: text/html\n\n"
-  puts %(
+  print "Content-type: text/html\n\n"
+  print %(
   <html lang="en">
     <body onload="reSignIn()"></body>
     <script>
@@ -21,8 +21,8 @@ end
 
 
 # render dashboard
-puts "Content-type: text/html\n\n"
-puts %(
+print "Content-type: text/html\n\n"
+print %(
 <html lang="en">
   <title>Dashboard</title>
   <head>
@@ -68,7 +68,7 @@ puts %(
               data: ''
             });
 
-            // @remember: should probably post request to fix potential out of sync event changes
+            // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
@@ -98,7 +98,6 @@ puts %(
       }
     }
     function revoke() {
-      // @remember: decide if should tie this to a button somehow and delete all of the user's events; or maybe just make it more difficult?
       $.ajax({
         type: 'POST',
         url: 'https://tomcalendar.com/delete_tomcalendar',

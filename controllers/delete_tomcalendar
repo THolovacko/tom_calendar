@@ -20,7 +20,7 @@ google_id             = get_google_id(request_ip_hash, session_id, dynamodb)
 google_authorizer     = get_google_authorizer(dynamodb)
 service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(google_id)
-service.client_options.application_name = 'TomCalendar'.freeze # @remember: is this arbitrary?
+service.client_options.application_name = 'TomCalendar'.freeze
 
 # get google calendar id
 begin
@@ -47,8 +47,9 @@ if google_calendar_id
 
   begin
     dynamodb.delete_item(params)
-  rescue  Aws::DynamoDB::Errors::ServiceError => error
-    raise "Unable to delete item: #{item.to_s}"
+  rescue
+    print "Content-type: text/html\n\nUnable to delete google calendar id"
+    return
   end
 
   result[:deleted_calendar] = true
