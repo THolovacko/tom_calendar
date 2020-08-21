@@ -37,8 +37,8 @@ print %(
       <input type="text" id="search_bar_input" placeholder="Search TomCalendar"></input>
     </div>
     <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
-    <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">person</i>
-    <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">view_list</i>
+    <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">settings</i>
+    <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">person</i>
     <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
   </div>
   <body onload="onExplore(); init();">
@@ -127,7 +127,7 @@ print %(
       user_settings.style.textShadow = "2px 2px 1px #000000";
 
       var search_bar = document.getElementById("search_bar_input");
-      search_bar.placeholder = "Search User Settings";
+      search_bar.placeholder = "Search Settings";
 
       var settings_page = document.getElementById("settings_page");
       settings_page.style.display = "block";
@@ -139,7 +139,7 @@ print %(
       explore_icon.style.color = "rgba(255, 255, 255, 1)";
       explore_icon.style.textShadow = "2px 2px 1px #000000";
       var search_bar = document.getElementById("search_bar_input");
-      search_bar.placeholder = "Search Event List";
+      search_bar.placeholder = "Search My Events";
     }
     function onCreate() {
     }
@@ -201,8 +201,8 @@ print %(
       float: right;
       text-align: center;
       margin-top: 6px;
-      margin-left: 12px;
-      margin-right: 12px;
+      margin-left: 10px;
+      margin-right: 10px;
       margin-bottom: 1px;
       text-shadow: 1px 1px 1px #000000;
       transition: color .175s, text-shadow .175s, background-color .175s;
@@ -214,9 +214,9 @@ print %(
     }
     .material-icons.nav.create {
       padding-top: 2px;
-      color: #43A047;
+      color: #0F9D58;
       border-style: solid;
-      border-color: rgb(66, 133, 244, 1);
+      border-color: #4285F4;
       border-width: 2px;
       border-radius: 4px;
       background-color: #DB4437;
@@ -226,6 +226,11 @@ print %(
       margin-top: 2px;
       padding-bottom: 3px;
       cursor: pointer;
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+    }
+    .material-icons.nav.create:hover {
+      background-color: #d9392b;
     }
     .material-icons.search {
       float: left;
@@ -237,7 +242,7 @@ print %(
       border: solid;
       border-radius: 25px;
       border-width: 1px;
-      border-color: #ECEFF1;
+      border-color: white;
       width: 512;
       height: 32;
       margin-top: 8px;
