@@ -31,23 +31,25 @@ print %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
-  <div class="navbar">
-    <div class="nav search_bar">
-      <i class="material-icons md-18 search" id="search">search</i>
-      <input type="text" id="search_bar_input" placeholder="Search TomCalendar"></input>
+  <div class= "background" id="all_background">
+    <div class="navbar">
+      <div class="nav search_bar">
+        <i class="material-icons md-18 search" id="search">search</i>
+        <input type="text" id="search_bar_input" placeholder="Search TomCalendar"></input>
+      </div>
+      <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
+      <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">settings</i>
+      <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">person</i>
+      <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
     </div>
-    <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
-    <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">settings</i>
-    <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">person</i>
-    <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
+    <body onload="onExplore(); init();">
+      <div class="settings_page", id="settings_page">
+        <i class="material-icons md-48 settings">settings</i>
+        <button class="settings_btn sign_out" onclick="signOut()">Sign out</button>
+        <button class="settings_btn deactivate" onclick="confirmRevoke()">Deactivate</button>
+      </div>
+    </body>
   </div>
-  <body onload="onExplore(); init();">
-    <div class="settings_page", id="settings_page">
-      <i class="material-icons md-48 settings">settings</i>
-      <button class="settings_btn sign_out" onclick="signOut()">Sign out</button>
-      <button class="settings_btn deactivate" onclick="confirmRevoke()">Deactivate</button>
-    </div>
-  </body>
   <script>
     function init() {
       $.ajax({
@@ -142,6 +144,7 @@ print %(
       search_bar.placeholder = "Search My Events";
     }
     function onCreate() {
+      document.getElementById("all_background").style.webkitFilter = "blur(4px)";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -171,6 +174,9 @@ print %(
       border-color: rgb(240, 240, 240, .25);
       padding-bottom: 6px;
       position: fixed;
+    }
+    .background {
+      transition: all .175s;
     }
     .settings_page {
       display: none;
