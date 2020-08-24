@@ -31,7 +31,7 @@ print %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
-  <div class= "background" id="all_background">
+  <div class="background" id="all_background">
     <div class="navbar">
       <div class="nav search_bar">
         <i class="material-icons md-18 search" id="search">search</i>
@@ -49,6 +49,10 @@ print %(
         <button class="settings_btn deactivate" onclick="confirmRevoke()">Deactivate</button>
       </div>
     </body>
+  </div>
+  <div class="create_form_close_layer" id="create_form_close_layer" onmousedown="onCreateClose()"></div>
+  <div class="create_form" id="create_form">
+    <i class="material-icons md-36 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
   </div>
   <script>
     function init() {
@@ -144,7 +148,19 @@ print %(
       search_bar.placeholder = "Search My Events";
     }
     function onCreate() {
+      // @remember: blur is moving objects around???
       document.getElementById("all_background").style.webkitFilter = "blur(4px)";
+      var create_form = document.getElementById("create_form");
+      var create_form_close_layer = document.getElementById("create_form_close_layer");
+      create_form_close_layer.style.display = "block";
+      create_form.style.display = "block";
+    }
+    function onCreateClose() {
+      document.getElementById("all_background").style.webkitFilter = "blur(0px)";
+      var create_form = document.getElementById("create_form");
+      var create_form_close_layer = document.getElementById("create_form_close_layer");
+      create_form_close_layer.style.display = "none";
+      create_form.style.display = "none";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -177,6 +193,26 @@ print %(
     }
     .background {
       transition: all .175s;
+    }
+    .create_form {
+      display: none;
+      position: fixed;
+      width: 70%;
+      margin-top: 100px;
+      text-align: center;
+      margin-left: 15%;
+      padding-bottom: 100px;
+      border: solid;
+      border-radius: 25px;
+      border-width: 1px;
+      border-color: white;
+      background-color: white;
+    }
+    .create_form_close_layer {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: fixed;
     }
     .settings_page {
       display: none;
@@ -234,6 +270,20 @@ print %(
       cursor: pointer;
       transition: background-color .175s;
       transition-timing-function: ease-out;
+    }
+    .material-icons.create_close {
+      float: right;
+      margin-right: 16px;
+      margin-top: 16px;
+      cursor: pointer;
+      transition: background-color .1s;
+      transition-timing-function: ease-out;
+      border-radius: 50px;
+      font-size: 36px;
+      color: #616161;
+    }
+    .material-icons.create_close:hover {
+      background-color: #EEEEEE;
     }
     .material-icons.nav.create:hover {
       background-color: #d9392b;
