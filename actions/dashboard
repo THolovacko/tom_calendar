@@ -52,7 +52,8 @@ print %(
   </div>
   <div class="create_form_close_layer" id="create_form_close_layer" onmousedown="onCreateClose()"></div>
   <div class="create_form" id="create_form">
-    <i class="material-icons md-36 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
+    <i class="material-icons md-48 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
+    <div class="event_form_title"><input type="text" id="event_title_input" placeholder="Add title"></input></div>
   </div>
   <script>
     function init() {
@@ -91,6 +92,10 @@ print %(
           redirect_uri: 'postmessage'
         }).then(function(then_init) {}, function(error) {});
       });
+
+      // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slighlty moved by default
+      document.getElementById("all_background").style.webkitFilter = "blur(4px)";
+      document.getElementById("all_background").style.webkitFilter = "blur(0px)";
     }
     function signOut() {
       document.cookie = "session_id=;secure";
@@ -148,7 +153,6 @@ print %(
       search_bar.placeholder = "Search My Events";
     }
     function onCreate() {
-      // @remember: blur is moving objects around???
       document.getElementById("all_background").style.webkitFilter = "blur(4px)";
       var create_form = document.getElementById("create_form");
       var create_form_close_layer = document.getElementById("create_form_close_layer");
@@ -279,7 +283,7 @@ print %(
       transition: background-color .1s;
       transition-timing-function: ease-out;
       border-radius: 50px;
-      font-size: 36px;
+      font-size: 40px;
       color: #616161;
     }
     .material-icons.create_close:hover {
@@ -357,6 +361,31 @@ print %(
     }
     .settings_btn:hover {
       background-color: #37474F;
+    }
+    .event_form_title input[type=text] {
+      float: left;
+      border-top-style: hidden;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-bottom-width: thin;
+      border-bottom-color: #90CAF9;
+      border-radius: 0;
+      width: 60%;
+      height: 64px;
+      font-size: 40px;
+      margin-top: 14px;
+      margin-left: 16px;
+      color: #424242;
+      background-color: white;
+    }
+    .event_form_title input[type=text]:focus {
+      border-color: #2962FF;
+      outline: none;
+      border-width: 2px;
+    }
+    .event_form_title input::placeholder {
+      color: #757575;
     }
   </style>
 </html>
