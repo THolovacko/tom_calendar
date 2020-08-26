@@ -104,7 +104,7 @@ print %(
     function signOut() {
       document.cookie = "session_id=;secure";
       var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut();
+      AUTh2.signOut();
       window.location = "https://tomcalendar.com/";
     }
     function confirmRevoke() {
@@ -181,9 +181,14 @@ print %(
       var settings_page = document.getElementById("settings_page");
       settings_page.style.display = "none";
     }
-    $( function() {
-      $( "#datepicker" ).datepicker({dateFormat: "M dd, yy"});
-    } );
+    $(function() {
+      $("#datepicker").datepicker({
+        dateFormat: "M d, yy",
+        beforeShow: function(input_element, obj) {
+          input_element.setSelectionRange(0,input_element.value.length);
+        }
+      });
+    });
   </script>
   <style>
     html {
@@ -287,11 +292,10 @@ print %(
       margin-right: 16px;
       margin-top: 16px;
       cursor: pointer;
-      transition: background-color .1s;
-      transition-timing-function: ease-out;
       border-radius: 50px;
       font-size: 40px;
       color: #616161;
+      padding: 4px;
     }
     .material-icons.create_close:hover {
       background-color: #EEEEEE;
@@ -405,7 +409,8 @@ print %(
       margin-top: 24px;
     }
     .start_date input[type=text] {
-      border-width: 2px;
+      border-width: .5px;
+      border-bottom-width: 2px;
       border-color: #EEEEEE;
       border-radius: 4px;
       border-style: solid;
@@ -421,10 +426,12 @@ print %(
     .start_date input[type=text]:focus {
       outline: none;
       border-bottom-color: #2962FF;
-      border-bottom-right-radius: 0px;
-      border-bottom-left-radius: 0px;
     }
     .ui-datepicker {
+      background-color: white;
+      margin-top: 8px;
+      box-shadow: 0px 0px 4px black;
+      border-radius: 2px;
     }
   </style>
 </html>
