@@ -447,21 +447,23 @@ print %(
       text-align: center;
     }
     .ui-datepicker-header {
-      margin-top: 3%;
-      margin-bottom: 3.25%;
+      margin-top: 2%;
+      margin-bottom: 2%;
       text-align: right;
     }
     .ui-datepicker-title {
       float: left;
       margin-left: 8%;
+      margin-top: 1%;
     }
     .ui-datepicker-prev, .ui-datepicker-next {
       display: inline-block;
       margin-right: 4%;
       cursor: pointer;
       color: transparent;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
+      font-size: 0px;
     }
     .ui-datepicker-prev {
       background-image: url('https://tomcalendar.com/public/navigation_arrow_prev.png');
