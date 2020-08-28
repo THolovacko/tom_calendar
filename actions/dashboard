@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-# @test: sometimes datepicker not loading??? (I think removing async defer from jquery stuff fixed this)
+# @remember: need more scalable border widths?
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -104,7 +104,7 @@ print %(
     function signOut() {
       document.cookie = "session_id=;secure";
       var auth2 = gapi.auth2.getAuthInstance();
-      AUTh2.signOut();
+      auth2.signOut();
       window.location = "https://tomcalendar.com/";
     }
     function confirmRevoke() {
@@ -226,6 +226,8 @@ print %(
       border-width: 1px;
       border-color: white;
       background-color: white;
+
+      height: 50%; // testinggg
     }
     .create_form_close_layer {
       display: none;
@@ -278,7 +280,7 @@ print %(
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
-      border-width: 2px;
+      border-width: 2.5px;
       border-radius: 4px;
       background-color: #DB4437;
       margin-right: 64px;
@@ -315,7 +317,7 @@ print %(
     .nav.search_bar {
       border: solid;
       border-radius: 25px;
-      border-width: 1px;
+      border-width: 1.5px;
       border-color: white;
       width: 512;
       height: 32;
@@ -433,9 +435,9 @@ print %(
     .ui-datepicker {
       background-color: white;
       margin-top: 8px;
-      box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, .5);
-      border-radius: 4px;
-      width: 280px;
+      box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, .4);
+      border-radius: 2px;
+      width: 330px;
     }
     .ui-datepicker a {
       text-decoration: none;
@@ -450,12 +452,12 @@ print %(
     }
     .ui-datepicker-header {
       margin-top: 2%;
-      margin-bottom: 1.5%;
+      margin-bottom: 8px;
       text-align: right;
     }
     .ui-datepicker-title {
       float: left;
-      margin-left: 8%;
+      margin-left: 9.5%;
       margin-top: 1.4%;
       color: #424242;
       cursor: default;
@@ -484,28 +486,43 @@ print %(
       background-image: url('https://tomcalendar.com/public/navigation_arrow_next.png');
       background-repeat: no-repeat;
       background-size: 92%;
-      margin-right: 4%;
+      margin-right: 7.5%;
       background-position: right 1px;
     }
     .ui-datepicker th {
-      font-size: 16px;
-      color: #757575;
+      font-size: 14px;
+      color: #9E9E9E;
       font-weight: normal;
       cursor: default;
+      padding-bottom: 8px;
     }
     .ui-datepicker td span, .ui-datepicker td a {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      text-align: center;
       border-radius: 50px;
       font-size: 14px;
       color: #616161;
     }
     .ui-datepicker-unselectable .ui-state-default {
-      color: #E0E0E0;
+      color: #9E9E9E;
       cursor: default;
     }
     .ui-datepicker-calendar .ui-state-hover {
       background-color: #EEEEEE;
     }
     .ui-datepicker-calendar .ui-state-active {
+      background-color: #BBDEFB;
+      color: #2962FF;
+    }
+    .ui-datepicker-today .ui-state-default {
+      color: white;
+      background-color: #2962FF;
+    }
+    .ui-datepicker-today .ui-state-active {
+      color: #0D47A1;
     }
   </style>
 </html>
