@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 
 # @remember: need more scalable border widths?
+# @remember: should make datepicker tooltip pretty
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -474,16 +475,17 @@ print %(
     }
     .ui-datepicker-prev:hover, .ui-datepicker-next:hover {
       background-color: #EEEEEE;
+      text-decoration: none;
     }
     .ui-datepicker-prev {
-      background-image: url('https://tomcalendar.com/public/navigation_arrow_prev.png');
+      background-image: url('https://tomcalendar.com/public/prev_arrow.png');
       background-repeat: no-repeat;
       background-size: 92%;
       margin-right: 1.25%;
       background-position: left 1px;
     }
     .ui-datepicker-next {
-      background-image: url('https://tomcalendar.com/public/navigation_arrow_next.png');
+      background-image: url('https://tomcalendar.com/public/next_arrow.png');
       background-repeat: no-repeat;
       background-size: 92%;
       margin-right: 7.5%;
@@ -520,9 +522,6 @@ print %(
     .ui-datepicker-today .ui-state-default {
       color: white;
       background-color: #2962FF;
-    }
-    .ui-datepicker-today .ui-state-active {
-      color: #0D47A1;
     }
   </style>
 </html>
