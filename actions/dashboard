@@ -2,6 +2,8 @@
 
 # @remember: need more scalable border widths?
 # @remember: should make datepicker tooltip pretty
+# @remember: should download the jquery libs locally (maybe concatenate?)
+# @current:  look into non-jquery timepicker
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -58,7 +60,12 @@ print %(
   <div class="create_form" id="create_form">
     <i class="material-icons md-48 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
     <div class="event_form_title"><input type="text" id="event_title_input" placeholder="Add title"></input></div>
-    <div class="start_date"><input type="text" id="datepicker"></div>
+    <div class="event_datetime">
+      <div class="start_date"><input type="text" id="datepicker" placeholder="Add date"></div>
+      <div class="start_time"><input type="text" id="start_timepicker" placeholder="Add time"></div>
+      <div class="event_datetime_text">to</div>
+      <div class="end_time"><input type="text" id="end_timepicker" placeholder="Add time"></div>
+    </div>
   </div>
   <script>
     function init() {
@@ -182,16 +189,14 @@ print %(
       var settings_page = document.getElementById("settings_page");
       settings_page.style.display = "none";
     }
-    $(function() {
-      $("#datepicker").datepicker({
-        dateFormat: "M d, yy",
-        dayNamesMin: [ "S","M","T","W","T","F","S" ],
-        duration: 0,
-        showOtherMonths: true,
-        beforeShow: function(input_element, obj) {
-          input_element.setSelectionRange(0,input_element.value.length);
-        }
-      });
+    $("#datepicker").datepicker({
+      dateFormat: "M d, yy",
+      dayNamesMin: [ "S","M","T","W","T","F","S" ],
+      duration: 0,
+      showOtherMonths: true,
+      beforeShow: function(input_element, obj) {
+        input_element.setSelectionRange(0,input_element.value.length);
+      }
     });
   </script>
   <style>
@@ -246,7 +251,7 @@ print %(
       padding-bottom: 100px;
       border: solid;
       border-radius: 25px;
-      border-width: 1px;
+      border-width: 1.5px;
       border-color: #ECEFF1;
       background-color: #263238;
     }
@@ -408,11 +413,26 @@ print %(
       width: 60%;
       display: inline-block;
     }
-    .start_date {
+    .event_datetime {
+      margin: 0;
+      padding: 0;
       width: 60%;
+    }
+    .start_date {
       display: inline-block;
       float: left;
       margin-top: 24px;
+      margin-right: 16px;
+    }
+    .event_datetime_text {
+      display: inline-block;
+      float: left;
+      margin-top: 36px;
+      margin-left: 8px;
+      margin-right: 8px;
+      text-align: center;
+      font-size: 16;
+      color: #616161;
     }
     .start_date input[type=text] {
       border-width: .5px;
@@ -429,7 +449,35 @@ print %(
       float: left;
       text-align: center;
     }
+    .start_date input::placeholder {
+      color: #757575;
+    }
     .start_date input[type=text]:focus {
+      outline: none;
+      border-bottom-color: #2962FF;
+    }
+    .start_time, .end_time {
+      display: inline-block;
+      float: left;
+      margin-top: 24px;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .start_time input[type=text], .end_time input[type=text] {
+      border-width: .5px;
+      border-bottom-width: 2px;
+      border-color: #EEEEEE;
+      border-radius: 3px;
+      border-style: solid;
+      width: 98px;
+      height: 42px;
+      background-color: #EEEEEE;
+      color: #424242;
+      font-size: 18;
+      float: left;
+      text-align: center;
+    }
+    .start_time input[type=text]:focus, .end_time input[type=text]:focus {
       outline: none;
       border-bottom-color: #2962FF;
     }
