@@ -3,7 +3,7 @@
 # @remember: need more scalable border widths?
 # @remember: should make datepicker tooltip pretty
 # @remember: should download the jquery libs locally (maybe concatenate?)
-# @current:  look into non-jquery timepicker
+# @current:  make timepicker
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -62,9 +62,113 @@ print %(
     <div class="event_form_title"><input type="text" id="event_title_input" placeholder="Add title"></input></div>
     <div class="event_datetime">
       <div class="start_date"><input type="text" id="datepicker" placeholder="Add date"></div>
-      <div class="start_time"><input type="text" id="start_timepicker" placeholder="Add time"></div>
+      <div class="start_time">
+        <input type="text" id="start_time" placeholder="Add time"></input>
+        <div class="timepicker" id="start_timepicker">
+          <select size="5" id="start_time_selectbox">
+            <option value="12:00am" class="timepicker-options">12:00am</option>
+            <option value="12:15am" class="timepicker-options">12:15am</option>
+            <option value="12:30am" class="timepicker-options">12:30am</option>
+            <option value="12:45am" class="timepicker-options">12:45am</option>
+            <option value="1:00am" class="timepicker-options">1:00am</option>
+            <option value="1:15am" class="timepicker-options">1:15am</option>
+            <option value="1:30am" class="timepicker-options">1:30am</option>
+            <option value="1:45am" class="timepicker-options">1:45am</option>
+            <option value="2:00am" class="timepicker-options">2:00am</option>
+            <option value="2:15am" class="timepicker-options">2:15am</option>
+            <option value="2:30am" class="timepicker-options">2:30am</option>
+            <option value="2:45am" class="timepicker-options">2:45am</option>
+            <option value="3:00am" class="timepicker-options">3:00am</option>
+            <option value="3:15am" class="timepicker-options">3:15am</option>
+            <option value="3:30am" class="timepicker-options">3:30am</option>
+            <option value="3:45am" class="timepicker-options">3:45am</option>
+            <option value="4:00am" class="timepicker-options">4:00am</option>
+            <option value="4:15am" class="timepicker-options">4:15am</option>
+            <option value="4:30am" class="timepicker-options">4:30am</option>
+            <option value="4:45am" class="timepicker-options">4:45am</option>
+            <option value="5:00am" class="timepicker-options">5:00am</option>
+            <option value="5:15am" class="timepicker-options">5:15am</option>
+            <option value="5:30am" class="timepicker-options">5:30am</option>
+            <option value="5:45am" class="timepicker-options">5:45am</option>
+            <option value="6:00am" class="timepicker-options">6:00am</option>
+            <option value="6:15am" class="timepicker-options">6:15am</option>
+            <option value="6:30am" class="timepicker-options">6:30am</option>
+            <option value="6:45am" class="timepicker-options">6:45am</option>
+            <option value="7:00am" class="timepicker-options">7:00am</option>
+            <option value="7:15am" class="timepicker-options">7:15am</option>
+            <option value="7:30am" class="timepicker-options">7:30am</option>
+            <option value="7:45am" class="timepicker-options">7:45am</option>
+            <option value="8:00am" class="timepicker-options">8:00am</option>
+            <option value="8:15am" class="timepicker-options">8:15am</option>
+            <option value="8:30am" class="timepicker-options">8:30am</option>
+            <option value="8:45am" class="timepicker-options">8:45am</option>
+            <option value="9:00am" class="timepicker-options">9:00am</option>
+            <option value="9:15am" class="timepicker-options">9:15am</option>
+            <option value="9:30am" class="timepicker-options">9:30am</option>
+            <option value="9:45am" class="timepicker-options">9:45am</option>
+            <option value="10:00am" class="timepicker-options">10:00am</option>
+            <option value="10:15am" class="timepicker-options">10:15am</option>
+            <option value="10:30am" class="timepicker-options">10:30am</option>
+            <option value="10:45am" class="timepicker-options">10:45am</option>
+            <option value="11:00am" class="timepicker-options">11:00am</option>
+            <option value="11:15am" class="timepicker-options">11:15am</option>
+            <option value="11:30am" class="timepicker-options">11:30am</option>
+            <option value="11:45am" class="timepicker-options">11:45am</option>
+            <option value="12:00pm" class="timepicker-options">12:00pm</option>
+            <option value="12:15pm" class="timepicker-options">12:15pm</option>
+            <option value="12:30pm" class="timepicker-options">12:30pm</option>
+            <option value="12:45pm" class="timepicker-options">12:45pm</option>
+            <option value="1:00pm" class="timepicker-options">1:00pm</option>
+            <option value="1:15pm" class="timepicker-options">1:15pm</option>
+            <option value="1:30pm" class="timepicker-options">1:30pm</option>
+            <option value="1:45pm" class="timepicker-options">1:45pm</option>
+            <option value="2:00pm" class="timepicker-options">2:00pm</option>
+            <option value="2:15pm" class="timepicker-options">2:15pm</option>
+            <option value="2:30pm" class="timepicker-options">2:30pm</option>
+            <option value="2:45pm" class="timepicker-options">2:45pm</option>
+            <option value="3:00pm" class="timepicker-options">3:00pm</option>
+            <option value="3:15pm" class="timepicker-options">3:15pm</option>
+            <option value="3:30am" class="timepicker-options">3:30am</option>
+            <option value="3:45pm" class="timepicker-options">3:45pm</option>
+            <option value="4:00pm" class="timepicker-options">4:00pm</option>
+            <option value="4:15pm" class="timepicker-options">4:15pm</option>
+            <option value="4:30pm" class="timepicker-options">4:30pm</option>
+            <option value="4:45pm" class="timepicker-options">4:45pm</option>
+            <option value="5:00pm" class="timepicker-options">5:00pm</option>
+            <option value="5:15pm" class="timepicker-options">5:15pm</option>
+            <option value="5:30pm" class="timepicker-options">5:30pm</option>
+            <option value="5:45pm" class="timepicker-options">5:45pm</option>
+            <option value="6:00pm" class="timepicker-options">6:00pm</option>
+            <option value="6:15pm" class="timepicker-options">6:15pm</option>
+            <option value="6:30pm" class="timepicker-options">6:30pm</option>
+            <option value="6:45pm" class="timepicker-options">6:45pm</option>
+            <option value="7:00pm" class="timepicker-options">7:00pm</option>
+            <option value="7:15pm" class="timepicker-options">7:15pm</option>
+            <option value="7:30pm" class="timepicker-options">7:30pm</option>
+            <option value="7:45pm" class="timepicker-options">7:45pm</option>
+            <option value="8:00pm" class="timepicker-options">8:00pm</option>
+            <option value="8:15pm" class="timepicker-options">8:15pm</option>
+            <option value="8:30pm" class="timepicker-options">8:30pm</option>
+            <option value="8:45pm" class="timepicker-options">8:45pm</option>
+            <option value="9:00pm" class="timepicker-options">9:00pm</option>
+            <option value="9:15pm" class="timepicker-options">9:15pm</option>
+            <option value="9:30pm" class="timepicker-options">9:30pm</option>
+            <option value="9:45pm" class="timepicker-options">9:45pm</option>
+            <option value="10:00pm" class="timepicker-options">10:00pm</option>
+            <option value="10:15pm" class="timepicker-options">10:15pm</option>
+            <option value="10:30pm" class="timepicker-options">10:30pm</option>
+            <option value="10:45pm" class="timepicker-options">10:45pm</option>
+            <option value="11:00pm" class="timepicker-options">11:00pm</option>
+            <option value="11:15pm" class="timepicker-options">11:15pm</option>
+            <option value="11:30pm" class="timepicker-options">11:30pm</option>
+            <option value="11:45pm" class="timepicker-options">11:45pm</option>
+          </select>
+        </div>
+      </div>
       <div class="event_datetime_text">to</div>
-      <div class="end_time"><input type="text" id="end_timepicker" placeholder="Add time"></div>
+      <div class="end_time">
+        <input type="text" id="end_time" placeholder="Add time"></input>
+      </div>
     </div>
   </div>
   <script>
@@ -570,6 +674,49 @@ print %(
     .ui-datepicker-today .ui-state-default {
       color: white;
       background-color: #2962FF;
+    }
+    .timepicker {
+      display: block;
+      overflow-y: auto;
+      position: absolute;
+      margin-top: 50px;
+      box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, .4);
+      border-radius: 2px;
+    }
+    .timepicker select {
+      border-width: .5px;
+      border-bottom-width: 2px;
+      border-color: white;
+      border-radius: 3px;
+      border-style: solid;
+      width: 220px;
+      background-color: white;
+      color: #424242;
+      font-size: 18;
+      text-align: left;
+    }
+    .timepicker select:focus {
+      outline: none;
+    }
+    .timepicker-options {
+      padding-left: 12px;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .timepicker-options:hover {
+      background-color: #EEEEEE;
+    }
+    ::-webkit-scrollbar {
+      width: 11px;
+    }
+    ::-webkit-scrollbar-thumb {
+      border-radius: 25px;
+      -webkit-border-radius: 25px;
+      height: 50px;
+      background: #BDBDBD;
+    }
+    ::-webkit-scrollbar-thumb:active {
+      background: #9E9E9E;
     }
   </style>
 </html>
