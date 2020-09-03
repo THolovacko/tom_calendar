@@ -65,7 +65,7 @@ print %(
       <div class="start_time">
         <input type="text" id="start_time" placeholder="Add time" onfocus="onStartTime()"></input>
         <div class="timepicker" id="start_timepicker">
-          <select size="5" id="start_time_selectbox" onChange="onStartTimepickerChange(this.value)">
+          <select size="5" id="start_time_selectbox" onChange="onStartTimepickerChange(this)">
             <option value="12:00am" class="timepicker-options">12:00am</option>
             <option value="12:15am" class="timepicker-options">12:15am</option>
             <option value="12:30am" class="timepicker-options">12:30am</option>
@@ -305,17 +305,14 @@ print %(
     function onStartTime() {
       var start_timepicker = document.getElementById("start_timepicker");
       start_timepicker.style.display = "block";
-      //var current_time = new Date().getHours();
-      //console.log(current_time);
     }
     function closeTimePickers() {
       var start_timepicker = document.getElementById("start_timepicker");
       start_timepicker.style.display = "none";
     }
-    function onStartTimepickerChange(value) {
-      var start_timepicker = document.getElementById("start_timepicker");
-      document.getElementById("start_time").value = value;
-      start_timepicker.style.display = "none";
+    function onStartTimepickerChange(obj) {
+      document.getElementById("start_time").value = obj.value;
+      closeTimePickers();
     }
   </script>
   <style>
@@ -717,10 +714,6 @@ print %(
       padding-left: 12px;
       padding-top: 12px;
       padding-bottom: 12px;
-    }
-    .timepicker-options:active {
-      // @current: figuring out ho to make selected color #EEEEEE
-      background-color: #EEEEEE;
     }
     .timepicker-options:hover {
       background-color: #EEEEEE;
