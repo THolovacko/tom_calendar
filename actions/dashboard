@@ -63,9 +63,9 @@ print %(
     <div class="event_datetime">
       <div class="start_date"><input type="text" id="datepicker" placeholder="Add date"></div>
       <div class="start_time">
-        <input type="text" id="start_time" placeholder="Add time" onfocus="onStartTime()"></input>
+        <input type="text" id="start_time" placeholder="Add time" onmousedown="showTimepicker('start_timepicker')">
         <div class="timepicker" id="start_timepicker">
-          <select size="5" id="start_time_selectbox" onChange="onStartTimepickerChange(this)">
+          <select size="5" id="start_time_selectbox" onChange="onStartTimepickerChange(this)" onblur="closeTimepicker('start_timepicker')">
             <option value="12:00am" class="timepicker-options">12:00am</option>
             <option value="12:15am" class="timepicker-options">12:15am</option>
             <option value="12:30am" class="timepicker-options">12:30am</option>
@@ -302,17 +302,18 @@ print %(
         input_element.setSelectionRange(0,input_element.value.length);
       }
     });
-    function onStartTime() {
-      var start_timepicker = document.getElementById("start_timepicker");
-      start_timepicker.style.display = "block";
+    function showTimepicker(timepicker_id) {
+      var timepicker = document.getElementById(timepicker_id);
+      timepicker.style.display = "block";
+      //document.getElementById("start_time_selectbox").focus();
     }
-    function closeTimePickers() {
-      var start_timepicker = document.getElementById("start_timepicker");
-      start_timepicker.style.display = "none";
+    function closeTimepicker(timepicker_id) {
+      var timepicker = document.getElementById(timepicker_id);
+      timepicker.style.display = "none";
     }
     function onStartTimepickerChange(obj) {
       document.getElementById("start_time").value = obj.value;
-      closeTimePickers();
+      closeTimepicker("start_timepicker");
     }
   </script>
   <style>
@@ -547,8 +548,8 @@ print %(
       margin-left: 8px;
       margin-right: 8px;
       text-align: center;
-      font-size: 16;
-      color: #616161;
+      font-size: 15;
+      color: #424242;
     }
     .start_date input[type=text] {
       border-width: .5px;
@@ -714,6 +715,7 @@ print %(
       padding-left: 12px;
       padding-top: 12px;
       padding-bottom: 12px;
+      color: #424242;
     }
     .timepicker-options:hover {
       background-color: #EEEEEE;
