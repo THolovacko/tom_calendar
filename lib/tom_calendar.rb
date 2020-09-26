@@ -15,6 +15,11 @@ require 'digest'
   requiring dynamodb is about .4 seconds
 =end
 
+module STATUS_CODE_STR
+  OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
+  BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
+  UNAUTHORIZED = "Content-type: text/plain\nStatus: 401 Unauthorized\n\n".freeze
+end
 
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze
 
