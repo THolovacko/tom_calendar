@@ -93,7 +93,6 @@ print %(
 <style>
 html {
   text-align: center;
-  background-color: #DB4437;
   font-family: 'Roboto', sans-serif;
 }
 </style>

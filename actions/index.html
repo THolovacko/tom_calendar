@@ -19,9 +19,7 @@ unless cookie_session_id.nil?
 end
 
 
-# render login page
 print "Content-type: text/html\n\n"
-
 print %(
 <html lang="en">
   <title>Login</title>
@@ -33,28 +31,29 @@ print %(
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
-  <body onload="init();" id="all_background">
+  <body onload="init();" id="background">
     <div class="firefox_hack"><img src="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png" alt="firefox_hack" style="display:none;"></div>
-    <div class="dashboard_screenshot"><img src="https://tomcalendar.com/public/dashboard_screenshot.png" alt="dashboard_screenshot" style="max-width:100%;max-height:50%;"></div>
-    <div class="description">
-      <div class="description_creator">
-        <h1 style="font-size:2vw;">You've earned your audience's attention, keep it</h1>
-        <ul class="description_list">
-          <li><i class="material-icons">create</i> Create planned and spontaneous events</li>
-          <li><i class="material-icons">update</i> Replicate event changes automatically</li>
-          <li><i class="material-icons">analytics</i> Analyze interest for your events</li>
-        </ul>
+    <div id="description_and_button">
+      <div id="description">
+        <div id="description_content">
+          <h1 style="font-size:2vw;">You've earned your audience's attention, keep it</h1>
+          <ul class="description_list">
+            <li><i class="material-icons">create</i> Create planned and spontaneous events</li>
+            <li><i class="material-icons">update</i> Replicate event changes automatically</li>
+            <li><i class="material-icons">analytics</i> Analyze interest for your events</li>
+          </ul>
+          <h1 style="font-size:2vw;">Stay in the know, without spam</h1>
+          <ul class="description_list">
+            <li><i class="material-icons">search</i> Find out when events happen</li>
+            <li><i class="material-icons">sync</i> Sync events with Google Calendar</li>
+            <li><i class="material-icons">explore</i> Explore trending events</li>
+          </ul>
+        </div>
       </div>
-      <div class="description_viewer">
-        <h1 style="font-size:2vw;">Stay in the know, without spam</h1>
-        <ul class="description_list">
-          <li>Find out when events happen <i class="material-icons">search</i></li>
-          <li>Sync events with Google Calendar <i class="material-icons">sync</i></li>
-          <li>Explore trending events <i class="material-icons">explore</i></li>
-        </ul>
+      <div id="google_button_wrapper">
+        <button class="google_button" id="google_login" onmousedown="onSignUp()"></button>
       </div>
     </div>
-    <button class="google_button" id="google_login" onmousedown="onSignUp()"></button>
   </body>
   <script>
     function init() {
@@ -67,7 +66,6 @@ print %(
       });
     }
     function onSignUp() {
-      // @remember: on mobile authorization prompt happens twice. Maybe bug only happens with unverified screen?
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.grantOfflineAccess().then(onSignIn);
     }
@@ -75,49 +73,46 @@ print %(
       if (authResponse['code']) {
         var auth2 = gapi.auth2.getAuthInstance();
 
-        // Send the code to the server
         $.ajax({
           type: 'POST',
           url: 'https://tomcalendar.com/authorize_gmail',
           contentType: 'application/octet-stream; charset=utf-8',
           success: function(result) {
-            var fail_regex = /failed/;
-            if ( fail_regex.test(JSON.stringify(result)) ) {
-              console.log(result)
-              revoke();
-            } else {
-              var today_time = new Date().getTime();
-              var expiration_date = new Date();
-              expiration_date.setTime(today_time + (1000 *31536000));
-              document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toGMTString() +";secure";
-              window.location = "https://tomcalendar.com/dashboard";
-            }
+            var today_time = new Date().getTime();
+            var expiration_date = new Date();
+            expiration_date.setTime(today_time + (1000 *31536000));
+            document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toGMTString() +";secure";
+            window.location = "https://tomcalendar.com/dashboard";
+          },
+          error: function(result) {
+            revoke();
           },
           processData: false,
           data: authResponse['code']
         });
-        document.getElementById("all_background").style.webkitFilter = "blur(50px)";
+
+        document.getElementById("background").style.webkitFilter = "blur(100px)";
       } else {
-        console.log("Didn't find code in authResponse");
+        // Didn't find code in authResponse
         revoke();
       }
     }
     function revoke() {
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.disconnect();
+      window.location = "https://tomcalendar.com";
     }
   </script>
   <style type="text/css">
     html {
       text-align: center;
-      background-color: #DB4437;
       font-family: 'Roboto', sans-serif;
     }
     h1 {
       margin: 0;
     }
     body {
-      transition: all 3s;
+      transition: all 10s;
       transition-timing-function: ease-out;
     }
     .material-icons {
@@ -129,28 +124,31 @@ print %(
       font-size: 1.5vw;
       margin-top: 8px;
     }
-    .description {
-      width: 100%;
+    #description_and_button {
+      margin-top: 12%;
+      margin-left: 12%;
+      width: 88%;
     }
-    .description_viewer {
-      color: white;
-      float: left;
-      width: 49%;
-      text-align: right;
-      margin-right: 1%;
-    }
-    .description_creator {
-      color: black;
-      float: right;
+    #description {
       width: 50%;
+      height: 50%;
       text-align: left;
+      display: inline-block;
+      float: left;
+    }
+    #description_content {
+      float: right;
+    }
+    #google_button_wrapper {
+      width: 48%;
+      height: 50%;
+      display: inline-block;
+      text-align: left;
+      margin-top: 10%;
     }
     .google_button {
       width: 250px;
       height: 60px;
-      margin-left: 25%;
-      margin-right: 25%;
-      margin-top: 2%;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;
@@ -170,6 +168,3 @@ print %(
   </style>
 </html>
 )
-
-
-

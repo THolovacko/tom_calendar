@@ -14,7 +14,6 @@ print %(
   <style type="text/css">
     html {
       text-align: center;
-      background-color: #DB4437;
       font-family: 'Roboto', sans-serif;
       font-size: 1.75vw;
     }

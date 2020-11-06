@@ -15,7 +15,7 @@ require 'digest'
   requiring dynamodb is about .4 seconds
 =end
 
-module STATUS_CODE_STR
+module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
   BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
   UNAUTHORIZED = "Content-type: text/plain\nStatus: 401 Unauthorized\n\n".freeze
@@ -89,32 +89,8 @@ def get_session_id_from_cookies()
   return JSON.parse(session_id)
 end
 
-def get_google_id(request_ip_hash, session_id, dynamodb=nil)
-  begin
-    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION']) unless dynamodb
-    params = {
-      table_name: 'Sessions',
-      key: { ip_hash: request_ip_hash,
-             google_id_hash: session_id['google_id_hash']
-      }
-    }
-
-    result_item = dynamodb.get_item(params).item || {}
-    request_password_hash = result_item['password_hash']
-    if request_password_hash == session_id['password_hash']
-      return result_item['google_id']
-    else
-      return nil
-    end
-  rescue Exception => e
-    #error = "#{e.message}:#{e.backtrace.inspect}"
-    return nil
-  end
-end
-
 def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   return false unless cookie_session_id
-  request_ip_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
   session_id = JSON.parse(cookie_session_id)
 
   begin
@@ -122,32 +98,22 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     params = {
       table_name: 'Sessions',
-      key: { ip_hash: request_ip_hash,
-             google_id_hash: session_id['google_id_hash']
-      }
+      key: session_id
     }
 
-    result_item = dynamodb.get_item(params).item || {}
-    request_password_hash = result_item['password_hash']
+    item = dynamodb.get_item(params).item
 
     # @remember: should occasionally reset password hash?
 
-    if request_password_hash != session_id['password_hash']
-      dynamodb.delete_item(params)
-      return false
-    else
-      google_authorizer = get_google_authorizer(dynamodb)
-      google_credentials = google_authorizer.get_credentials(result_item['google_id'])
-      google_credentials.refresh!
-      
-      if google_credentials.expired?
-        return false
-      else
-        return true
-      end
-    end
+    return false unless item
+    google_authorizer = get_google_authorizer(dynamodb)
+    google_credentials = google_authorizer.get_credentials(item['google_id'])
+    google_credentials.refresh!
+    return false if google_credentials.expired?
+
+    return true
   rescue Exception => e
-    error = "#{e.message}:#{e.backtrace.inspect}"
+    #error = "#{e.message}:#{e.backtrace.inspect}"
     return false
   end
 end

@@ -6,8 +6,7 @@ require_relative '../lib/tom_calendar.rb'
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 # @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
-# @remember: need to be able to be signed in on mutliple devices as same user on same ip (currently it sign out other device)
-
+# @remember: add ability for user to log out all devices
 
 begin
   # create google tokens and session
@@ -22,26 +21,21 @@ begin
   raise 'invalid aud' unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
   raise 'invalid exp' unless user_data['exp'] > 0
 
-  google_authorizer.store_credentials(user_data['sub'], credentials)
+  google_id  = user_data['sub']
+  device_id  = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{Time.now}#{rand}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
+  session_id = { google_id: google_id, device_id: device_id }
 
-  ip_hash        = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
-  google_id_hash = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{user_data['sub']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
-  password_hash  = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{Time.now}#{rand}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
-  session_id     = { google_id_hash: google_id_hash, password_hash: password_hash }
+  google_authorizer.store_credentials(google_id, credentials)
 
   session_params = {
     table_name: 'Sessions',
-    item: { ip_hash: ip_hash, google_id_hash: google_id_hash, password_hash: password_hash, google_id: user_data['sub'] }
+    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s }
   }
 
   dynamodb.put_item(session_params)
 rescue Exception => e
-  credentials = nil
-  error = "#{e.message}"
+  print StatusCodeStr::UNAUTHORIZED
+  return
 end
 
-if credentials.nil?
-  print "Content-type: text/html\n\nfailed: #{error}"
-else
-  print "Content-type: application/json\n\n#{session_id.to_json}"
-end
+print "Content-type: application/json\n\n#{session_id.to_json}"

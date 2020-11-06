@@ -15,11 +15,11 @@ unless cookie_session_id
   return
 end
 
-request_ip_hash   = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
 session_id        = JSON.parse(cookie_session_id)
 dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_id         = get_google_id(request_ip_hash, session_id, dynamodb)
+google_id         = session_id['google_id']
 google_authorizer = get_google_authorizer(dynamodb)
+
 google_calendar_service               = Google::Apis::CalendarV3::CalendarService.new
 google_calendar_service.authorization = google_authorizer.get_credentials(google_id)
 google_calendar_service.client_options.application_name = 'TomCalendar'.freeze

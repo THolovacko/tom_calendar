@@ -3,7 +3,9 @@
 # @remember: need more scalable border widths?
 # @remember: should make datepicker tooltip pretty
 # @remember: should download the jquery libs locally (maybe concatenate?)
-# @current:  make timepicker
+# @remember: decide if delete session item on logout or periodically delete "expired" sessions
+
+# @current: review and refactor logout and deactivate
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -16,7 +18,7 @@ unless cookie_session_id
     <body onload="reSignIn()"></body>
     <script>
       function reSignIn() {
-        window.location = "https://tomcalendar.com/";
+        window.location = "https://tomcalendar.com";
       }
     </script>
   </html>
@@ -241,8 +243,7 @@ print %(
       unactivateAllNavIcons();
       unactivateAllPages();
       var explore_icon = document.getElementById("explore");
-      explore_icon.style.color = "rgba(255, 255, 255, 1)";
-      explore_icon.style.textShadow = "2px 2px 1px #000000";
+      explore_icon.style.color = "black";
       var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search TomCalendar";
     }
@@ -250,8 +251,7 @@ print %(
       unactivateAllNavIcons();
       unactivateAllPages();
       var user_settings_icon = document.getElementById("user_settings");
-      user_settings.style.color = "rgba(255, 255, 255, 1)";
-      user_settings.style.textShadow = "2px 2px 1px #000000";
+      user_settings.style.color = "black";
 
       var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search Settings";
@@ -263,8 +263,7 @@ print %(
       unactivateAllNavIcons();
       unactivateAllPages();
       var explore_icon = document.getElementById("view_list");
-      explore_icon.style.color = "rgba(255, 255, 255, 1)";
-      explore_icon.style.textShadow = "2px 2px 1px #000000";
+      explore_icon.style.color = "black";
       var search_bar = document.getElementById("search_bar_input");
       search_bar.placeholder = "Search My Events";
     }
@@ -285,8 +284,7 @@ print %(
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
       for(var i = 0; i < all_nav_icons.length; i++){
-        all_nav_icons[i].style.color = "rgba(255, 255, 255, .7)";
-        all_nav_icons[i].style.textShadow = "1px 1px 1px #000000";
+        all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
       }
     }
     function unactivateAllPages() {
@@ -319,12 +317,12 @@ print %(
   <style>
     html {
       text-align: center;
-      background-color: #DB4437;
+      //background-color: #DB4437;
       font-family: 'Roboto', sans-serif;
     }
     .navbar {
       margin: 0;
-      background-color: rgba(219, 68, 55, .7);
+      //background-color: rgba(219, 68, 55, .7);
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
@@ -390,7 +388,6 @@ print %(
       margin-left: 10px;
       margin-right: 10px;
       margin-bottom: 1px;
-      text-shadow: 1px 1px 1px #000000;
       transition: color .175s, text-shadow .175s, background-color .175s;
       transition-timing-function: ease-out;
     }
@@ -405,7 +402,6 @@ print %(
       border-color: #4285F4;
       border-width: 2.5px;
       border-radius: 4px;
-      background-color: #DB4437;
       margin-right: 64px;
       padding-left: 8px;
       padding-right: 8px;
@@ -441,13 +437,12 @@ print %(
       border: solid;
       border-radius: 25px;
       border-width: 1.5px;
-      border-color: white;
+      border-color: black;
       width: 512;
       height: 32;
       margin-top: 8px;
       margin-left: 64px;
       float: left;
-      background-color: #DB4437;
       transition: box-shadow .175s, height .175s, width .175s;
       transition-timing-function: ease-out;
     }
@@ -472,10 +467,8 @@ print %(
       height: 20px;
       margin-top: 4px;
       font-size: 16px;
-      background-color: #DB4437;
     }
     .navbar input[type=text]:focus {
-      border-color: #DB4437;
       outline: none;
     }
     .navbar input::placeholder {
