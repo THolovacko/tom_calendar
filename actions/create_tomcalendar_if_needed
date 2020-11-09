@@ -5,13 +5,11 @@ require "google/apis/calendar_v3"
 
 # @test: make sure calendar and event timezones are correct when creating and synching events
 
-result = { needed_to_create: false }
-
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print "Content-type: text/html\n\nerror: no session id cookie"
+  print StatusCodeStr::BAD_REQUEST
   return
 end
 
@@ -42,11 +40,12 @@ end
 google_calendar = nil
 if google_calendar_id
   begin
+    # @current: rewrite to also check calendar list due to users unsubscribing but not deleting calendars
     google_calendar = google_calendar_service.get_calendar(google_calendar_id)
   rescue Google::Apis::ClientError => e # handles 404 (missing calendar) error
     google_calendar = nil
-  rescue Exception => e
-    print "Content-type: text/html\n\nGoogle Server or Authorization Error"
+  rescue Exception => e # Google Server or Authorization Error"
+    print StatusCodeStr::UNAUTHORIZED
     return
   end
 end
@@ -65,11 +64,9 @@ unless google_calendar
     dynamodb.put_item(params)
   rescue
     google_calendar_service.delete_calendar(google_calendar.id)
-    print "Content-type: text/html\n\nUnable to add google calendar id"
+    print StatusCodeStr::error_message('Unable to add google calendar id')
     return
   end
-
-  result[:needed_to_create] = true
 end
 
-print "Content-type: application/json\n\n#{result.to_json}"
+print StatusCodeStr::OK

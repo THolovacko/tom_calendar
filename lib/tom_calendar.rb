@@ -19,6 +19,14 @@ module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
   BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
   UNAUTHORIZED = "Content-type: text/plain\nStatus: 401 Unauthorized\n\n".freeze
+
+  def self.error_message(message)
+    "Content-type: text/plain\nStatus: 500 Internal Server Error\n\n#{message}".freeze
+  end
+
+  def self.plain_text(message)
+    "Content-type: text/plain\n\n#{message}".freeze
+  end
 end
 
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze
