@@ -32,7 +32,7 @@ begin
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
 rescue Exception => e
-  print "Content-type: text/html\n\n#{e.message}"
+  print StatusCodeStr::error_message(e.message)
   return
 end
 
@@ -40,14 +40,25 @@ end
 google_calendar = nil
 if google_calendar_id
   begin
-    # @current: rewrite to also check calendar list due to users unsubscribing but not deleting calendars
-    google_calendar = google_calendar_service.get_calendar(google_calendar_id)
-  rescue Google::Apis::ClientError => e # handles 404 (missing calendar) error
-    google_calendar = nil
+    # @test: pagination with several calendars
+    page_token = nil
+    calendar_lists = google_calendar_service.list_calendar_lists(page_token: page_token)
+    summaries = (calendar_lists.items.map{ |calendar| calendar.summary })
+    summaries.each do |summary|
+      if summary == 'TomCalendar'.freeze
+        print StatusCodeStr::OK
+        return
+      end
+    end
+    if calendar_lists.next_page_token != page_token
+      page_token = calendar_lists.next_page_token
+    else
+      page_token = nil
+    end
   rescue Exception => e # Google Server or Authorization Error"
     print StatusCodeStr::UNAUTHORIZED
     return
-  end
+  end while !page_token.nil?
 end
 
 # create google calendar if missing

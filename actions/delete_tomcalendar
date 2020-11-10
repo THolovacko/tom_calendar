@@ -3,20 +3,17 @@
 require_relative '../lib/tom_calendar.rb'
 require "google/apis/calendar_v3"
 
-result = { deleted_calendar: false }
-
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print "Content-type: text/html\n\nerror: no session id cookie"
+  print StatusCodeStr::BAD_REQUEST
   return
 end
 
-request_ip_hash       = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{ENV['REMOTE_ADDR']}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
 session_id            = JSON.parse(cookie_session_id)
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_id             = get_google_id(request_ip_hash, session_id, dynamodb)
+google_id             = session_id['google_id']
 google_authorizer     = get_google_authorizer(dynamodb)
 service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(google_id)
@@ -32,7 +29,7 @@ begin
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
 rescue Exception => e
-  print "Content-type: text/html\n\n#{e.message}"
+  print StatusCodeStr::error_message(e.message)
   return
 end
 
@@ -48,11 +45,9 @@ if google_calendar_id
   begin
     dynamodb.delete_item(params)
   rescue
-    print "Content-type: text/html\n\nUnable to delete google calendar id"
+    print StatusCodeStr::error_message('Unable to delete google calendar id')
     return
   end
-
-  result[:deleted_calendar] = true
 end
 
-print "Content-type: application/json\n\n#{result.to_json}"
+print StatusCodeStr::OK

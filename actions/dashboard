@@ -6,7 +6,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @test:     sign out on mobile and confirm google api not deactivated
 
-# @current: review and refactor logout and deactivate then look into needing less permissions
+# @current: rewrite current ui to be mobile friendly
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -184,7 +184,6 @@ print %(
           if (result["is_valid"]) {
             // handle initial data load
 
-            // @current: review and rewrite create_tomcalendar_if_needed
             $.ajax({
               type: 'POST',
               url: 'https://tomcalendar.com/create_tomcalendar_if_needed',
