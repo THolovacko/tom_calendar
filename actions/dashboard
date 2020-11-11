@@ -4,9 +4,11 @@
 # @remember: should make datepicker tooltip pretty
 # @remember: should download the jquery libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
+# @remember: change UI scale if desktop
 # @test:     sign out on mobile and confirm google api not deactivated
 
-# @current: rewrite current ui to be mobile friendly
+# @current: rewrite UI to be more mobile friendly
+# @current: rewrite dashboard
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -27,7 +29,6 @@ unless cookie_session_id
   return
 end
 
-
 # render dashboard
 print "Content-type: text/html\n\n"
 print %(
@@ -40,18 +41,19 @@ print %(
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
-  <div class="background" id="all_background">
-    <div class="navbar">
-      <div class="nav search_bar">
-        <i class="material-icons md-18 search" id="search">search</i>
-        <input type="text" id="search_bar_input" placeholder="Search TomCalendar"></input>
-      </div>
+  <div id="background">
+    <div id="navbar">
+      <i class="material-icons md-36 nav select" id="explore" onmousedown="onNavIconSelect('explore')">explore</i>
+      <div class="navbar_space"></div>
+      <i class="material-icons md-36 nav select" id="search" onmousedown="onNavIconSelect('search')">search</i>
+      <div class="navbar_space"></div>
       <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
-      <i class="material-icons md-36 nav select" id="user_settings" onmousedown="onUserSettings()">settings</i>
-      <i class="material-icons md-36 nav select" id="view_list" onmousedown="onViewList()">person</i>
-      <i class="material-icons md-36 nav select" id="explore" onmousedown="onExplore()">explore</i>
+      <div class="navbar_space"></div>
+      <i class="material-icons md-36 nav select" id="profile" onmousedown="onNavIconSelect('profile')">person</i>
+      <div class="navbar_space"></div>
+      <i class="material-icons md-36 nav select" id="settings" onmousedown="onNavIconSelect('settings')">settings</i>
     </div>
-    <body onload="onExplore(); init();">
+    <body onload="onNavIconSelect('explore'); init();">
       <div class="settings_page", id="settings_page">
         <i class="material-icons md-48 settings">settings</i>
         <button class="settings_btn" onclick="signOut()">Sign out</button>
@@ -211,8 +213,8 @@ print %(
       });
 
       // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slighlty moved by default
-      document.getElementById("all_background").style.webkitFilter = "blur(4px)";
-      document.getElementById("all_background").style.webkitFilter = "blur(0px)";
+      document.getElementById("background").style.webkitFilter = "blur(4px)";
+      document.getElementById("background").style.webkitFilter = "blur(0px)";
     }
     function signOut() {
       document.cookie = "session_id=;secure";
@@ -238,43 +240,24 @@ print %(
       auth2.disconnect();
       window.location = "https://tomcalendar.com/";
     }
-    function onExplore() {
+    function onNavIconSelect(nav_icon_id) {
       unactivateAllNavIcons();
       unactivateAllPages();
-      var explore_icon = document.getElementById("explore");
-      explore_icon.style.color = "black";
-      var search_bar = document.getElementById("search_bar_input");
-      search_bar.placeholder = "Search TomCalendar";
-    }
-    function onUserSettings() {
-      unactivateAllNavIcons();
-      unactivateAllPages();
-      var user_settings_icon = document.getElementById("user_settings");
-      user_settings.style.color = "black";
+      var nav_icon = document.getElementById(nav_icon_id);
+      nav_icon.style.color = "black";
 
-      var search_bar = document.getElementById("search_bar_input");
-      search_bar.placeholder = "Search Settings";
-
-      var settings_page = document.getElementById("settings_page");
-      settings_page.style.display = "block";
-    }
-    function onViewList() {
-      unactivateAllNavIcons();
-      unactivateAllPages();
-      var explore_icon = document.getElementById("view_list");
-      explore_icon.style.color = "black";
-      var search_bar = document.getElementById("search_bar_input");
-      search_bar.placeholder = "Search My Events";
+      var page = document.getElementById(nav_icon_id + "_page");
+      page.style.display = "block";
     }
     function onCreate() {
-      document.getElementById("all_background").style.webkitFilter = "blur(4px)";
+      document.getElementById("background").style.webkitFilter = "blur(4px)";
       var create_form = document.getElementById("create_form");
       var create_form_close_layer = document.getElementById("create_form_close_layer");
       create_form_close_layer.style.display = "block";
       create_form.style.display = "block";
     }
     function onCreateClose() {
-      document.getElementById("all_background").style.webkitFilter = "blur(0px)";
+      document.getElementById("background").style.webkitFilter = "blur(0px)";
       var create_form = document.getElementById("create_form");
       var create_form_close_layer = document.getElementById("create_form_close_layer");
       create_form_close_layer.style.display = "none";
@@ -319,18 +302,17 @@ print %(
       //background-color: #DB4437;
       font-family: 'Roboto', sans-serif;
     }
-    .navbar {
+    #navbar {
       margin: 0;
       //background-color: rgba(219, 68, 55, .7);
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
       border-width: thin;
-      border-color: rgb(240, 240, 240, .25);
-      padding-bottom: 6px;
+      border-color: rgba(219, 68, 55, .75);
       position: fixed;
     }
-    .background {
+    #background {
       transition: all .175s;
     }
     .create_form {
@@ -379,14 +361,11 @@ print %(
       color: #90A4AE;
     }
     .material-icons.nav {
-      font-size: 36px;
+      font-size: 8vw;
       color: rgba(255, 255, 255, 1);
-      float: right;
       text-align: center;
-      margin-top: 6px;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-bottom: 1px;
+      margin-top: 2vw;
+      margin-bottom: 2vw;
       transition: color .175s, text-shadow .175s, background-color .175s;
       transition-timing-function: ease-out;
     }
@@ -395,17 +374,19 @@ print %(
       cursor: pointer;
     }
     .material-icons.nav.create {
-      padding-top: 2px;
+      //padding-top: 2px;
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
       border-width: 2.5px;
-      border-radius: 4px;
-      margin-right: 64px;
-      padding-left: 8px;
-      padding-right: 8px;
-      margin-top: 2px;
-      padding-bottom: 3px;
+      border-radius: 25px;
+      //padding-left: 8px;
+      //padding-right: 8px;
+      //padding-left: 4vw;
+      //padding-right: 4vw;
+      //margin-top: 2px;
+      //padding-bottom: 2vw;
+      //padding-bottom: 3px;
       cursor: pointer;
       transition: background-color .175s;
       transition-timing-function: ease-out;
@@ -432,7 +413,7 @@ print %(
       margin-left: 8px;
       margin-right: 2px;
     }
-    .nav.search_bar {
+    .search_bar {
       border: solid;
       border-radius: 25px;
       border-width: 1.5px;
@@ -445,19 +426,19 @@ print %(
       transition: box-shadow .175s, height .175s, width .175s;
       transition-timing-function: ease-out;
     }
-    .nav.search_bar:hover {
+    .search_bar:hover {
       box-shadow: 0px 0px 4px black;
       border: none;
       width: 514;
       height: 33;
     }
-    .nav.search_bar:focus-within {
+    .search_bar:focus-within {
       box-shadow: 0px 0px 4px black;
       border: none;
       width: 514;
       height: 33;
     }
-    .nav.search_bar input[type=text] {
+    .search_bar input[type=text] {
       float: left;
       padding: 12px;
       border: none;
@@ -467,10 +448,10 @@ print %(
       margin-top: 4px;
       font-size: 16px;
     }
-    .navbar input[type=text]:focus {
+    #navbar input[type=text]:focus {
       outline: none;
     }
-    .navbar input::placeholder {
+    #navbar input::placeholder {
       color: black;
       opacity: .75;
     }
@@ -723,6 +704,10 @@ print %(
     }
     ::-webkit-scrollbar-thumb:active {
       background: #9E9E9E;
+    }
+    .navbar_space {
+      width: 10vw;
+      display: inline-block;
     }
   </style>
 </html>
