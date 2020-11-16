@@ -6,6 +6,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: change UI scale if desktop
 # @test:     sign out on mobile and confirm google api not deactivated
+# @test:     user agent detection on several platforms
 
 # @current: rewrite UI to be more mobile friendly
 # @current: rewrite dashboard
@@ -29,6 +30,10 @@ unless cookie_session_id
   return
 end
 
+user_agent_str = ENV['HTTP_USER_AGENT'].downcase
+IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
+VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
+
 # render dashboard
 print "Content-type: text/html\n\n"
 print %(
@@ -46,9 +51,7 @@ print %(
       <i class="material-icons md-36 nav select" id="explore" onmousedown="onNavIconSelect('explore')">explore</i>
       <div class="navbar_space"></div>
       <i class="material-icons md-36 nav select" id="search" onmousedown="onNavIconSelect('search')">search</i>
-      <div class="navbar_space"></div>
       <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
-      <div class="navbar_space"></div>
       <i class="material-icons md-36 nav select" id="profile" onmousedown="onNavIconSelect('profile')">person</i>
       <div class="navbar_space"></div>
       <i class="material-icons md-36 nav select" id="settings" onmousedown="onNavIconSelect('settings')">settings</i>
@@ -299,17 +302,17 @@ print %(
   <style>
     html {
       text-align: center;
-      //background-color: #DB4437;
+      background-color: #FEFFFE;
       font-family: 'Roboto', sans-serif;
     }
     #navbar {
       margin: 0;
-      //background-color: rgba(219, 68, 55, .7);
+      background-color: rgba(254, 255, 254, .7);
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
       border-width: thin;
-      border-color: rgba(219, 68, 55, .75);
+      border-color: rgba(235, 239, 240, 1);
       position: fixed;
     }
     #background {
@@ -361,12 +364,13 @@ print %(
       color: #90A4AE;
     }
     .material-icons.nav {
-      font-size: 8vw;
+      margin-top: #{2 * VW_FACTOR}vw;
+      margin-bottom: #{2 * VW_FACTOR}vw;
+      //font-size: #{8 * VW_FACTOR}vw;
+      font-size: #{7 * VW_FACTOR}vw;
       color: rgba(255, 255, 255, 1);
       text-align: center;
-      margin-top: 2vw;
-      margin-bottom: 2vw;
-      transition: color .175s, text-shadow .175s, background-color .175s;
+      transition: color .175s;
       transition-timing-function: ease-out;
     }
     .material-icons.nav.select {
@@ -374,19 +378,17 @@ print %(
       cursor: pointer;
     }
     .material-icons.nav.create {
-      //padding-top: 2px;
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
-      border-width: 2.5px;
-      border-radius: 25px;
-      //padding-left: 8px;
-      //padding-right: 8px;
-      //padding-left: 4vw;
-      //padding-right: 4vw;
-      //margin-top: 2px;
-      //padding-bottom: 2vw;
-      //padding-bottom: 3px;
+      border-width: medium;
+      border-radius: 8%; 
+      padding-right:  #{3 * VW_FACTOR}vw;
+      margin-right:   #{9 * VW_FACTOR}vw;
+      padding-left:   #{3 * VW_FACTOR}vw;
+      margin-left:    #{9 * VW_FACTOR}vw;
+      //padding-top:    #{1 * VW_FACTOR}vw;
+      //padding-bottom: #{1 * VW_FACTOR}vw;
       cursor: pointer;
       transition: background-color .175s;
       transition-timing-function: ease-out;
@@ -706,7 +708,7 @@ print %(
       background: #9E9E9E;
     }
     .navbar_space {
-      width: 10vw;
+      width: #{12 * VW_FACTOR}vw;
       display: inline-block;
     }
   </style>
