@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-# @remember: mention users can forget about dates, timzones, etc... in description?
+# @remember: use image(screenshot)?
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -20,7 +20,7 @@ end
 
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
-VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
+VW_FACTOR  = IS_DESKTOP ? 0.6 : 1
 
 
 print "Content-type: text/html\n\n"
@@ -31,31 +31,22 @@ print %(
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body onload="init();" id="background">
     <div class="firefox_hack"><img src="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png" alt="firefox_hack" style="display:none;"></div>
     <div id="description_and_button">
+      <div id="logo_txt"><h1>TomCalendar</h1></div>
       <div id="description">
         <div id="description_content">
-          <h1 style="font-size:2vw;">You've earned your audience's attention, keep it</h1>
-          <ul class="description_list">
-            <li><i class="material-icons">create</i> Create planned and spontaneous events</li>
-            <li><i class="material-icons">update</i> Replicate event changes automatically</li>
-            <li><i class="material-icons">analytics</i> Analyze interest for your events</li>
-          </ul>
-          <h1 style="font-size:2vw;">Stay in the know, without spam</h1>
-          <ul class="description_list">
-            <li><i class="material-icons">search</i> Find out when events happen</li>
-            <li><i class="material-icons">sync</i> Sync events with Google Calendar</li>
-            <li><i class="material-icons">explore</i> Explore trending events</li>
-          </ul>
+          <h1>You've earned your audience's attention, keep it.</h1><br>
+          <h1>Stay in the know, without spam.</h1>
         </div>
       </div>
+      <br>
       <div id="google_button_wrapper">
-        <button class="google_button" id="google_login" onmousedown="onSignUp()"></button>
+        <button class="google_button" id="google_login" ontouchstart="onSignUp()" onmousedown="onSignUp()"></button>
       </div>
     </div>
   </body>
@@ -119,40 +110,30 @@ print %(
       transition: all 10s;
       transition-timing-function: ease-out;
     }
-    .material-icons {
-      font-size: 1.5vw;
-    }
-    ul.description_list {
-      list-style-type: none;
-      padding: 0;
-      font-size: 1.5vw;
-      margin-top: 8px;
-    }
     #description_and_button {
-      margin-top: 12%;
-      margin-left: 12%;
-      width: 88%;
+      margin-top: #{32 * VW_FACTOR}%;
+    }
+    #logo_txt {
+      font-size: #{5 * VW_FACTOR}vw;
+      font-weight: bold;
     }
     #description {
-      width: 50%;
-      height: 50%;
-      text-align: left;
+      width: #{100 * VW_FACTOR}%;
       display: inline-block;
-      float: left;
     }
     #description_content {
-      float: right;
+      text-align: center;
+      font-size: #{1.25 * VW_FACTOR}vw;
+      font-weight: normal;
+      margin-top: #{4 * VW_FACTOR}vw;
     }
     #google_button_wrapper {
-      width: 48%;
-      height: 50%;
       display: inline-block;
-      text-align: left;
-      margin-top: 10%;
+      margin-top: #{10 * VW_FACTOR}%;
     }
     .google_button {
-      width: 250px;
-      height: 60px;
+      width: #{31.25 * VW_FACTOR}vw;
+      height: #{7.5 * VW_FACTOR}vw;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;

@@ -8,8 +8,7 @@
 # @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
-# @current: rewrite UI to be more mobile friendly
-# @current: rewrite dashboard
+# @current: rewrite signing out and deactivating
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -48,13 +47,13 @@ print %(
   </head>
   <div id="background">
     <div id="navbar">
-      <i class="material-icons md-36 nav select" id="explore" onmousedown="onNavIconSelect('explore')">explore</i>
+      <i class="material-icons md-36 nav select" id="explore" ontouchstart="onNavIconSelect('explore')" onmousedown="onNavIconSelect('explore')">explore</i>
       <div class="navbar_space"></div>
-      <i class="material-icons md-36 nav select" id="search" onmousedown="onNavIconSelect('search')">search</i>
-      <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
-      <i class="material-icons md-36 nav select" id="profile" onmousedown="onNavIconSelect('profile')">person</i>
+      <i class="material-icons md-36 nav select" id="search" ontouchstart="onNavIconSelect('search')" onmousedown="onNavIconSelect('search')">search</i>
+      <i class="material-icons md-36 nav create" id="create" ontouchstart="onCreate()" onmousedown="onCreate()">create</i>
+      <i class="material-icons md-36 nav select" id="profile" ontouchstart="onNavIconSelect('profile')" onmousedown="onNavIconSelect('profile')">person</i>
       <div class="navbar_space"></div>
-      <i class="material-icons md-36 nav select" id="settings" onmousedown="onNavIconSelect('settings')">settings</i>
+      <i class="material-icons md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings')" onmousedown="onNavIconSelect('settings')">settings</i>
     </div>
     <body onload="onNavIconSelect('explore'); init();">
       <div class="settings_page", id="settings_page">
