@@ -5,6 +5,7 @@
 # @remember: should download the jquery libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: change UI scale if desktop
+# @remember: use vh for font heights? (I've only been using vw's for font sizes)
 # @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
@@ -32,6 +33,7 @@ end
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
+VH_FACTOR  = IS_DESKTOP ? 0.93 : 1
 
 # render dashboard
 print "Content-type: text/html\n\n"
@@ -53,13 +55,24 @@ print %(
       <i class="material-icons md-36 nav create" id="create" ontouchstart="onCreate()" onmousedown="onCreate()">create</i>
       <i class="material-icons md-36 nav select" id="profile" ontouchstart="onNavIconSelect('profile')" onmousedown="onNavIconSelect('profile')">person</i>
       <div class="navbar_space"></div>
-      <i class="material-icons md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings')" onmousedown="onNavIconSelect('settings')">settings</i>
+      <i class="material-icons md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings');" onmousedown="onNavIconSelect('settings')">settings</i>
     </div>
     <body onload="onNavIconSelect('explore'); init();">
-      <div class="settings_page", id="settings_page">
-        <i class="material-icons md-48 settings">settings</i>
-        <button class="settings_btn" onclick="signOut()">Sign out</button>
+      <div class="page", id="explore_page">
+        <h1>explore</h1>
+      </div>
+      <div class="page", id="search_page">
+        <h1>search</h1>
+      </div>
+      <div class="page", id="profile_page">
+        <h1>profile</h1>
+      </div>
+      <div class="page", id="settings_page">
+        <h1 style="text-align:left;font-size:#{8 * VW_FACTOR}vw;margin-left:#{4 * VW_FACTOR}vw;margin-top:#{10 * VW_FACTOR}vw">Settings</h1>
+        <button class="settings_btn" onclick="onViewSessions()">Sessions</button>
         <button class="settings_btn" onclick="confirmRevoke()">Deactivate</button>
+        <button class="settings_btn" id="log_out_btn" onclick="signOut()">Log out</button>
+        <div class="page_anchor_hack"></div>
       </div>
     </body>
   </div>
@@ -272,8 +285,10 @@ print %(
       }
     }
     function unactivateAllPages() {
-      var settings_page = document.getElementById("settings_page");
-      settings_page.style.display = "none";
+      var all_pages = document.getElementsByClassName("page");
+      for(var i = 0; i < all_pages.length; i++){
+        all_pages[i].style.display = "none";
+      }
     }
     $("#datepicker").datepicker({
       dateFormat: "M d, yy",
@@ -287,7 +302,6 @@ print %(
     function showTimepicker(timepicker_id) {
       var timepicker = document.getElementById(timepicker_id);
       timepicker.style.display = "block";
-      //document.getElementById("start_time_selectbox").focus();
     }
     function closeTimepicker(timepicker_id) {
       var timepicker = document.getElementById(timepicker_id);
@@ -302,6 +316,7 @@ print %(
     html {
       text-align: center;
       background-color: #FEFFFE;
+      border: none;
       font-family: 'Roboto', sans-serif;
     }
     #navbar {
@@ -316,6 +331,7 @@ print %(
     }
     #background {
       transition: all .175s;
+      border: none;
     }
     .create_form {
       display: none;
@@ -339,19 +355,13 @@ print %(
       height: 100%;
       position: fixed;
     }
-    .settings_page {
+    .page {
       display: none;
       position: absolute;
-      width: 40%;
-      top: 100px;
-      text-align: center;
-      margin-left: 30%;
-      padding-bottom: 100px;
-      border: solid;
-      border-radius: 25px;
-      border-width: 1.5px;
-      border-color: #ECEFF1;
-      background-color: #263238;
+      border: none;
+      //width: 99.9%;
+      width: 100%;
+      margin-top: #{12 * VW_FACTOR}vw;
     }
     .material-icons {
       cursor: default;
@@ -365,7 +375,6 @@ print %(
     .material-icons.nav {
       margin-top: #{2 * VW_FACTOR}vw;
       margin-bottom: #{2 * VW_FACTOR}vw;
-      //font-size: #{8 * VW_FACTOR}vw;
       font-size: #{7 * VW_FACTOR}vw;
       color: rgba(255, 255, 255, 1);
       text-align: center;
@@ -386,8 +395,6 @@ print %(
       margin-right:   #{9 * VW_FACTOR}vw;
       padding-left:   #{3 * VW_FACTOR}vw;
       margin-left:    #{9 * VW_FACTOR}vw;
-      //padding-top:    #{1 * VW_FACTOR}vw;
-      //padding-bottom: #{1 * VW_FACTOR}vw;
       cursor: pointer;
       transition: background-color .175s;
       transition-timing-function: ease-out;
@@ -458,22 +465,35 @@ print %(
     }
     .settings_btn {
       display: inline-block;
-      width: 50%;
-      height: 64px;
-      margin-top: 32px;
-      font-size: 24px;
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      font-size: 32px;
       outline: none;
-      border: none;
-      border-radius: 40px;
+      text-align: left;
+
+      border-top-style: hidden;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-bottom-width: thin;
+      border-bottom-color: #90CAF9;
+      border-radius: 0;
+ 
       cursor: pointer;
-      box-shadow: 0px 0px 5px black;
-      background-color: #455A64;
+      //box-shadow: 0px 0px 5px black;
+      background-color: rgba(254, 255, 254, 1);
       transition: background-color .175s;
       transition-timing-function: ease-out;
-      color: #ECEFF1;
+      color: black;
     }
     .settings_btn:hover {
-      background-color: #37474F;
+      //background-color: #37474F;
+    }
+    #log_out_btn {
+      text-align: center;
+    }
+    .page_anchor_hack {
+      margin-top: #{56 * VH_FACTOR}vh;
     }
     .event_form_title input[type=text] {
       float: left;
@@ -709,6 +729,9 @@ print %(
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
       display: inline-block;
+    }
+    #settings_page {
+      background-color: #F2F2F7;
     }
   </style>
 </html>
