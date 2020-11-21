@@ -6,6 +6,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: change UI scale if desktop
 # @remember: use vh for font heights? (I've only been using vw's for font sizes)
+# @remember: fix flicker/ double tap bug by choosing omnousedon or ontouchstart
 # @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
@@ -35,6 +36,7 @@ IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
 VH_FACTOR  = IS_DESKTOP ? 0.93 : 1
 
+
 # render dashboard
 print "Content-type: text/html\n\n"
 print %(
@@ -44,18 +46,18 @@ print %(
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
   <div id="background">
     <div id="navbar">
-      <i class="material-icons md-36 nav select" id="explore" ontouchstart="onNavIconSelect('explore')" onmousedown="onNavIconSelect('explore')">explore</i>
+      <i class="material-icons-outlined md-36 nav select" id="explore" onmousedown="onNavIconSelect('explore')" ontouchstart="onNavIconSelect('explore')">explore</i>
       <div class="navbar_space"></div>
-      <i class="material-icons md-36 nav select" id="search" ontouchstart="onNavIconSelect('search')" onmousedown="onNavIconSelect('search')">search</i>
-      <i class="material-icons md-36 nav create" id="create" ontouchstart="onCreate()" onmousedown="onCreate()">create</i>
-      <i class="material-icons md-36 nav select" id="profile" ontouchstart="onNavIconSelect('profile')" onmousedown="onNavIconSelect('profile')">person</i>
+      <i class="material-icons-outlined md-36 nav select" id="search" ontouchstart="onNavIconSelect('search')" onmousedown="onNavIconSelect('search')">search</i>
+      <i class="material-icons-outlined md-36 nav create" id="create" ontouchstart="onCreate()" onmousedown="onCreate()">create</i>
+      <i class="material-icons-outlined md-36 nav select" id="profile" ontouchstart="onNavIconSelect('profile')" onmousedown="onNavIconSelect('profile')">person</i>
       <div class="navbar_space"></div>
-      <i class="material-icons md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings');" onmousedown="onNavIconSelect('settings')">settings</i>
+      <i class="material-icons-outlined md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings');" onmousedown="onNavIconSelect('settings')">settings</i>
     </div>
     <body onload="onNavIconSelect('explore'); init();">
       <div class="page", id="explore_page">
@@ -260,6 +262,7 @@ print %(
       unactivateAllPages();
       var nav_icon = document.getElementById(nav_icon_id);
       nav_icon.style.color = "black";
+      nav_icon.className = "material-icons nav select";
 
       var page = document.getElementById(nav_icon_id + "_page");
       page.style.display = "block";
@@ -281,7 +284,8 @@ print %(
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
       for(var i = 0; i < all_nav_icons.length; i++){
-        all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
+        //all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
+        all_nav_icons[i].className = "material-icons-outlined nav select";
       }
     }
     function unactivateAllPages() {
@@ -359,33 +363,28 @@ print %(
       display: none;
       position: absolute;
       border: none;
-      //width: 99.9%;
       width: 100%;
       margin-top: #{12 * VW_FACTOR}vw;
     }
-    .material-icons {
+    .material-icons, .material-icons-outlined {
       cursor: default;
     }
-    .material-icons.settings {
-      font-size: 64px;
-      margin-top: 18px;
-      width: 100%;
-      color: #90A4AE;
-    }
-    .material-icons.nav {
+    .material-icons.nav, .material-icons-outlined.nav {
       margin-top: #{2 * VW_FACTOR}vw;
       margin-bottom: #{2 * VW_FACTOR}vw;
       font-size: #{7 * VW_FACTOR}vw;
-      color: rgba(255, 255, 255, 1);
+      //color: rgba(255, 255, 255, 1);
+      color: #000000;
       text-align: center;
       transition: color .175s;
       transition-timing-function: ease-out;
     }
-    .material-icons.nav.select {
-      color: rgba(255, 255, 255, .7);
+    .material-icons.nav.select, .material-icons-outlined.nav.select {
+      //color: rgba(255, 255, 255, .7);
+      color: #000000;
       cursor: pointer;
     }
-    .material-icons.nav.create {
+    .material-icons.nav.create, .material-icons-outlined.nav.create {
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
@@ -415,7 +414,7 @@ print %(
     .material-icons.nav.create:hover {
       background-color: #d9392b;
     }
-    .material-icons.search {
+    .material-icons.search, .material-icons-outlined.search {
       float: left;
       margin-top: 4px;
       margin-left: 8px;
