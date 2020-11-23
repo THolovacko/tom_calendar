@@ -6,11 +6,10 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: change UI scale if desktop
 # @remember: use vh for font heights? (I've only been using vw's for font sizes)
-# @remember: fix flicker/ double tap bug by choosing omnousedon or ontouchstart
 # @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
-# @current: rewrite signing out and deactivating
+# @current: settings page
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -46,20 +45,20 @@ print %(
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
-  <div id="background">
-    <div id="navbar">
-      <i class="material-icons-outlined md-36 nav select" id="explore" onmousedown="onNavIconSelect('explore')" ontouchstart="onNavIconSelect('explore')">explore</i>
-      <div class="navbar_space"></div>
-      <i class="material-icons-outlined md-36 nav select" id="search" ontouchstart="onNavIconSelect('search')" onmousedown="onNavIconSelect('search')">search</i>
-      <i class="material-icons-outlined md-36 nav create" id="create" ontouchstart="onCreate()" onmousedown="onCreate()">create</i>
-      <i class="material-icons-outlined md-36 nav select" id="profile" ontouchstart="onNavIconSelect('profile')" onmousedown="onNavIconSelect('profile')">person</i>
-      <div class="navbar_space"></div>
-      <i class="material-icons-outlined md-36 nav select" id="settings" ontouchstart="onNavIconSelect('settings');" onmousedown="onNavIconSelect('settings')">settings</i>
-    </div>
-    <body onload="onNavIconSelect('explore'); init();">
+  <body onload="onNavIconSelect('explore'); init();">
+    <div id="background">
+      <div id="navbar">
+        <i class="material-icons md-36 nav select" id="explore" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect('explore')">explore</i>
+        <div class="navbar_space"></div>
+        <i class="material-icons md-36 nav select" id="search" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect('search')">search</i>
+        <i class="material-icons md-36 nav create" id="create" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreate()">create</i>
+        <i class="material-icons md-36 nav select" id="profile" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect('profile')">person</i>
+        <div class="navbar_space"></div>
+        <i class="material-icons md-36 nav select" id="settings" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect('settings')">settings</i>
+      </div>
       <div class="page", id="explore_page">
         <h1>explore</h1>
       </div>
@@ -74,125 +73,9 @@ print %(
         <button class="settings_btn" onclick="onViewSessions()">Sessions</button>
         <button class="settings_btn" onclick="confirmRevoke()">Deactivate</button>
         <button class="settings_btn" id="log_out_btn" onclick="signOut()">Log out</button>
-        <div class="page_anchor_hack"></div>
-      </div>
-    </body>
-  </div>
-  <div class="create_form_close_layer" id="create_form_close_layer" onmousedown="onCreateClose()"></div>
-  <div class="create_form" id="create_form">
-    <i class="material-icons md-48 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
-    <div class="event_form_title"><input type="text" id="event_title_input" placeholder="Add title"></input></div>
-    <div class="event_datetime">
-      <div class="start_date"><input type="text" id="datepicker" placeholder="Add date"></div>
-      <div class="start_time">
-        <input type="text" id="start_time" placeholder="Add time" onmousedown="showTimepicker('start_timepicker')">
-        <div class="timepicker" id="start_timepicker">
-          <select size="5" id="start_time_selectbox" onChange="onStartTimepickerChange(this)" onblur="closeTimepicker('start_timepicker')">
-            <option value="12:00am" class="timepicker-options">12:00am</option>
-            <option value="12:15am" class="timepicker-options">12:15am</option>
-            <option value="12:30am" class="timepicker-options">12:30am</option>
-            <option value="12:45am" class="timepicker-options">12:45am</option>
-            <option value="1:00am" class="timepicker-options">1:00am</option>
-            <option value="1:15am" class="timepicker-options">1:15am</option>
-            <option value="1:30am" class="timepicker-options">1:30am</option>
-            <option value="1:45am" class="timepicker-options">1:45am</option>
-            <option value="2:00am" class="timepicker-options">2:00am</option>
-            <option value="2:15am" class="timepicker-options">2:15am</option>
-            <option value="2:30am" class="timepicker-options">2:30am</option>
-            <option value="2:45am" class="timepicker-options">2:45am</option>
-            <option value="3:00am" class="timepicker-options">3:00am</option>
-            <option value="3:15am" class="timepicker-options">3:15am</option>
-            <option value="3:30am" class="timepicker-options">3:30am</option>
-            <option value="3:45am" class="timepicker-options">3:45am</option>
-            <option value="4:00am" class="timepicker-options">4:00am</option>
-            <option value="4:15am" class="timepicker-options">4:15am</option>
-            <option value="4:30am" class="timepicker-options">4:30am</option>
-            <option value="4:45am" class="timepicker-options">4:45am</option>
-            <option value="5:00am" class="timepicker-options">5:00am</option>
-            <option value="5:15am" class="timepicker-options">5:15am</option>
-            <option value="5:30am" class="timepicker-options">5:30am</option>
-            <option value="5:45am" class="timepicker-options">5:45am</option>
-            <option value="6:00am" class="timepicker-options">6:00am</option>
-            <option value="6:15am" class="timepicker-options">6:15am</option>
-            <option value="6:30am" class="timepicker-options">6:30am</option>
-            <option value="6:45am" class="timepicker-options">6:45am</option>
-            <option value="7:00am" class="timepicker-options">7:00am</option>
-            <option value="7:15am" class="timepicker-options">7:15am</option>
-            <option value="7:30am" class="timepicker-options">7:30am</option>
-            <option value="7:45am" class="timepicker-options">7:45am</option>
-            <option value="8:00am" class="timepicker-options">8:00am</option>
-            <option value="8:15am" class="timepicker-options">8:15am</option>
-            <option value="8:30am" class="timepicker-options">8:30am</option>
-            <option value="8:45am" class="timepicker-options">8:45am</option>
-            <option value="9:00am" class="timepicker-options">9:00am</option>
-            <option value="9:15am" class="timepicker-options">9:15am</option>
-            <option value="9:30am" class="timepicker-options">9:30am</option>
-            <option value="9:45am" class="timepicker-options">9:45am</option>
-            <option value="10:00am" class="timepicker-options">10:00am</option>
-            <option value="10:15am" class="timepicker-options">10:15am</option>
-            <option value="10:30am" class="timepicker-options">10:30am</option>
-            <option value="10:45am" class="timepicker-options">10:45am</option>
-            <option value="11:00am" class="timepicker-options">11:00am</option>
-            <option value="11:15am" class="timepicker-options">11:15am</option>
-            <option value="11:30am" class="timepicker-options">11:30am</option>
-            <option value="11:45am" class="timepicker-options">11:45am</option>
-            <option value="12:00pm" class="timepicker-options">12:00pm</option>
-            <option value="12:15pm" class="timepicker-options">12:15pm</option>
-            <option value="12:30pm" class="timepicker-options">12:30pm</option>
-            <option value="12:45pm" class="timepicker-options">12:45pm</option>
-            <option value="1:00pm" class="timepicker-options">1:00pm</option>
-            <option value="1:15pm" class="timepicker-options">1:15pm</option>
-            <option value="1:30pm" class="timepicker-options">1:30pm</option>
-            <option value="1:45pm" class="timepicker-options">1:45pm</option>
-            <option value="2:00pm" class="timepicker-options">2:00pm</option>
-            <option value="2:15pm" class="timepicker-options">2:15pm</option>
-            <option value="2:30pm" class="timepicker-options">2:30pm</option>
-            <option value="2:45pm" class="timepicker-options">2:45pm</option>
-            <option value="3:00pm" class="timepicker-options">3:00pm</option>
-            <option value="3:15pm" class="timepicker-options">3:15pm</option>
-            <option value="3:30am" class="timepicker-options">3:30am</option>
-            <option value="3:45pm" class="timepicker-options">3:45pm</option>
-            <option value="4:00pm" class="timepicker-options">4:00pm</option>
-            <option value="4:15pm" class="timepicker-options">4:15pm</option>
-            <option value="4:30pm" class="timepicker-options">4:30pm</option>
-            <option value="4:45pm" class="timepicker-options">4:45pm</option>
-            <option value="5:00pm" class="timepicker-options">5:00pm</option>
-            <option value="5:15pm" class="timepicker-options">5:15pm</option>
-            <option value="5:30pm" class="timepicker-options">5:30pm</option>
-            <option value="5:45pm" class="timepicker-options">5:45pm</option>
-            <option value="6:00pm" class="timepicker-options">6:00pm</option>
-            <option value="6:15pm" class="timepicker-options">6:15pm</option>
-            <option value="6:30pm" class="timepicker-options">6:30pm</option>
-            <option value="6:45pm" class="timepicker-options">6:45pm</option>
-            <option value="7:00pm" class="timepicker-options">7:00pm</option>
-            <option value="7:15pm" class="timepicker-options">7:15pm</option>
-            <option value="7:30pm" class="timepicker-options">7:30pm</option>
-            <option value="7:45pm" class="timepicker-options">7:45pm</option>
-            <option value="8:00pm" class="timepicker-options">8:00pm</option>
-            <option value="8:15pm" class="timepicker-options">8:15pm</option>
-            <option value="8:30pm" class="timepicker-options">8:30pm</option>
-            <option value="8:45pm" class="timepicker-options">8:45pm</option>
-            <option value="9:00pm" class="timepicker-options">9:00pm</option>
-            <option value="9:15pm" class="timepicker-options">9:15pm</option>
-            <option value="9:30pm" class="timepicker-options">9:30pm</option>
-            <option value="9:45pm" class="timepicker-options">9:45pm</option>
-            <option value="10:00pm" class="timepicker-options">10:00pm</option>
-            <option value="10:15pm" class="timepicker-options">10:15pm</option>
-            <option value="10:30pm" class="timepicker-options">10:30pm</option>
-            <option value="10:45pm" class="timepicker-options">10:45pm</option>
-            <option value="11:00pm" class="timepicker-options">11:00pm</option>
-            <option value="11:15pm" class="timepicker-options">11:15pm</option>
-            <option value="11:30pm" class="timepicker-options">11:30pm</option>
-            <option value="11:45pm" class="timepicker-options">11:45pm</option>
-          </select>
-        </div>
-      </div>
-      <div class="event_datetime_text">to</div>
-      <div class="end_time">
-        <input type="text" id="end_time" placeholder="Add time"></input>
       </div>
     </div>
-  </div>
+  </body>
   <script>
     function init() {
       $.ajax({
@@ -230,8 +113,8 @@ print %(
       });
 
       // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slighlty moved by default
-      document.getElementById("background").style.webkitFilter = "blur(4px)";
-      document.getElementById("background").style.webkitFilter = "blur(0px)";
+      //document.getElementById("background").style.webkitFilter = "blur(4px)";
+      //document.getElementById("background").style.webkitFilter = "blur(0px)";
     }
     function signOut() {
       document.cookie = "session_id=;secure";
@@ -262,20 +145,19 @@ print %(
       unactivateAllPages();
       var nav_icon = document.getElementById(nav_icon_id);
       nav_icon.style.color = "black";
-      nav_icon.className = "material-icons nav select";
 
       var page = document.getElementById(nav_icon_id + "_page");
       page.style.display = "block";
     }
     function onCreate() {
-      document.getElementById("background").style.webkitFilter = "blur(4px)";
+      //document.getElementById("background").style.webkitFilter = "blur(4px)";
       var create_form = document.getElementById("create_form");
       var create_form_close_layer = document.getElementById("create_form_close_layer");
       create_form_close_layer.style.display = "block";
       create_form.style.display = "block";
     }
     function onCreateClose() {
-      document.getElementById("background").style.webkitFilter = "blur(0px)";
+      //document.getElementById("background").style.webkitFilter = "blur(0px)";
       var create_form = document.getElementById("create_form");
       var create_form_close_layer = document.getElementById("create_form_close_layer");
       create_form_close_layer.style.display = "none";
@@ -284,8 +166,7 @@ print %(
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
       for(var i = 0; i < all_nav_icons.length; i++){
-        //all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
-        all_nav_icons[i].className = "material-icons-outlined nav select";
+        all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
       }
     }
     function unactivateAllPages() {
@@ -319,9 +200,12 @@ print %(
   <style>
     html {
       text-align: center;
-      background-color: #FEFFFE;
       border: none;
       font-family: 'Roboto', sans-serif;
+      //background-color: yellow;
+    }
+    body {
+      background-color: #FEFFFE;
     }
     #navbar {
       margin: 0;
@@ -332,6 +216,8 @@ print %(
       border-width: thin;
       border-color: rgba(235, 239, 240, 1);
       position: fixed;
+      top: 0;
+      left: 0;
     }
     #background {
       transition: all .175s;
@@ -363,13 +249,14 @@ print %(
       display: none;
       position: absolute;
       border: none;
-      width: 100%;
+      left: 0;
+      right: 0;
       margin-top: #{12 * VW_FACTOR}vw;
     }
-    .material-icons, .material-icons-outlined {
+    .material-icons {
       cursor: default;
     }
-    .material-icons.nav, .material-icons-outlined.nav {
+    .material-icons.nav {
       margin-top: #{2 * VW_FACTOR}vw;
       margin-bottom: #{2 * VW_FACTOR}vw;
       font-size: #{7 * VW_FACTOR}vw;
@@ -379,12 +266,12 @@ print %(
       transition: color .175s;
       transition-timing-function: ease-out;
     }
-    .material-icons.nav.select, .material-icons-outlined.nav.select {
+    .material-icons.nav.select {
       //color: rgba(255, 255, 255, .7);
       color: #000000;
       cursor: pointer;
     }
-    .material-icons.nav.create, .material-icons-outlined.nav.create {
+    .material-icons.nav.create {
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
@@ -414,7 +301,7 @@ print %(
     .material-icons.nav.create:hover {
       background-color: #d9392b;
     }
-    .material-icons.search, .material-icons-outlined.search {
+    .material-icons.search {
       float: left;
       margin-top: 4px;
       margin-left: 8px;
@@ -490,9 +377,6 @@ print %(
     }
     #log_out_btn {
       text-align: center;
-    }
-    .page_anchor_hack {
-      margin-top: #{56 * VH_FACTOR}vh;
     }
     .event_form_title input[type=text] {
       float: left;
@@ -713,24 +597,9 @@ print %(
     .timepicker-options:hover {
       background-color: #EEEEEE;
     }
-    ::-webkit-scrollbar {
-      width: 11px;
-    }
-    ::-webkit-scrollbar-thumb {
-      border-radius: 25px;
-      -webkit-border-radius: 25px;
-      height: 50px;
-      background: #BDBDBD;
-    }
-    ::-webkit-scrollbar-thumb:active {
-      background: #9E9E9E;
-    }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
       display: inline-block;
-    }
-    #settings_page {
-      background-color: #F2F2F7;
     }
   </style>
 </html>
