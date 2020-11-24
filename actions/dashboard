@@ -10,6 +10,7 @@
 # @test:     user agent detection on several platforms
 
 # @current: settings page
+# @current:   look into accurately scaling fonts and correctly using vh
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -69,10 +70,10 @@ print %(
         <h1>profile</h1>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{8 * VW_FACTOR}vw;margin-left:#{4 * VW_FACTOR}vw;margin-top:#{10 * VW_FACTOR}vw">Settings</h1>
-        <button class="settings_btn" onclick="onViewSessions()">Sessions</button>
-        <button class="settings_btn" onclick="confirmRevoke()">Deactivate</button>
-        <button class="settings_btn" id="log_out_btn" onclick="signOut()">Log out</button>
+        <h1 style="text-align:left;font-size:#{8 * VW_FACTOR}vw;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vw">Settings</h1>
+        <div class="settings_btn" onclick="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <div class="settings_btn" onclick="confirmRevoke()">Deactivate<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <button id="log_out_btn" onclick="signOut()">Log out</button>
       </div>
     </div>
   </body>
@@ -148,6 +149,13 @@ print %(
 
       var page = document.getElementById(nav_icon_id + "_page");
       page.style.display = "block";
+
+      if(nav_icon_id != 'settings') {
+        document.body.style.backgroundColor = "#FEFFFE";
+      }
+      else {
+        document.body.style.backgroundColor = "#F2F2F7";
+      }
     }
     function onCreate() {
       //document.getElementById("background").style.webkitFilter = "blur(4px)";
@@ -202,7 +210,6 @@ print %(
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
-      //background-color: yellow;
     }
     body {
       background-color: #FEFFFE;
@@ -214,7 +221,7 @@ print %(
       overflow: auto;
       border-bottom-style: solid;
       border-width: thin;
-      border-color: rgba(235, 239, 240, 1);
+      border-color: #E8E8EB;
       position: fixed;
       top: 0;
       left: 0;
@@ -222,6 +229,10 @@ print %(
     #background {
       transition: all .175s;
       border: none;
+    }
+    .navbar_space {
+      width: #{12 * VW_FACTOR}vw;
+      display: inline-block;
     }
     .create_form {
       display: none;
@@ -351,18 +362,22 @@ print %(
     }
     .settings_btn {
       display: inline-block;
-      width: 100%;
+      width: #{100 - (6 * VW_FACTOR)}vw;
+      //width: #{94 * VW_FACTOR}vw;
       height: #{6 * VH_FACTOR}vh;
-      font-size: 32px;
+      font-size: #{4 * VW_FACTOR}vw;
+      font-weight: bold;
       outline: none;
       text-align: left;
+      line-height: #{6 * VH_FACTOR}vh;
+      padding-left: #{6 * VW_FACTOR}vw;
 
       border-top-style: hidden;
       border-right-style: hidden;
       border-left-style: hidden;
       border-bottom-style: solid;
-      border-bottom-width: thin;
-      border-bottom-color: #90CAF9;
+      border-width: thin;
+      border-color: #E8E8EB;
       border-radius: 0;
  
       cursor: pointer;
@@ -375,8 +390,35 @@ print %(
     .settings_btn:hover {
       //background-color: #37474F;
     }
+    .settings_navigate_next {
+      font-size: #{3.25 * VH_FACTOR}vh;
+      float: right;
+      line-height: #{6 * VH_FACTOR}vh;
+      margin-right: #{4 * VW_FACTOR}vw;
+      color: #616161;
+    }
     #log_out_btn {
+      display: inline-block;
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      font-size: #{4 * VW_FACTOR}vw;
+      font-weight: bold;
+      outline: none;
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      cursor: pointer;
+      //box-shadow: 0px 0px 5px black;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
       text-align: center;
+      margin-top: #{4 * VH_FACTOR}vh;
+      color: #0F82FF;
     }
     .event_form_title input[type=text] {
       float: left;
@@ -596,10 +638,6 @@ print %(
     }
     .timepicker-options:hover {
       background-color: #EEEEEE;
-    }
-    .navbar_space {
-      width: #{12 * VW_FACTOR}vw;
-      display: inline-block;
     }
   </style>
 </html>
