@@ -46,7 +46,7 @@ print %(
       </div>
       <br>
       <div id="google_button_wrapper">
-        <button class="google_button" id="google_login" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onSignUp()"></button>
+        <button class="google_button" id="google_login" onmousedown="onSignUp()"></button><!-- using ontouchstart breaks google sign in (popup window is blocked) -->
       </div>
     </div>
   </body>
