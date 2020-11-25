@@ -9,8 +9,7 @@
 # @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
-# @current: settings page
-# @current:   look into accurately scaling fonts and correctly using vh
+# @current: settings page (after custom google sign in button)
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -33,9 +32,16 @@ end
 
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
-VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
-VH_FACTOR  = IS_DESKTOP ? 0.93 : 1
+VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
+VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
+FONT_FACTOR = IS_DESKTOP ? 0.7 : 1
 
+# from index page |
+#                 |
+#                 v
+#VW_FACTOR   = IS_DESKTOP ? 0.6 : 1
+#VH_FACTOR   = IS_DESKTOP ? 1.8 : 1
+#FONT_FACTOR = IS_DESKTOP ? 1 : 1
 
 # render dashboard
 print "Content-type: text/html\n\n"
@@ -70,7 +76,8 @@ print %(
         <h1>profile</h1>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{8 * VW_FACTOR}vw;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vw">Settings</h1>
+        <h1 style="text-align:left;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vw">Settings</h1>
+        <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" onclick="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
         <div class="settings_btn" onclick="confirmRevoke()">Deactivate<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
         <button id="log_out_btn" onclick="signOut()">Log out</button>
@@ -210,6 +217,7 @@ print %(
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
+      font-size: 16px;
     }
     body {
       background-color: #FEFFFE;
@@ -262,15 +270,15 @@ print %(
       border: none;
       left: 0;
       right: 0;
-      margin-top: #{12 * VW_FACTOR}vw;
+      margin-top: #{7 * VH_FACTOR}vh;
     }
     .material-icons {
       cursor: default;
     }
     .material-icons.nav {
-      margin-top: #{2 * VW_FACTOR}vw;
-      margin-bottom: #{2 * VW_FACTOR}vw;
-      font-size: #{7 * VW_FACTOR}vw;
+      margin-top: #{1.5 * VH_FACTOR}vh;
+      margin-bottom: #{1 * VH_FACTOR}vh;
+      font-size: #{4.25 * FONT_FACTOR}rem;
       //color: rgba(255, 255, 255, 1);
       color: #000000;
       text-align: center;
@@ -363,18 +371,16 @@ print %(
     .settings_btn {
       display: inline-block;
       width: #{100 - (6 * VW_FACTOR)}vw;
-      //width: #{94 * VW_FACTOR}vw;
-      height: #{6 * VH_FACTOR}vh;
-      font-size: #{4 * VW_FACTOR}vw;
-      font-weight: bold;
+      height: #{5.25 * VH_FACTOR}vh;
+      font-size: #{2.25 * FONT_FACTOR}rem;
       outline: none;
       text-align: left;
-      line-height: #{6 * VH_FACTOR}vh;
+      line-height: #{5.25 * VH_FACTOR}vh;
       padding-left: #{6 * VW_FACTOR}vw;
 
-      border-top-style: hidden;
       border-right-style: hidden;
       border-left-style: hidden;
+      border-top-style: hidden;
       border-bottom-style: solid;
       border-width: thin;
       border-color: #E8E8EB;
@@ -391,17 +397,17 @@ print %(
       //background-color: #37474F;
     }
     .settings_navigate_next {
-      font-size: #{3.25 * VH_FACTOR}vh;
+      font-size: #{4.2 * FONT_FACTOR}rem;
       float: right;
-      line-height: #{6 * VH_FACTOR}vh;
+      line-height: #{5.25 * VH_FACTOR}vh;
       margin-right: #{4 * VW_FACTOR}vw;
       color: #616161;
     }
     #log_out_btn {
       display: inline-block;
       width: 100%;
-      height: #{6 * VH_FACTOR}vh;
-      font-size: #{4 * VW_FACTOR}vw;
+      height: #{5.25 * VH_FACTOR}vh;
+      font-size: #{2.25 * FONT_FACTOR}rem;
       font-weight: bold;
       outline: none;
       border-top-style: solid;

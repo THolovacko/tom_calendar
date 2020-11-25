@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 
 # @remember: use image(screenshot)?
+# @current: create custom google sign-in button with: https://developers.google.com/identity/sign-in/web/build-button and https://developers.google.com/identity/branding-guidelines
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -19,8 +20,10 @@ unless cookie_session_id.nil?
 end
 
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
-IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
-VW_FACTOR  = IS_DESKTOP ? 0.6 : 1
+IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
+VW_FACTOR   = IS_DESKTOP ? 0.6 : 1
+VH_FACTOR   = IS_DESKTOP ? 1.8 : 1
+FONT_FACTOR = IS_DESKTOP ? 0.7 : 1
 
 
 print "Content-type: text/html\n\n"
@@ -102,6 +105,7 @@ print %(
     html {
       text-align: center;
       font-family: 'Roboto', sans-serif;
+      font-size: 16px;
     }
     h1 {
       margin: 0;
@@ -111,29 +115,28 @@ print %(
       transition-timing-function: ease-out;
     }
     #description_and_button {
-      margin-top: #{32 * VW_FACTOR}%;
+      margin-top: #{16 * VH_FACTOR}vh;
     }
     #logo_txt {
-      font-size: #{5 * VW_FACTOR}vw;
+      font-size: #{3 * FONT_FACTOR}rem;
       font-weight: bold;
     }
     #description {
-      width: #{100 * VW_FACTOR}%;
       display: inline-block;
     }
     #description_content {
       text-align: center;
-      font-size: #{1.25 * VW_FACTOR}vw;
+      font-size: #{1.15 * FONT_FACTOR}rem;
+      margin-top: #{3 * VH_FACTOR}vh;
       font-weight: normal;
-      margin-top: #{4 * VW_FACTOR}vw;
     }
     #google_button_wrapper {
       display: inline-block;
-      margin-top: #{10 * VW_FACTOR}%;
+      margin-top: #{3 * VH_FACTOR}vh;
     }
     .google_button {
-      width: #{31.25 * VW_FACTOR}vw;
-      height: #{7.5 * VW_FACTOR}vw;
+      width: #{60 * VW_FACTOR}vw;
+      height: #{7 * VH_FACTOR}vh;
       border: none;
       background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
       background-size: cover;
