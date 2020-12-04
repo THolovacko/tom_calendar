@@ -1,7 +1,8 @@
 #! /usr/bin/ruby
 
 # @remember: use image(screenshot)?
-# @current: create custom google sign-in button with: https://developers.google.com/identity/sign-in/web/build-button and https://developers.google.com/identity/branding-guidelines
+# @remember: sometimes on mobile prompts login twice (maybe bug when user has sub-users)
+# @remember: desktop sizes get messed up depending on window sizes
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -35,7 +36,7 @@ print %(
     <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://apis.google.com/js/platform.js"></script>
   </head>
   <body onload="init();" id="background">
     <div class="firefox_hack"><img src="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png" alt="firefox_hack" style="display:none;"></div>
@@ -49,11 +50,9 @@ print %(
       </div>
       <br>
       <div id="google_button_wrapper">
-        <!-- <button class="google_button" id="google_login" onmousedown="onSignUp()"></button> using ontouchstart breaks google sign in (popup window is blocked) -->
-        <div id="google_sign_in_button">
-          <div style="display:inline-block;margin-left:0;height:50px;width:50px;vertical-align:middle;background-image:url('https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg');background-size:cover;background-repeat:no-repeat;background-position: 50% 50%;"></div>
-          <!-- <img style="height:50px;vertical-align:middle;" src="https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_dark_normal_ios.svg"></img> -->
-          <span style="font-size:16px;margin-left:18px;margin-right:26px;">Sign in with Google</span>
+        <div id="google_sign_in_button" onmousedown="onSignUp()"> <!-- using ontouchstart breaks google sign in (popup window is blocked) -->
+          <div style="display:inline-block;width:#{IS_DESKTOP ? 4 : 12}vw;height:#{IS_DESKTOP ? 6 : 6}vh;vertical-align:middle;background-image:url('https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_light_normal_ios.svg');background-size:cover;background-repeat:no-repeat;background-position: 50% 50%;"></div>
+          <span style="font-size:#{IS_DESKTOP ? 2 : 3}rem;vertical-align:middle;margin-left:#{IS_DESKTOP ? 4 : 8}vw">Sign in with Google</span>
         </div>
       </div>
     </div>
@@ -65,29 +64,9 @@ print %(
           client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
           scope: 'profile email https://www.googleapis.com/auth/calendar',
           redirect_uri: 'postmessage'
-        }).then(function(then_init) {
-        /*
-          gapi.signin2.render('google_login', {
-            'scope': 'profile email https://www.googleapis.com/auth/calendar',
-            'width': 240,
-            'height': 50,
-            'longtitle': true,
-            'theme': 'dark',
-            'onsuccess': onSuccess,
-            'onfailure': onFailure
-          }); 
-          document.getElementById("tomcalendar-signin2-btn").disabled = true;
-        */
-        }, function(error) {});
+        })
       });
     }
-    //function onSuccess(googleUser) {
-    //  console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
-    //}
-    //function onFailure(error) {
-    //  console.log(error);
-    //  //revoke();
-    //}
     function onSignUp() {
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.grantOfflineAccess().then(onSignIn);
@@ -158,38 +137,24 @@ print %(
     #google_button_wrapper {
       display: inline-block;
       margin-top: #{3 * VH_FACTOR}vh;
-
-
       background-color: #4285F4;
       border: none;
-      border-radius: 1px;
-      box-shadow: 0px 1px 4px rgba(0, 0, 0, .35);
-      transition: box-shadow .175s;
+      border-radius: 4px;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, .35);
+      transition: box-shadow .15s, background-color .15s;
     }
     #google_button_wrapper:hover {
-      box-shadow: 0px 2px 8px rgba(66, 133, 244, .8);
+      box-shadow: 0px 8px 12px -1px rgba(66, 133, 244, .75);
       cursor: pointer;
     }
-    .google_button {
-      width: #{60 * VW_FACTOR}vw;
-      height: #{7 * VH_FACTOR}vh;
-      border: none;
-      background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_normal_web@2x.png') no-repeat;
-      background-size: cover;
-      cursor: pointer;
-      transition: background .175s;
-      transition-timing-function: ease-out;
-    }
-    .google_button:hover {
-      background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
-      background-size: cover;
-    }
-    .google_button:active {
-      background: url('https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png') no-repeat;
-      background-size: cover;
+    #google_button_wrapper:active {
+      background-color: #0a49b0;
     }
     #google_sign_in_button {
       color: #FFFFFF;
+      text-align: left;
+      width:  #{IS_DESKTOP ? 30 : 75}vw;
+      height: 6vh;
     }
   </style>
 </html>
