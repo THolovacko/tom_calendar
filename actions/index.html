@@ -2,7 +2,6 @@
 
 # @remember: use image(screenshot)?
 # @remember: sometimes on mobile prompts login twice (maybe bug when user has sub-users)
-# @remember: desktop sizes get messed up depending on window sizes
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -25,6 +24,7 @@ IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR   = IS_DESKTOP ? 0.6 : 1
 VH_FACTOR   = IS_DESKTOP ? 1.8 : 1
 FONT_FACTOR = IS_DESKTOP ? 0.7 : 1
+SCALE       = IS_DESKTOP ? 1 : 2
 
 
 print "Content-type: text/html\n\n"
@@ -33,13 +33,12 @@ print %(
   <title>Login</title>
   <head>
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
-    <link rel="preload" as="image" href="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://apis.google.com/js/platform.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
   </head>
-  <body onload="init();" id="background">
-    <div class="firefox_hack"><img src="https://tomcalendar.com/public/google_signin_buttons/web/2x/btn_google_signin_dark_pressed_web@2x.png" alt="firefox_hack" style="display:none;"></div>
+  <body id="background" onload="init();">
     <div id="description_and_button">
       <div id="logo_txt"><h1>TomCalendar</h1></div>
       <div id="description">
@@ -47,26 +46,47 @@ print %(
           <h1>You've earned your audience's attention, keep it.</h1><br>
           <h1>Stay in the know, without spam.</h1>
         </div>
-      </div>
-      <br>
-      <div id="google_button_wrapper">
-        <div id="google_sign_in_button" onmousedown="onSignUp()"> <!-- using ontouchstart breaks google sign in (popup window is blocked) -->
-          <div style="display:inline-block;width:#{IS_DESKTOP ? 4 : 12}vw;height:#{IS_DESKTOP ? 6 : 6}vh;vertical-align:middle;background-image:url('https://tomcalendar.com/public/google_signin_buttons/web/vector/btn_google_light_normal_ios.svg');background-size:cover;background-repeat:no-repeat;background-position: 50% 50%;"></div>
-          <span style="font-size:#{IS_DESKTOP ? 2 : 3}rem;vertical-align:middle;margin-left:#{IS_DESKTOP ? 4 : 8}vw">Sign in with Google</span>
+        <div id="google_button_wrapper">
+          <div id="my-signin2" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="redirectLogin();"></div>
         </div>
       </div>
+      <br>
     </div>
   </body>
   <script>
+    login_url = "https://google.com";
+
     function init() {
-      gapi.load('auth2', function() {
-        auth2 = gapi.auth2.init({
-          client_id: '#{ENV['GOOGLE_OAUTH_CLIENT_ID']}',
-          scope: 'profile email https://www.googleapis.com/auth/calendar',
-          redirect_uri: 'postmessage'
-        })
+      gapi.signin2.render('my-signin2', {
+        'scope': 'profile email',
+        //'width':  #{( IS_DESKTOP ? 240 : 480 )},
+        //'height':  #{( IS_DESKTOP ? 50 : 100 )},
+        'width': 240,
+        'height': 50,
+        'longtitle': true,
+        'theme': 'dark',
+        'onsuccess': onSuccess,
+        'onfailure': onFailure
       });
+      document.addEventListener("click",disableAllClickEvents,true);  // preventing google api button from doing anything, just using it for aesthetics
     }
+    function disableAllClickEvents(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    function redirectLogin() {
+      window.location = login_url;
+    }
+    function onSuccess() {
+      // function has to exist for google api button to be rendered
+    }
+    function onFailure() {
+      // function has to exist for google api button to be rendered
+    }
+
+
+
+  /*
     function onSignUp() {
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.grantOfflineAccess().then(onSignIn);
@@ -104,6 +124,7 @@ print %(
       auth2.disconnect();
       window.location = "https://tomcalendar.com";
     }
+  */
   </script>
   <style type="text/css">
     html {
@@ -136,25 +157,9 @@ print %(
     }
     #google_button_wrapper {
       display: inline-block;
-      margin-top: #{3 * VH_FACTOR}vh;
-      background-color: #4285F4;
+      margin-top: #{4 * VH_FACTOR}vh;
       border: none;
-      border-radius: 4px;
-      box-shadow: 0px 2px 4px rgba(0, 0, 0, .35);
-      transition: box-shadow .15s, background-color .15s;
-    }
-    #google_button_wrapper:hover {
-      box-shadow: 0px 8px 12px -1px rgba(66, 133, 244, .75);
-      cursor: pointer;
-    }
-    #google_button_wrapper:active {
-      background-color: #0a49b0;
-    }
-    #google_sign_in_button {
-      color: #FFFFFF;
-      text-align: left;
-      width:  #{IS_DESKTOP ? 30 : 75}vw;
-      height: 6vh;
+      transform: scale(#{SCALE}, #{SCALE});
     }
   </style>
 </html>
