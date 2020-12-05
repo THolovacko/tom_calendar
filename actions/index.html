@@ -2,6 +2,7 @@
 
 # @remember: use image(screenshot)?
 # @remember: sometimes on mobile prompts login twice (maybe bug when user has sub-users)
+# @current:  rewrite authcode login
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
