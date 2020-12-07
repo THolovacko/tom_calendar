@@ -126,11 +126,13 @@ print %(
       }
     }
     function revoke() {
+      document.getElementById("background").style.webkitFilter = "blur(100px)";
       $.ajax({
         type: 'POST',
         url: 'https://tomcalendar.com/delete_tomcalendar',
         contentType: 'application/octet-stream; charset=utf-8',
         processData: false,
+        async:       false,
         data: ''
       });
       document.cookie = "session_id=;secure";
