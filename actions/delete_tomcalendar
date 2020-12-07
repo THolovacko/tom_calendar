@@ -19,6 +19,8 @@ service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(google_id)
 service.client_options.application_name = 'TomCalendar'.freeze
 
+google_authorizer.revoke_authorization(google_id)
+
 # get google calendar id
 begin
   params = {

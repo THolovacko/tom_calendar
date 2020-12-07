@@ -1,0 +1,13 @@
+#! /usr/bin/ruby
+
+require_relative '../lib/tom_calendar.rb'
+
+# @remember: need to handle people spamming refresh
+
+dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+google_authorizer = get_google_authorizer(dynamodb)
+authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
+
+#raise authorization_url
+
+print StatusCodeStr::plain_text(authorization_url)

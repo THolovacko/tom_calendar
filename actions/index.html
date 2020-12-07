@@ -1,8 +1,6 @@
 #! /usr/bin/ruby
 
 # @remember: use image(screenshot)?
-# @remember: sometimes on mobile prompts login twice (maybe bug when user has sub-users)
-# @current:  rewrite authcode login
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -19,6 +17,11 @@ unless cookie_session_id.nil?
   )
   return
 end
+
+
+query_str = ENV['QUERY_STRING']
+code      = query_str.match(/code=([^&]*)/)&.to_s&.sub('code=','')
+code      = nil if (code == '') || (code == ' ')
 
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
@@ -55,13 +58,12 @@ print %(
     </div>
   </body>
   <script>
-    login_url = "https://google.com";
+    authorization_url  = "https://tomcalendar.com";  // default value
+    authorization_code = #{code ? "\"#{code}\"" : 'null'};
 
     function init() {
       gapi.signin2.render('my-signin2', {
         'scope': 'profile email',
-        //'width':  #{( IS_DESKTOP ? 240 : 480 )},
-        //'height':  #{( IS_DESKTOP ? 50 : 100 )},
         'width': 240,
         'height': 50,
         'longtitle': true,
@@ -70,13 +72,33 @@ print %(
         'onfailure': onFailure
       });
       document.addEventListener("click",disableAllClickEvents,true);  // preventing google api button from doing anything, just using it for aesthetics
+
+      if (authorization_code) {
+        onSignIn(authorization_code);
+      }
+      else {
+        // get authorization url
+        $.ajax({
+          type: 'POST',
+          url: 'https://tomcalendar.com/generate_authorization_url',
+          contentType: 'application/octet-stream; charset=utf-8',
+          success: function(result) {
+            authorization_url = result;
+            console.log(authorization_url)
+          },
+          error: function(result) {
+          },
+          processData: false,
+          data: ''
+        });
+      }
     }
     function disableAllClickEvents(e) {
       e.stopPropagation();
       e.preventDefault();
     }
     function redirectLogin() {
-      window.location = login_url;
+      window.location = authorization_url;
     }
     function onSuccess() {
       // function has to exist for google api button to be rendered
@@ -84,48 +106,27 @@ print %(
     function onFailure() {
       // function has to exist for google api button to be rendered
     }
+    function onSignIn(auth_code) {
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/authorize_gmail',
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+          var today_time = new Date().getTime();
+          var expiration_date = new Date();
+          expiration_date.setTime(today_time + (1000 *31536000));
+          document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toGMTString() +";secure";
+          window.location = "https://tomcalendar.com/dashboard";
+        },
+        error: function(result) {
+          // @remember: more detailed error handling
+        },
+        processData: false,
+        data: auth_code
+      });
 
-
-
-  /*
-    function onSignUp() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.grantOfflineAccess().then(onSignIn);
+      document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
-    function onSignIn(authResponse) {
-      if (authResponse['code']) {
-        var auth2 = gapi.auth2.getAuthInstance();
-
-        $.ajax({
-          type: 'POST',
-          url: 'https://tomcalendar.com/authorize_gmail',
-          contentType: 'application/octet-stream; charset=utf-8',
-          success: function(result) {
-            var today_time = new Date().getTime();
-            var expiration_date = new Date();
-            expiration_date.setTime(today_time + (1000 *31536000));
-            document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toGMTString() +";secure";
-            window.location = "https://tomcalendar.com/dashboard";
-          },
-          error: function(result) {
-            revoke();
-          },
-          processData: false,
-          data: authResponse['code']
-        });
-
-        document.getElementById("background").style.webkitFilter = "blur(100px)";
-      } else {
-        // Didn't find code in authResponse
-        revoke();
-      }
-    }
-    function revoke() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.disconnect();
-      window.location = "https://tomcalendar.com";
-    }
-  */
   </script>
   <style type="text/css">
     html {
