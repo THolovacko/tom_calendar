@@ -34,7 +34,8 @@ user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
 VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
-FONT_FACTOR = IS_DESKTOP ? 0.7 : 1
+FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
+SCALE       = IS_DESKTOP ? 0.6 : 1
 
 # from index page |
 #                 |
@@ -268,7 +269,8 @@ print %(
     .material-icons.nav {
       margin-top: #{1.5 * VH_FACTOR}vh;
       margin-bottom: #{1 * VH_FACTOR}vh;
-      font-size: #{4.25 * FONT_FACTOR}rem;
+      font-size: #{4.35 * FONT_FACTOR}rem;
+      //font-size: #{4.25 * FONT_FACTOR}rem;
       //color: rgba(255, 255, 255, 1);
       color: #000000;
       text-align: center;
