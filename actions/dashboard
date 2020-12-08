@@ -37,13 +37,6 @@ VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
 FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
 SCALE       = IS_DESKTOP ? 0.6 : 1
 
-# from index page |
-#                 |
-#                 v
-#VW_FACTOR   = IS_DESKTOP ? 0.6 : 1
-#VH_FACTOR   = IS_DESKTOP ? 1.8 : 1
-#FONT_FACTOR = IS_DESKTOP ? 1 : 1
-
 # render dashboard
 print "Content-type: text/html\n\n"
 print %(
@@ -77,15 +70,25 @@ print %(
         <h1>profile</h1>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vw">Settings</h1>
+        <h1 style="text-align:left;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
-        <div class="settings_btn" onclick="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
-        <div class="settings_btn" onclick="confirmRevoke()">Deactivate<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
-        <button id="log_out_btn" onclick="signOut()">Log out</button>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
+      </div>
+      <div class="page", id="sessions_page">
+        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">navigate_before</i>Settings</div>
+        <h1 style="text-align:center;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{0 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vh">Sessions</h1>
+      </div>
+      <div class="page", id="deactivate_page">
+        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">navigate_before</i>Settings</div>
+        <h1 style="text-align:center;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{0 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vh">Deactivate</h1>
       </div>
     </div>
   </body>
   <script>
+    var current_settings_page = "settings";
+
     function init() {
       $.ajax({
         type: 'POST',
@@ -145,15 +148,16 @@ print %(
       var nav_icon = document.getElementById(nav_icon_id);
       nav_icon.style.color = "black";
 
-      var page = document.getElementById(nav_icon_id + "_page");
-      page.style.display = "block";
-
       if(nav_icon_id != 'settings') {
         document.body.style.backgroundColor = "#FEFFFE";
+        var page = document.getElementById(nav_icon_id + "_page")
       }
       else {
         document.body.style.backgroundColor = "#F2F2F7";
+        var page = document.getElementById(current_settings_page + "_page");
       }
+
+      page.style.display = "block";
     }
     function onCreate() {
       //document.getElementById("background").style.webkitFilter = "blur(4px)";
@@ -180,6 +184,20 @@ print %(
       for(var i = 0; i < all_pages.length; i++){
         all_pages[i].style.display = "none";
       }
+    }
+    function onViewSessions() {
+      unactivateAllPages();
+
+      current_settings_page = "sessions";
+      var sessions_page = document.getElementById("sessions_page");
+      sessions_page.style.display = "block";
+    }
+    function onDeactivate() {
+      unactivateAllPages();
+
+      current_settings_page = "deactivate";
+      var deactivate_page = document.getElementById("deactivate_page");
+      deactivate_page.style.display = "block";
     }
     $("#datepicker").datepicker({
       dateFormat: "M d, yy",
@@ -379,14 +397,16 @@ print %(
       border-radius: 0;
  
       cursor: pointer;
-      //box-shadow: 0px 0px 5px black;
       background-color: rgba(254, 255, 254, 1);
       transition: background-color .175s;
       transition-timing-function: ease-out;
       color: black;
     }
-    .settings_btn:hover {
-      //background-color: #37474F;
+    .settings_btn:hover, #log_out_btn:hover {
+      background-color: #f1fff1;
+    }
+    .settings_btn:active, #log_out_btn:active {
+      background-color: #e5ffe5;
     }
     .settings_navigate_next {
       font-size: #{4.2 * FONT_FACTOR}rem;
@@ -394,6 +414,30 @@ print %(
       line-height: #{5.25 * VH_FACTOR}vh;
       margin-right: #{4 * VW_FACTOR}vw;
       color: #616161;
+      cursor: pointer;
+    }
+    .settings_back_btn {
+      margin-left:#{0.5 * VW_FACTOR}vw;
+      display: inline-block;
+      width: #{26 * VW_FACTOR}vw;
+      height: #{6 * VH_FACTOR}vh;
+      font-size: #{2.5 * FONT_FACTOR}rem;
+      outline: none;
+      text-align: left;
+      float: left;
+      line-height: #{6 * VH_FACTOR}vh;
+      border: none;
+      cursor: pointer;
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      color: blue;
+    }
+    .settings_navigate_before {
+      font-size: #{5.5 * FONT_FACTOR}rem;
+      float: left;
+      line-height: #{6 * VH_FACTOR}vh;
+      color: blue;
+      cursor: pointer;
     }
     #log_out_btn {
       display: inline-block;
@@ -410,7 +454,6 @@ print %(
       border-color: #E8E8EB;
       border-radius: 0;
       cursor: pointer;
-      //box-shadow: 0px 0px 5px black;
       background-color: rgba(254, 255, 254, 1);
       transition: background-color .175s;
       transition-timing-function: ease-out;
