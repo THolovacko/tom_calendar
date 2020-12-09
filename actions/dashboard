@@ -77,12 +77,12 @@ print %(
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
-        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">navigate_before</i>Settings</div>
-        <h1 style="text-align:center;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{0 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vh">Sessions</h1>
+        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">keyboard_backspace</i>Settings</div>
+        <div class="settings_page_title">Sessions</div>
       </div>
       <div class="page", id="deactivate_page">
-        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">navigate_before</i>Settings</div>
-        <h1 style="text-align:center;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{0 * VW_FACTOR}vw;margin-top:#{8 * VH_FACTOR}vh">Deactivate</h1>
+        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">keyboard_backspace</i>Settings</div>
+        <div class="settings_page_title">Deactivate</div>
       </div>
     </div>
   </body>
@@ -288,15 +288,12 @@ print %(
       margin-top: #{1.5 * VH_FACTOR}vh;
       margin-bottom: #{1 * VH_FACTOR}vh;
       font-size: #{4.35 * FONT_FACTOR}rem;
-      //font-size: #{4.25 * FONT_FACTOR}rem;
-      //color: rgba(255, 255, 255, 1);
       color: #000000;
       text-align: center;
       transition: color .175s;
       transition-timing-function: ease-out;
     }
     .material-icons.nav.select {
-      //color: rgba(255, 255, 255, .7);
       color: #000000;
       cursor: pointer;
     }
@@ -417,15 +414,15 @@ print %(
       cursor: pointer;
     }
     .settings_back_btn {
-      margin-left:#{0.5 * VW_FACTOR}vw;
       display: inline-block;
-      width: #{26 * VW_FACTOR}vw;
-      height: #{6 * VH_FACTOR}vh;
-      font-size: #{2.5 * FONT_FACTOR}rem;
+      margin-left:#{3 * VW_FACTOR}vw;
+      width: #{10 * VW_FACTOR}vw;
+      height: #{1 * VH_FACTOR}vh;
+      font-size: #{2 * FONT_FACTOR}rem;
+      line-height: #{1 * VH_FACTOR}vh;
       outline: none;
-      text-align: left;
+      vertical-align: middle;
       float: left;
-      line-height: #{6 * VH_FACTOR}vh;
       border: none;
       cursor: pointer;
       transition: background-color .175s;
@@ -433,11 +430,15 @@ print %(
       color: blue;
     }
     .settings_navigate_before {
-      font-size: #{5.5 * FONT_FACTOR}rem;
       float: left;
       line-height: #{6 * VH_FACTOR}vh;
+      font-size: #{6 * FONT_FACTOR}rem;
       color: blue;
       cursor: pointer;
+    }
+    .settings_page_title {
+      position: absolute;
+      float: right;
     }
     #log_out_btn {
       display: inline-block;
