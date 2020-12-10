@@ -77,12 +77,16 @@ print %(
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
-        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">keyboard_backspace</i>Settings</div>
-        <div class="settings_page_title">Sessions</div>
+        <div class="sessions_page_header">
+          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <div class="settings_page_title">Sessions</div>
+        </div>
       </div>
       <div class="page", id="deactivate_page">
-        <div class="settings_back_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')"><i class="material-icons md-36 settings_navigate_before">keyboard_backspace</i>Settings</div>
-        <div class="settings_page_title">Deactivate</div>
+        <div class="sessions_page_header">
+          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <div class="settings_page_title">Deactivate</div>
+        </div>
       </div>
     </div>
   </body>
@@ -375,71 +379,6 @@ print %(
       color: black;
       opacity: .75;
     }
-    .settings_btn {
-      display: inline-block;
-      width: #{100 - (6 * VW_FACTOR)}vw;
-      height: #{5.25 * VH_FACTOR}vh;
-      font-size: #{2.25 * FONT_FACTOR}rem;
-      outline: none;
-      text-align: left;
-      line-height: #{5.25 * VH_FACTOR}vh;
-      padding-left: #{6 * VW_FACTOR}vw;
-
-      border-right-style: hidden;
-      border-left-style: hidden;
-      border-top-style: hidden;
-      border-bottom-style: solid;
-      border-width: thin;
-      border-color: #E8E8EB;
-      border-radius: 0;
- 
-      cursor: pointer;
-      background-color: rgba(254, 255, 254, 1);
-      transition: background-color .175s;
-      transition-timing-function: ease-out;
-      color: black;
-    }
-    .settings_btn:hover, #log_out_btn:hover {
-      background-color: #f1fff1;
-    }
-    .settings_btn:active, #log_out_btn:active {
-      background-color: #e5ffe5;
-    }
-    .settings_navigate_next {
-      font-size: #{4.2 * FONT_FACTOR}rem;
-      float: right;
-      line-height: #{5.25 * VH_FACTOR}vh;
-      margin-right: #{4 * VW_FACTOR}vw;
-      color: #616161;
-      cursor: pointer;
-    }
-    .settings_back_btn {
-      display: inline-block;
-      margin-left:#{3 * VW_FACTOR}vw;
-      width: #{10 * VW_FACTOR}vw;
-      height: #{1 * VH_FACTOR}vh;
-      font-size: #{2 * FONT_FACTOR}rem;
-      line-height: #{1 * VH_FACTOR}vh;
-      outline: none;
-      vertical-align: middle;
-      float: left;
-      border: none;
-      cursor: pointer;
-      transition: background-color .175s;
-      transition-timing-function: ease-out;
-      color: blue;
-    }
-    .settings_navigate_before {
-      float: left;
-      line-height: #{6 * VH_FACTOR}vh;
-      font-size: #{6 * FONT_FACTOR}rem;
-      color: blue;
-      cursor: pointer;
-    }
-    .settings_page_title {
-      position: absolute;
-      float: right;
-    }
     #log_out_btn {
       display: inline-block;
       width: 100%;
@@ -680,6 +619,67 @@ print %(
     }
     .timepicker-options:hover {
       background-color: #EEEEEE;
+    }
+    .sessions_page_header {
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      //margin-top: #{0.5 * VH_FACTOR}vh;
+    }
+    .settings_btn {
+      display: inline-block;
+      width: #{100 - (6 * VW_FACTOR)}vw;
+      height: #{5.25 * VH_FACTOR}vh;
+      font-size: #{2.25 * FONT_FACTOR}rem;
+      outline: none;
+      text-align: left;
+      line-height: #{5.25 * VH_FACTOR}vh;
+      padding-left: #{6 * VW_FACTOR}vw;
+
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-top-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+ 
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      color: black;
+    }
+    .settings_btn:hover, #log_out_btn:hover {
+      background-color: #f1fff1;
+    }
+    .settings_btn:active, #log_out_btn:active {
+      background-color: #e5ffe5;
+    }
+    .settings_navigate_next {
+      font-size: #{4.2 * FONT_FACTOR}rem;
+      float: right;
+      line-height: #{5.25 * VH_FACTOR}vh;
+      margin-right: #{4 * VW_FACTOR}vw;
+      color: #616161;
+      cursor: pointer;
+    }
+    .settings_navigate_before {
+      float:left;
+      margin-left: #{4 * VW_FACTOR}vw;
+      line-height: #{6 * VH_FACTOR}vh;
+      font-size: #{4.2 * FONT_FACTOR}rem;
+      color: #0F82FF;
+      cursor: pointer;
+      vertical-align: middle;
+      display:inline-block;
+    }
+    .settings_page_title {
+      text-align: center;
+      font-size: #{4 * FONT_FACTOR}rem;
+      line-height: #{6 * VH_FACTOR}vh;
+      float:left;
+      vertical-align: middle;
+      margin-left: #{7 * VW_FACTOR}vw;
     }
   </style>
 </html>
