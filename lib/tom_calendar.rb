@@ -120,6 +120,16 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
     google_credentials.refresh!
     return false if google_credentials.expired?
 
+    # update the item
+    item['last_updated'] = Time.now.to_s
+
+    session_params = {
+      table_name: 'Sessions',
+      item: item
+    }
+
+    dynamodb.put_item(session_params)
+
     return true
   rescue Exception => e
     #error = "#{e.message}:#{e.backtrace.inspect}"

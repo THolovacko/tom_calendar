@@ -29,7 +29,7 @@ begin
 
   session_params = {
     table_name: 'Sessions',
-    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s }
+    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: ENV['HTTP_USER_AGENT'] }
   }
 
   dynamodb.put_item(session_params)

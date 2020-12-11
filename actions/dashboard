@@ -1,12 +1,7 @@
 #! /usr/bin/ruby
 
-# @remember: need more scalable border widths?
-# @remember: should make datepicker tooltip pretty
 # @remember: should download the jquery libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
-# @remember: change UI scale if desktop
-# @remember: use vh for font heights? (I've only been using vw's for font sizes)
-# @test:     sign out on mobile and confirm google api not deactivated
 # @test:     user agent detection on several platforms
 
 # @current: settings page
@@ -33,7 +28,8 @@ end
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
-VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
+VH_FACTOR   = IS_DESKTOP ? 1 : 1
+#VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
 FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
 SCALE       = IS_DESKTOP ? 0.6 : 1
 
@@ -81,6 +77,15 @@ print %(
           <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
           <div class="settings_page_title">Sessions</div>
         </div>
+        <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
+        <div class="session_widget">
+          <i class="material-icons md-36 session_icon">smartphone</i>
+          <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+          <span class="session_device_type">device</span>
+          <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
+          <span class="session_last_updated">Active now</span>
+          <div class="session_log_out">Log out</div>
+        </div>
       </div>
       <div class="page", id="deactivate_page">
         <div class="sessions_page_header">
@@ -120,7 +125,7 @@ print %(
         data: ''
       });
 
-      // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slighlty moved by default
+      // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slightly moved by default
       //document.getElementById("background").style.webkitFilter = "blur(4px)";
       //document.getElementById("background").style.webkitFilter = "blur(0px)";
     }
@@ -623,7 +628,7 @@ print %(
     .sessions_page_header {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      //margin-top: #{0.5 * VH_FACTOR}vh;
+      margin-top: #{0.75 * VH_FACTOR}vh;
     }
     .settings_btn {
       display: inline-block;
@@ -634,7 +639,6 @@ print %(
       text-align: left;
       line-height: #{5.25 * VH_FACTOR}vh;
       padding-left: #{6 * VW_FACTOR}vw;
-
       border-right-style: hidden;
       border-left-style: hidden;
       border-top-style: hidden;
@@ -642,7 +646,6 @@ print %(
       border-width: thin;
       border-color: #E8E8EB;
       border-radius: 0;
- 
       cursor: pointer;
       background-color: rgba(254, 255, 254, 1);
       transition: background-color .175s;
@@ -680,6 +683,44 @@ print %(
       float:left;
       vertical-align: middle;
       margin-left: #{7 * VW_FACTOR}vw;
+    }
+    .session_widget {
+      display: inline-block;
+      width: #{100 - (6 * VW_FACTOR)}vw;
+      height: #{7 * VH_FACTOR}vh;
+      font-size: #{2.25 * FONT_FACTOR}rem;
+      outline: none;
+      text-align: left;
+      line-height: #{7 * VH_FACTOR}vh;
+      padding-left: #{6 * VW_FACTOR}vw;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-top-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      background-color: rgba(254, 255, 254, 1);
+      color: black;
+    }
+    .material-icons.session_icon {
+      font-size: #{5.5 * FONT_FACTOR}rem;
+      vertical-align: middle;
+    }
+    .session_device_type {
+      font-size: #{2.25 * FONT_FACTOR}rem;
+    }
+    .session_last_updated {
+      font-size: #{1.75 * FONT_FACTOR}rem;
+      color: #757575;
+    }
+    .session_log_out {
+      display: inline-block;
+      font-size: #{2.25 * FONT_FACTOR}rem;
+      color: red;
+      float: right;
+      margin-right: #{8 * VW_FACTOR}vw;
+      cursor: pointer;
     }
   </style>
 </html>
