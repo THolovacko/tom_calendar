@@ -13,9 +13,22 @@ end
 
 session_id = JSON.parse(cookie_session_id)
 dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-result     = []
+result     = { deactivation_code: nil, sessions: [], current_session_index: nil }
 
-params = {
+deactivation_code_thread = Thread.new {
+  code = ''
+  5.times { code << rand(9).to_s }
+
+  deactivation_code_params = {
+    table_name: 'DeactivationCodes',
+    item: { google_id: session_id['google_id'], code: code, created_at: Time.now.to_s, attempts_made: 0 }
+  }
+
+  dynamodb.put_item(deactivation_code_params)
+  result[:deactivation_code] = code
+}
+
+sessions_params = {
     table_name: 'Sessions',
     key_condition_expression: "#gid = :google_id",
     expression_attribute_names: {
@@ -27,15 +40,20 @@ params = {
 }
 
 begin
-  query_result = dynamodb.query(params)
+  session_index = 0
+  query_result = dynamodb.query(sessions_params)
   query_result.items.each do |session|
-    result.push({
-      device_type: session['user_agent'],
-      last_updated: session['last_updated']
+    result[:current_session_index] = session_index if session['device_id'] == session_id['device_id']
+    result[:sessions].push({
+      device_type: session['user_agent'].match(/\((?<device>\w+)/)[:device],
+      last_active: calculate_time_passed_in_words(Time.parse(session['last_updated']))
     })
+    session_index = session_index + 1
   end
 rescue Aws::DynamoDB::Errors::ServiceError => error
   print StatusCodeStr::BAD_REQUEST
 end
 
+
+deactivation_code_thread.join
 print "Content-type: application/json\n\n#{result.to_json}"

@@ -115,6 +115,18 @@ print %(
               data: ''
             });
 
+            $.ajax({
+              type: 'POST',
+              url: 'https://tomcalendar.com/load_settings_data',
+              contentType: 'application/octet-stream; charset=utf-8',
+              success: function(result) {
+                // insert session html
+                console.log(result);
+              },
+              processData: false,
+              data: ''
+            });
+
             // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
             document.cookie = "session_id=;secure";

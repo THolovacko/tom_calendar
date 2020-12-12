@@ -136,3 +136,25 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
     return false
   end
 end
+
+def calculate_time_passed_in_words(previous_time)
+  seconds = Time.now - previous_time
+  return '1 second ago' if seconds < 2
+  return "#{seconds.to_i} seconds ago" if seconds < 60
+
+  minutes = seconds / 60
+  return '1 minute ago' if minutes < 2
+  return "#{minutes.to_i} minutes ago" if minutes < 60
+
+  hours = minutes / 60
+  return '1 hour ago' if hours < 2
+  return "#{hours.to_i} hours ago" if hours < 24
+
+  days = hours / 24
+  return '1 day ago' if days < 2
+  return "#{days.to_i} days ago" if days < 365
+
+  years = days / 365
+  return '1 year ago' if years < 2
+  return "#{years.to_i} years ago"
+end
