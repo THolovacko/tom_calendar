@@ -1,0 +1,41 @@
+#! /usr/bin/ruby
+
+require_relative '../lib/tom_calendar.rb'
+
+
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  print StatusCodeStr::BAD_REQUEST
+  return
+end
+
+session_id = JSON.parse(cookie_session_id)
+dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+result     = []
+
+params = {
+    table_name: 'Sessions',
+    key_condition_expression: "#gid = :google_id",
+    expression_attribute_names: {
+        "#gid" => "google_id"
+    },
+    expression_attribute_values: {
+        ":google_id" => session_id['google_id']
+    }
+}
+
+begin
+  query_result = dynamodb.query(params)
+  query_result.items.each do |session|
+    result.push({
+      device_type: session['user_agent'],
+      last_updated: session['last_updated']
+    })
+  end
+rescue Aws::DynamoDB::Errors::ServiceError => error
+  print StatusCodeStr::BAD_REQUEST
+end
+
+print "Content-type: application/json\n\n#{result.to_json}"

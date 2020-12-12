@@ -1,0 +1,5 @@
+*** Put things to do here that don't have code context ***
+
+@remember: protect system from any spamming of any backed request (from single user)
+@remember: look into general security protections
+@remember: each server needs to have region environment variable accuratley set in apache config

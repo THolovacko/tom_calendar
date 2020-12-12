@@ -136,6 +136,3 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
     return false
   end
 end
-
-
-
