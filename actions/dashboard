@@ -78,14 +78,6 @@ print %(
           <div class="settings_page_title">Sessions</div>
         </div>
         <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
-        <div class="session_widget">
-          <i class="material-icons md-36 session_icon">smartphone</i>
-          <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
-          <span class="session_device_type">device</span>
-          <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
-          <span class="session_last_updated">Active now</span>
-          <div class="session_log_out">Log out</div>
-        </div>
       </div>
       <div class="page", id="deactivate_page">
         <div class="sessions_page_header">
@@ -115,22 +107,46 @@ print %(
               data: ''
             });
 
-            $.ajax({
-              type: 'POST',
-              url: 'https://tomcalendar.com/load_settings_data',
-              contentType: 'application/octet-stream; charset=utf-8',
-              success: function(result) {
-                // insert session html
-                console.log(result);
-              },
-              processData: false,
-              data: ''
-            });
-
             // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
+          }
+        },
+        processData: false,
+        data: ''
+      });
+
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/load_settings_data',
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+          var sessions_page         = document.getElementById("sessions_page");
+          var sessions              = result['sessions'];
+          var current_session_index = result['current_session_index'];
+
+          var first_session = sessions[0];
+          sessions[0] = sessions[current_session_index];
+          sessions[current_session_index] = first_session;
+
+          let phone_regex = /phone|android/;
+          for(var i=0; i < sessions.length; i++) {
+            // @remember: need more robust device type checking for sessions
+            var session_icon_type = "smartphone";
+            if (sessions[i]['device_type'].toLowerCase().match(phone_regex) == null) {
+              session_icon_type = "computer";
+            }
+            sessions_page.insertAdjacentHTML("beforeend", `
+              <div class="session_widget">
+                <i class="material-icons md-36 session_icon">${session_icon_type}</i>
+                <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+                <span class="session_device_type">${sessions[i]['device_type']}</span>
+                <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
+                <span class="session_last_updated">${sessions[i]['last_active']}</span>
+                <div class="session_log_out">Log out</div>
+              </div>
+            `);
           }
         },
         processData: false,
