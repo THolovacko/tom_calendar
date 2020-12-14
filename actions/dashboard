@@ -145,11 +145,8 @@ print %(
               <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
               <span class="session_last_updated" style="color: green;">Active now</span>
             </div>
-            <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
           `);
           
-          // @remember: add button that logs out all other sessions
-
           for(var i=1; i < sessions.length; i++) {
             // @remember: need more robust device type checking for sessions
             session_icon_type = "smartphone";
@@ -167,6 +164,11 @@ print %(
               </div>
             `);
           }
+
+          sessions_page.insertAdjacentHTML("beforeend", `
+            <div style="margin-top:#{4 * VH_FACTOR}vh;"></div>
+            <div id="all_sessions_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="log_out_all_other_sessions();">Log out all other sessions</div>
+          `);
         },
         processData: false,
         data: ''
@@ -197,6 +199,17 @@ print %(
       });
       document.cookie = "session_id=;secure";
       window.location = "https://tomcalendar.com/";
+    }
+    function log_out_all_other_sessions() {
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/log_out_all_other_sessions',
+        contentType: 'application/octet-stream; charset=utf-8',
+        processData: false,
+        data: ''
+      });
+
+      // delete html stuff
     }
     function log_out_session(session_index) {
     }
@@ -776,6 +789,34 @@ print %(
       background-color: #f1fff1;
     }
     .session_log_out:active {
+      background-color: #e5ffe5;
+    }
+    #all_sessions_log_out {
+      display: inline-block;
+      width: 100%;
+      height: #{5 * VH_FACTOR}vh;
+      font-size: #{2 * FONT_FACTOR}rem;
+      font-weight: bold;
+      outline: none;
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      text-align: center;
+      line-height: #{5 * VH_FACTOR}vh;
+      color: #0F82FF;
+    }
+    #all_sessions_log_out:hover {
+      background-color: #f1fff1;
+    }
+    #all_sessions_log_out:active {
       background-color: #e5ffe5;
     }
   </style>
