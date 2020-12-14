@@ -14,9 +14,6 @@ end
 session_id = JSON.parse(cookie_session_id)
 dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
-
-
-######  delete all sessions that don't have session_id
 sessions_params = {
     table_name: 'Sessions',
     key_condition_expression: "#gid = :google_id",
@@ -31,10 +28,14 @@ sessions_params = {
 begin
   query_result = dynamodb.query(sessions_params)
   query_result.items.each do |session|
+    delete_params = {
+     table_name: 'Sessions',
+     key: { google_id: session['google_id'], device_id: session['device_id'] }
+    }
+    dynamodb.delete_item(delete_params) unless session['device_id'] == session_id['device_id']
   end
 rescue Aws::DynamoDB::Errors::ServiceError => error
   print StatusCodeStr::BAD_REQUEST
 end
-######
 
 print StatusCodeStr::OK

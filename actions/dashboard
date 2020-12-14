@@ -4,7 +4,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @test:     user agent detection on several platforms
 
-# @current: settings page
+# @current: settings page (individual session widget sign out)
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -138,7 +138,7 @@ print %(
           }
 
           sessions_page.insertAdjacentHTML("beforeend", `
-            <div class="session_widget">
+            <div class="session_widget" id="active_session_widget">
               <i class="material-icons md-36 session_icon">${session_icon_type}</i>
               <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
@@ -179,6 +179,14 @@ print %(
       //document.getElementById("background").style.webkitFilter = "blur(0px)";
     }
     function signOut() {
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/sign_out',
+        contentType: 'application/octet-stream; charset=utf-8',
+        processData: false,
+        async:       false,
+        data: ''
+      });
       document.cookie = "session_id=;secure";
       window.location = "https://tomcalendar.com/";
     }
@@ -209,7 +217,12 @@ print %(
         data: ''
       });
 
-      // delete html stuff
+      var all_session_widgets = document.getElementsByClassName("session_widget");
+      for(var i=0; i < all_session_widgets.length; i++){
+        if (all_session_widgets[i].id != "active_session_widget") {
+          all_session_widgets[i].remove();
+        }
+      }
     }
     function log_out_session(session_index) {
     }
