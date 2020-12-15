@@ -13,11 +13,13 @@ end
 
 session_id = JSON.parse(cookie_session_id)
 dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+device_id  = ARGF.first
+device_id  = session_id['device_id'] if device_id.nil? || (device_id == '') || (device_id == ' ')
 
 begin
   delete_params = {
    table_name: 'Sessions',
-   key: session_id
+   key: { google_id: session_id['google_id'], device_id: device_id }
   }
   dynamodb.delete_item(delete_params)
 rescue Aws::DynamoDB::Errors::ServiceError => error

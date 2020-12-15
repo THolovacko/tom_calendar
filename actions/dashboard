@@ -4,7 +4,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @test:     user agent detection on several platforms
 
-# @current: settings page (individual session widget sign out)
+# @current: settings page (deactivate page)
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -154,13 +154,13 @@ print %(
               session_icon_type = "computer";
             }
             sessions_page.insertAdjacentHTML("beforeend", `
-              <div class="session_widget">
+              <div class="session_widget" id=${sessions[i]['device_id']}>
                 <i class="material-icons md-36 session_icon">${session_icon_type}</i>
                 <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
                 <span class="session_device_type">${sessions[i]['device_type']}</span>
                 <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
                 <span class="session_last_updated">${sessions[i]['last_active']}</span>
-                <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="log_out_session(i);">Log out</div>
+                <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="log_out_session('${sessions[i]['device_id']}');">Log out</div>
               </div>
             `);
           }
@@ -225,6 +225,16 @@ print %(
       }
     }
     function log_out_session(session_index) {
+      $.ajax({
+        type: 'POST',
+        url: 'https://tomcalendar.com/sign_out',
+        contentType: 'application/octet-stream; charset=utf-8',
+        processData: false,
+        data: session_index
+      });
+
+      var session_widget = document.getElementById(session_index);
+      session_widget.remove();
     }
     function onNavIconSelect(nav_icon_id) {
       unactivateAllNavIcons();
