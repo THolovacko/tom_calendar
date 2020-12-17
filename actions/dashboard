@@ -184,11 +184,14 @@ print %(
         url: 'https://tomcalendar.com/sign_out',
         contentType: 'application/octet-stream; charset=utf-8',
         processData: false,
-        async:       false,
+        success: function(result) {
+          document.cookie = "session_id=;secure";
+          window.location = "https://tomcalendar.com/";
+        },
         data: ''
       });
-      document.cookie = "session_id=;secure";
-      window.location = "https://tomcalendar.com/";
+
+      document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
     function confirmRevoke() {
       if (window.confirm("Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?")) {
@@ -202,13 +205,22 @@ print %(
         url: 'https://tomcalendar.com/delete_tomcalendar',
         contentType: 'application/octet-stream; charset=utf-8',
         processData: false,
-        async:       false,
         data: ''
       });
       document.cookie = "session_id=;secure";
       window.location = "https://tomcalendar.com/";
     }
     function log_out_all_other_sessions() {
+      var all_session_widgets = document.getElementsByClassName("session_widget");
+      var non_active_session_widget_ids = [];
+      for(var i=0; i < all_session_widgets.length; i++) {
+        if (all_session_widgets[i].id != "active_session_widget") {
+          non_active_session_widget_ids.push(all_session_widgets[i].id);
+        }
+      }
+      for(var i=0; i < non_active_session_widget_ids.length; i++) {
+        document.getElementById(non_active_session_widget_ids[i]).remove();
+      }
       $.ajax({
         type: 'POST',
         url: 'https://tomcalendar.com/log_out_all_other_sessions',
@@ -216,13 +228,6 @@ print %(
         processData: false,
         data: ''
       });
-
-      var all_session_widgets = document.getElementsByClassName("session_widget");
-      for(var i=0; i < all_session_widgets.length; i++){
-        if (all_session_widgets[i].id != "active_session_widget") {
-          all_session_widgets[i].remove();
-        }
-      }
     }
     function log_out_session(session_index) {
       $.ajax({
@@ -338,8 +343,9 @@ print %(
       left: 0;
     }
     #background {
-      transition: all .175s;
       border: none;
+      transition: all 5s;
+      //transition: all .175s;
     }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
