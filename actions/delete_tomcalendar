@@ -17,7 +17,27 @@ google_id             = session_id['google_id']
 google_authorizer     = get_google_authorizer(dynamodb)
 service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(google_id)
+code                  = ARGF.first.to_s
 service.client_options.application_name = 'TomCalendar'.freeze
+
+# validate code
+begin
+  params = {
+    table_name: 'DeactivationCodes',
+    key: { google_id: google_id }
+  }
+
+  result_item = dynamodb.get_item(params)&.item || {}
+  valid_code = result_item['code']
+rescue Exception => e
+  print StatusCodeStr::error_message(e.message)
+  return
+end
+
+unless code == valid_code
+  print StatusCodeStr::BAD_REQUEST
+  return
+end
 
 google_authorizer.revoke_authorization(google_id)
 

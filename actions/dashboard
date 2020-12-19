@@ -69,7 +69,7 @@ print %(
         <h1 style="text-align:left;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
-        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
@@ -82,7 +82,7 @@ print %(
       <div class="page", id="deactivate_page">
         <div class="sessions_page_header">
           <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
-          <div class="settings_page_title">Deactivate</div>
+          <div class="settings_page_title">Deactivate account</div>
         </div>
       </div>
     </div>
@@ -122,6 +122,7 @@ print %(
         url: 'https://tomcalendar.com/load_settings_data',
         contentType: 'application/octet-stream; charset=utf-8',
         success: function(result) {
+          var deactivate_page       = document.getElementById("deactivate_page");
           var sessions_page         = document.getElementById("sessions_page");
           var sessions              = result['sessions'];
           var current_session_index = result['current_session_index'];
@@ -169,6 +170,15 @@ print %(
             <div style="margin-top:#{4 * VH_FACTOR}vh;"></div>
             <div id="all_sessions_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="log_out_all_other_sessions();">Log out all other sessions</div>
           `);
+
+          deactivate_page.insertAdjacentHTML("beforeend", `
+            <p>
+              You CAN NOT restore your TomCalendar account after deactivation.
+              Some account information may still be available in search engines, such as Google or Bing.
+              All Tomcalendar events in your Google Calendar will be deleted.
+            </p>
+            <div id="deactivate_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="confirmRevoke('${result['deactivation_code']}');">Deactivate my account</div>
+          `);
         },
         processData: false,
         data: ''
@@ -193,19 +203,19 @@ print %(
 
       document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
-    function confirmRevoke() {
+    function confirmRevoke(code) {
       if (window.confirm("Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?")) {
-        revoke();
+        revoke(code);
       }
     }
-    function revoke() {
+    function revoke(code) {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
       $.ajax({
         type: 'POST',
         url: 'https://tomcalendar.com/delete_tomcalendar',
         contentType: 'application/octet-stream; charset=utf-8',
         processData: false,
-        data: ''
+        data: code
       });
       document.cookie = "session_id=;secure";
       window.location = "https://tomcalendar.com/";
@@ -847,6 +857,17 @@ print %(
     }
     #all_sessions_log_out:active {
       background-color: #e5ffe5;
+    }
+    #deactivate_btn {
+      display: inline-block;
+      height: #{5 * VH_FACTOR}vh;
+      font-size: #{2 * FONT_FACTOR}rem;
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+      text-align: center;
+      line-height: #{5 * VH_FACTOR}vh;
+      color: #0F82FF;
     }
   </style>
 </html>
