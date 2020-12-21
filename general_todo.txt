@@ -4,3 +4,4 @@
 @remember: look into general security protections
 @remember: each server needs to have region environment variable accuratley set in apache config
 @remember: see if anything might need to be paginated
+@remember: if a margin or size shouldn't be stretchable then don't use vw and vh factor stuff?

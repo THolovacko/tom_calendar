@@ -95,6 +95,11 @@ print %(
       </div>
     </div>
   </body>
+  <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
+  <div id="create_form">
+    <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
+    <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
+  </div>
   <script>
     var current_settings_page = "settings";
 
@@ -269,23 +274,21 @@ print %(
       page.style.display = "block";
     }
     function onCreate() {
-      //document.getElementById("background").style.webkitFilter = "blur(4px)";
       var create_form = document.getElementById("create_form");
-      var create_form_close_layer = document.getElementById("create_form_close_layer");
-      create_form_close_layer.style.display = "block";
+      var popup_close_layer = document.getElementById("popup_close_layer");
+      popup_close_layer.style.display = "block";
       create_form.style.display = "block";
     }
     function onCreateClose() {
-      //document.getElementById("background").style.webkitFilter = "blur(0px)";
       var create_form = document.getElementById("create_form");
-      var create_form_close_layer = document.getElementById("create_form_close_layer");
-      create_form_close_layer.style.display = "none";
+      var popup_close_layer = document.getElementById("popup_close_layer");
+      popup_close_layer.style.display = "none";
       create_form.style.display = "none";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
       for(var i = 0; i < all_nav_icons.length; i++){
-        all_nav_icons[i].style.color = "rgba(0, 0, 0, .7)";
+        all_nav_icons[i].style.color = "rgba(0, 0, 0, .6)";
       }
     }
     function unactivateAllPages() {
@@ -360,27 +363,32 @@ print %(
       width: #{12 * VW_FACTOR}vw;
       display: inline-block;
     }
-    .create_form {
+    #create_form {
       display: none;
       position: fixed;
-      width: 70%;
-      margin-top: 100px;
+      width: #{( IS_DESKTOP ? '80' : '100' )}%;
+      height: #{( IS_DESKTOP ? '80' : '100' )}%;
+      margin-top: #{( IS_DESKTOP ? '5' : '0' )}%;
+      margin-left: #{( IS_DESKTOP ? '10' : '0' )}%;
       text-align: center;
-      margin-left: 15%;
-      padding-bottom: 100px;
-      border: solid;
-      border-radius: 25px;
-      border-width: 1px;
+      border-radius: #{( IS_DESKTOP ? '25' : '0' )}px;
       border-color: white;
       background-color: white;
-
-      height: 50%; // testinggg
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
     }
-    .create_form_close_layer {
+    #popup_close_layer {
       display: none;
       width: 100%;
       height: 100%;
       position: fixed;
+      background-color: rgba(0, 0, 0, 0.5);
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
     }
     .page {
       display: none;
@@ -421,12 +429,12 @@ print %(
       transition-timing-function: ease-out;
     }
     .material-icons.create_close {
-      float: right;
-      margin-right: 16px;
-      margin-top: 16px;
+      float: left;
+      margin-left: #{3 * VW_FACTOR}vw;
+      margin-top: #{3 * VH_FACTOR}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: 40px;
+      font-size: #{4.35 * FONT_FACTOR}rem;
       color: #616161;
       padding: 4px;
     }
@@ -506,34 +514,29 @@ print %(
       margin-top: #{4 * VH_FACTOR}vh;
       color: #0F82FF;
     }
-    .event_form_title input[type=text] {
+    #create_form_title input[type=text] {
       float: left;
       border-top-style: hidden;
       border-right-style: hidden;
       border-left-style: hidden;
       border-bottom-style: solid;
-      border-bottom-width: thin;
+      border-bottom-width: 2px;
       border-bottom-color: #90CAF9;
       border-radius: 0;
-      width: 60%;
-      height: 64px;
-      font-size: 40px;
-      margin-top: 14px;
-      margin-left: 16px;
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      font-size: #{5 * FONT_FACTOR}rem;
+      margin-top: #{2 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
+      text-indent: #{12 * VW_FACTOR}vw;
     }
-    .event_form_title input[type=text]:focus {
+    #create_form_title input[type=text]:focus {
       border-color: #2962FF;
       outline: none;
-      border-width: 2px;
     }
-    .event_form_title input::placeholder {
+    #create_form_title input::placeholder {
       color: #757575;
-    }
-    .create_form_space {
-      width: 60%;
-      display: inline-block;
     }
     .event_datetime {
       margin: 0;
