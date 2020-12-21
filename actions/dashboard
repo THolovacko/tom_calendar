@@ -434,7 +434,7 @@ print %(
       background-color: #EEEEEE;
     }
     .material-icons.nav.create:hover {
-      background-color: #d9392b;
+      background-color: #EEEEEE;
     }
     .material-icons.search {
       float: left;
