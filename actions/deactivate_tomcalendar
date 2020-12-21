@@ -39,8 +39,6 @@ unless code == valid_code
   return
 end
 
-google_authorizer.revoke_authorization(google_id)
-
 # get google calendar id
 begin
   params = {
@@ -71,5 +69,33 @@ if google_calendar_id
     return
   end
 end
+
+# delete all sessions
+begin
+  sessions_params = {
+      table_name: 'Sessions',
+      key_condition_expression: "#gid = :google_id",
+      expression_attribute_names: {
+          "#gid" => "google_id"
+      },
+      expression_attribute_values: {
+          ":google_id" => google_id
+      }
+  }
+
+  query_result = dynamodb.query(sessions_params)
+  query_result.items.each do |session|
+    delete_params = {
+     table_name: 'Sessions',
+     key: { google_id: session['google_id'], device_id: session['device_id'] }
+    }
+    dynamodb.delete_item(delete_params)
+  end
+rescue Aws::DynamoDB::Errors::ServiceError => error
+  print StatusCodeStr::error_message(e.message)
+  return
+end
+
+google_authorizer.revoke_authorization(google_id)
 
 print StatusCodeStr::OK
