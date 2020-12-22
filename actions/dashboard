@@ -98,7 +98,9 @@ print %(
   <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
   <div id="create_form">
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
+    <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
+    <div id="start_date"><input type="text" id="datepicker" placeholder="Add start date"></div>
   </div>
   <script>
     var current_settings_page = "settings";
@@ -332,6 +334,19 @@ print %(
       document.getElementById("start_time").value = obj.value;
       closeTimepicker("start_timepicker");
     }
+    function saveEvent() {
+    }
+    $(function() {
+      $("#datepicker").datepicker({
+        dateFormat: "M d, yy",
+        dayNamesMin: [ "S","M","T","W","T","F","S" ],
+        duration: 0,
+        showOtherMonths: true,
+        beforeShow: function(input_element, obj) {
+          input_element.setSelectionRange(0,input_element.value.length);
+        }
+      });
+    });
   </script>
   <style>
     html {
@@ -428,20 +443,20 @@ print %(
       transition: background-color .175s;
       transition-timing-function: ease-out;
     }
+    .material-icons.nav.create:hover {
+      background-color: #EEEEEE;
+    }
     .material-icons.create_close {
       float: left;
-      margin-left: #{3 * VW_FACTOR}vw;
+      margin-left: #{4 * VW_FACTOR}vw;
       margin-top: #{3 * VH_FACTOR}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{4.35 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       color: #616161;
       padding: 4px;
     }
     .material-icons.create_close:hover {
-      background-color: #EEEEEE;
-    }
-    .material-icons.nav.create:hover {
       background-color: #EEEEEE;
     }
     .material-icons.search {
@@ -521,11 +536,11 @@ print %(
       border-left-style: hidden;
       border-bottom-style: solid;
       border-bottom-width: 2px;
-      border-bottom-color: #90CAF9;
+      border-bottom-color: #E8E8EB;
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      font-size: #{5 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       margin-top: #{2 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
@@ -543,12 +558,6 @@ print %(
       padding: 0;
       width: 60%;
     }
-    .start_date {
-      display: inline-block;
-      float: left;
-      margin-top: 24px;
-      margin-right: 16px;
-    }
     .event_datetime_text {
       display: inline-block;
       float: left;
@@ -559,27 +568,36 @@ print %(
       font-size: 15;
       color: #424242;
     }
-    .start_date input[type=text] {
-      border-width: .5px;
-      border-bottom-width: 2px;
-      border-color: #EEEEEE;
-      border-radius: 3px;
-      border-style: solid;
-      margin-left: 16px;
-      width: 128px;
-      height: 42px;
-      background-color: #EEEEEE;
-      color: #424242;
-      font-size: 18;
+    #start_date {
+      display: inline-block;
       float: left;
-      text-align: center;
+      margin-top: #{2 * VH_FACTOR}vh;
+      //margin-left: #{12 * VW_FACTOR}vw;
     }
-    .start_date input::placeholder {
+    #start_date input[type=text] {
+      //border-width: .5px;
+      //border-bottom-width: 2px;
+      //border-color: #EEEEEE;
+      //border-radius: 3px;
+      //border-style: solid;
+      border: none;
+      //margin-left: 16px;
+      width: #{64 * VW_FACTOR}vw;
+      height: #{4 * VH_FACTOR}vh;
+      background-color: white;
+      color: #424242;
+      //font-size: 18;
+      font-size: #{2.75 * FONT_FACTOR}rem;
+      float: left;
+      //text-align: center;
+      text-indent: #{12 * VW_FACTOR}vw;
+    }
+    #start_date input::placeholder {
       color: #757575;
     }
-    .start_date input[type=text]:focus {
+    #start_date input[type=text]:focus {
       outline: none;
-      border-bottom-color: #2962FF;
+      //border-bottom-color: #2962FF;
     }
     .start_time, .end_time {
       display: inline-block;
@@ -870,6 +888,26 @@ print %(
       text-align: center;
       line-height: #{5 * VH_FACTOR}vh;
       color: #0F82FF;
+    }
+    #save_event_btn {
+      float: right;
+      background-color: #1A73E8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      height: #{4 * VH_FACTOR}vh;
+      line-height: #{4 * VH_FACTOR}vh;
+      width: #{16 * VW_FACTOR}vw;
+      font-size: #{2 * FONT_FACTOR}rem;
+      text-align: center;
+      margin-right: #{5.25 * VW_FACTOR}vw;
+      margin-top: #{2.4 * VH_FACTOR}vh;
+      cursor: pointer;
+      outline: none;
+      font-weight: bold;
+    }
+    #save_event_btn:hover {
+      background-color: #3986eb;
     }
   </style>
 </html>
