@@ -114,8 +114,8 @@ print %(
         success: function(result) {
           var today_time = new Date().getTime();
           var expiration_date = new Date();
-          expiration_date.setTime(today_time + (1000 *31536000));
-          document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toGMTString() +";secure";
+          expiration_date.setTime(today_time + (31 * 86400000));
+          document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toUTCString() +";secure";
           window.location = "https://tomcalendar.com/dashboard";
         },
         error: function(result) {

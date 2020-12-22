@@ -112,7 +112,7 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     item = dynamodb.get_item(params).item
 
-    # @remember: should occasionally reset password hash?
+    # @remember: should occasionally reset password hash? (Safari mobile might set max cookie expiration time to 24 hours, so maybe help with reseting each time)
 
     return false unless item
     google_authorizer = get_google_authorizer(dynamodb)
@@ -132,7 +132,6 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     return true
   rescue Exception => e
-    #error = "#{e.message}:#{e.backtrace.inspect}"
     return false
   end
 end

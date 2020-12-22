@@ -540,11 +540,12 @@ print %(
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
       margin-top: #{2 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
-      text-indent: #{12 * VW_FACTOR}vw;
+      //text-indent: #{12 * VW_FACTOR}vw;
+      text-align: center;
     }
     #create_form_title input[type=text]:focus {
       border-color: #2962FF;
@@ -572,25 +573,16 @@ print %(
       display: inline-block;
       float: left;
       margin-top: #{2 * VH_FACTOR}vh;
-      //margin-left: #{12 * VW_FACTOR}vw;
+      margin-left: #{14 * VW_FACTOR}vw;
     }
     #start_date input[type=text] {
-      //border-width: .5px;
-      //border-bottom-width: 2px;
-      //border-color: #EEEEEE;
-      //border-radius: 3px;
-      //border-style: solid;
       border: none;
-      //margin-left: 16px;
-      width: #{64 * VW_FACTOR}vw;
+      width: #{32 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
-      //font-size: 18;
-      font-size: #{2.75 * FONT_FACTOR}rem;
+      font-size: #{2.5 * FONT_FACTOR}rem;
       float: left;
-      //text-align: center;
-      text-indent: #{12 * VW_FACTOR}vw;
     }
     #start_date input::placeholder {
       color: #757575;
