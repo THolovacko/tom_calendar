@@ -38,7 +38,6 @@ print %(
   <head>
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
   </head>
@@ -71,26 +70,25 @@ print %(
         'onsuccess': onSuccess,
         'onfailure': onFailure
       });
-      document.addEventListener("click",disableAllClickEvents,true);  // preventing google api button from doing anything, just using it for aesthetics
+      document.addEventListener("click",disableAllClickEvents,true);  // preventing google api button from doing anything, just using google button for aesthetics
 
       if (authorization_code) {
         onSignIn(authorization_code);
       }
       else {
         // get authorization url
-        $.ajax({
-          type: 'POST',
-          url: 'https://tomcalendar.com/generate_authorization_url',
-          contentType: 'application/octet-stream; charset=utf-8',
-          success: function(result) {
-            authorization_url = result;
-            console.log(authorization_url)
-          },
-          error: function(result) {
-          },
-          processData: false,
-          data: ''
-        });
+        var http = new XMLHttpRequest();
+        http.open('POST', 'generate_authorization_url', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.onload = function() {
+          if(http.status == 200) {
+            authorization_url = http.responseText;
+          }
+          else {
+            // @remember: handle error
+          }
+        }
+        http.send('');
       }
     }
     function disableAllClickEvents(e) {
@@ -107,24 +105,23 @@ print %(
       // function has to exist for google api button to be rendered
     }
     function onSignIn(auth_code) {
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/authorize_gmail',
-        contentType: 'application/octet-stream; charset=utf-8',
-        success: function(result) {
+      var http = new XMLHttpRequest();
+      http.open('POST', 'authorize_gmail', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
+          result = http.responseText;
           var today_time = new Date().getTime();
           var expiration_date = new Date();
           expiration_date.setTime(today_time + (31 * 86400000));
-          document.cookie = "session_id=" + JSON.stringify(result) + ";expires=" + expiration_date.toUTCString() +";secure";
+          document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() +";secure";
           window.location = "https://tomcalendar.com/dashboard";
-        },
-        error: function(result) {
-          // @remember: more detailed error handling
-        },
-        processData: false,
-        data: auth_code
-      });
-
+        }
+        else {
+          // @remember: handle error
+        }
+      }
+      http.send(auth_code);
       document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
   </script>

@@ -39,9 +39,9 @@ print %(
 <html lang="en">
   <title>Dashboard</title>
   <head>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
@@ -100,7 +100,7 @@ print %(
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
     <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
-    <div id="start_date"><input type="text" id="datepicker" placeholder="Add start date"></div>
+    <div id="start_date"><input type="text" id="start_datepicker" placeholder="Add start date"></div>
   </div>
   <script>
     var current_settings_page = "settings";
@@ -193,10 +193,6 @@ print %(
         processData: false,
         data: ''
       });
-
-      // @remember: this is a fix for blur moving around stuff when blurred then not moving them back, so things should be slightly moved by default
-      //document.getElementById("background").style.webkitFilter = "blur(4px)";
-      //document.getElementById("background").style.webkitFilter = "blur(0px)";
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -312,27 +308,6 @@ print %(
       current_settings_page = "deactivate";
       var deactivate_page = document.getElementById("deactivate_page");
       deactivate_page.style.display = "block";
-    }
-    $("#datepicker").datepicker({
-      dateFormat: "M d, yy",
-      dayNamesMin: [ "S","M","T","W","T","F","S" ],
-      duration: 0,
-      showOtherMonths: true,
-      beforeShow: function(input_element, obj) {
-        input_element.setSelectionRange(0,input_element.value.length);
-      }
-    });
-    function showTimepicker(timepicker_id) {
-      var timepicker = document.getElementById(timepicker_id);
-      timepicker.style.display = "block";
-    }
-    function closeTimepicker(timepicker_id) {
-      var timepicker = document.getElementById(timepicker_id);
-      timepicker.style.display = "none";
-    }
-    function onStartTimepickerChange(obj) {
-      document.getElementById("start_time").value = obj.value;
-      closeTimepicker("start_timepicker");
     }
     function saveEvent() {
       // save stuff
@@ -581,145 +556,6 @@ print %(
     }
     #start_date input[type=text]:focus {
       outline: none;
-    }
-    .start_time, .end_time {
-      display: inline-block;
-      float: left;
-      margin-top: 24px;
-      margin-left: 0;
-      margin-right: 0;
-    }
-    .start_time input[type=text], .end_time input[type=text] {
-      border-width: .5px;
-      border-bottom-width: 2px;
-      border-color: #EEEEEE;
-      border-radius: 3px;
-      border-style: solid;
-      width: 98px;
-      height: 42px;
-      background-color: #EEEEEE;
-      color: #424242;
-      font-size: 18;
-      float: left;
-      text-align: center;
-    }
-    .start_time input[type=text]:focus, .end_time input[type=text]:focus {
-      outline: none;
-      border-bottom-color: #2962FF;
-    }
-    .ui-datepicker {
-      background-color: white;
-      margin-top: 8px;
-      width: #{82 * VW_FACTOR}vw;
-    }
-    .ui-datepicker a {
-      text-decoration: none;
-    }
-    .ui-datepicker table {
-      width: 100%;
-      height: #{24 * VH_FACTOR}vh;
-      text-align: left;
-    }
-    .ui-datepicker-header {
-      margin-bottom: #{2 * VH_FACTOR}vh;
-      text-align: left;
-    }
-    .ui-datepicker-title {
-      float: left;
-      color: #424242;
-      cursor: default;
-      font-size: #{2.75 * FONT_FACTOR}rem;
-    }
-    .ui-datepicker-prev, .ui-datepicker-next {
-      display: inline-block;
-      cursor: pointer;
-      color: transparent;
-      border-color: black;
-      height: #{3 * VH_FACTOR}vh;
-      width: #{6 * VW_FACTOR}vw;
-      font-size: 0px;
-      border-radius: 50px;
-      background-repeat: no-repeat;
-      background-size: 92%;
-    }
-    .ui-datepicker-prev {
-      background-image: url('https://tomcalendar.com/public/prev_arrow.png');
-      margin-left: 25%;
-      margin-right: 1.25%;
-      background-position: left 1px;
-    }
-    .ui-datepicker-next {
-      background-image: url('https://tomcalendar.com/public/next_arrow.png');
-      margin-right: 7.5%;
-      background-position: right 1px;
-    }
-    .ui-datepicker-prev:hover, .ui-datepicker-next:hover {
-      background-color: #EEEEEE;
-      text-decoration: none;
-    }
-    .ui-datepicker th {
-      font-size: 14px;
-      color: #9E9E9E;
-      font-weight: normal;
-      cursor: default;
-      padding-bottom: 8px;
-    }
-    .ui-datepicker td span, .ui-datepicker td a {
-      display: inline-block;
-      width: 28px;
-      height: 28px;
-      line-height: 28px;
-      text-align: center;
-      border-radius: 50px;
-      font-size: 14px;
-      color: #616161;
-    }
-    .ui-datepicker-unselectable .ui-state-default {
-      color: #9E9E9E;
-      cursor: default;
-    }
-    .ui-datepicker-calendar .ui-state-hover {
-      background-color: #EEEEEE;
-    }
-    .ui-datepicker-calendar .ui-state-active {
-      background-color: #BBDEFB;
-      color: #2962FF;
-    }
-    .ui-datepicker-today .ui-state-default {
-      color: white;
-      background-color: #2962FF;
-    }
-    .timepicker {
-      display: none;
-      overflow-y: auto;
-      position: absolute;
-      margin-top: 50px;
-      box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, .4);
-      border-radius: 2px;
-    }
-    .timepicker select {
-      border-width: .5px;
-      border-bottom-width: 2px;
-      border-color: white;
-      border-radius: 3px;
-      border-style: solid;
-      width: 220px;
-      background-color: white;
-      color: #424242;
-      font-size: 18;
-      text-align: left;
-    }
-    .timepicker select:focus {
-      outline: none;
-    }
-    .timepicker-options {
-      padding-left: 12px;
-      padding-top: 12px;
-      padding-bottom: 12px;
-      color: #424242;
-    }
-    .timepicker-options:hover {
-      background-color: #EEEEEE;
     }
     .sessions_page_header {
       width: 100%;

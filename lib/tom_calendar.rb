@@ -112,8 +112,7 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     item = dynamodb.get_item(params).item
 
-    # @remember: should occasionally reset password hash? (Safari mobile might set max cookie expiration time to 24 hours, so maybe help with reseting each time)
-
+    # @test: safari mobile has max 24 hours cookie lifetime (might need to rethink session id and passwords etc.)
     return false unless item
     google_authorizer = get_google_authorizer(dynamodb)
     google_credentials = google_authorizer.get_credentials(item['google_id'])
