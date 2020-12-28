@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-# @remember: should download the jquery libs locally (maybe concatenate?)
+# @remember: should download the header link libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @test:     user agent detection on several platforms
 
@@ -29,7 +29,6 @@ user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
-#VH_FACTOR   = IS_DESKTOP ? 0.93 : 1
 FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
 SCALE       = IS_DESKTOP ? 0.6 : 1
 
@@ -39,9 +38,6 @@ print %(
 <html lang="en">
   <title>Dashboard</title>
   <head>
-    <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
   </head>
@@ -106,37 +102,37 @@ print %(
     var current_settings_page = "settings";
 
     function init() {
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/validate_tokens_and_load_initial_content',
-        contentType: 'application/octet-stream; charset=utf-8',
-        success: function(result) {
+      var http = new XMLHttpRequest();
+      http.open('POST', 'validate_tokens_and_load_initial_content', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
+          result = JSON.parse(http.responseText);
+
           if (result["is_valid"]) {
             // handle initial data load
-
-            $.ajax({
-              type: 'POST',
-              url: 'https://tomcalendar.com/create_tomcalendar_if_needed',
-              contentType: 'application/octet-stream; charset=utf-8',
-              processData: false,
-              data: ''
-            });
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'create_tomcalendar_if_needed', true);
+            xhr.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+            xhr.send('');
 
             // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
           }
-        },
-        processData: false,
-        data: ''
-      });
+        }
+      }
+      http.send('');
 
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/load_settings_data',
-        contentType: 'application/octet-stream; charset=utf-8',
-        success: function(result) {
+      var request = new XMLHttpRequest();
+      request.open('POST', 'load_settings_data', true);
+      request.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      request.onload = function() {
+        if(request.status == 200) {
+          result = JSON.parse(request.responseText);
+
           var deactivate_page       = document.getElementById("deactivate_page");
           var sessions_page         = document.getElementById("sessions_page");
           var sessions              = result['sessions'];
@@ -189,39 +185,36 @@ print %(
           deactivate_page.insertAdjacentHTML("beforeend", `
             <div id="deactivate_btn" style="margin-top:#{2 * VH_FACTOR}vh;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="confirmRevoke('${result['deactivation_code']}');">Deactivate my account</div>
           `);
-        },
-        processData: false,
-        data: ''
-      });
+        }
+      }
+      request.send('');
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/sign_out',
-        contentType: 'application/octet-stream; charset=utf-8',
-        processData: false,
-        success: function(result) {
+      var http = new XMLHttpRequest();
+      http.open('POST', 'sign_out', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
           document.cookie = "session_id=;secure";
           window.location = "https://tomcalendar.com/";
-        },
-        data: ''
-      });
+        }
+      }
+      http.send('');
     }
     function confirmRevoke(code) {
       if (window.confirm("Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?")) {
         document.getElementById("background").style.webkitFilter = "blur(100px)";
-        $.ajax({
-          type: 'POST',
-          url: 'https://tomcalendar.com/deactivate_tomcalendar',
-          contentType: 'application/octet-stream; charset=utf-8',
-          processData: false,
-          success: function(result) {
+        var http = new XMLHttpRequest();
+        http.open('POST', 'deactivate_tomcalendar', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.onload = function() {
+          if(http.status == 200) {
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
-          },
-          data: code
-        });
+          }
+        }
+        http.send(code);
       }
     }
     function logOutAllOtherSessions() {
@@ -235,22 +228,18 @@ print %(
       for(var i=0; i < non_active_session_widget_ids.length; i++) {
         document.getElementById(non_active_session_widget_ids[i]).remove();
       }
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/log_out_all_other_sessions',
-        contentType: 'application/octet-stream; charset=utf-8',
-        processData: false,
-        data: ''
-      });
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'log_out_all_other_sessions', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.send('');
     }
     function logOutSession(session_index) {
-      $.ajax({
-        type: 'POST',
-        url: 'https://tomcalendar.com/sign_out',
-        contentType: 'application/octet-stream; charset=utf-8',
-        processData: false,
-        data: session_index
-      });
+      var http = new XMLHttpRequest();
+      http.open('POST', 'sign_out', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.send(session_index);
+      
       var session_widget = document.getElementById(session_index);
       session_widget.remove();
     }

@@ -1,8 +1,7 @@
 *** Put things to do here that don't have code context ***
 
-@remember: protect system from any spamming of any backed request (from single user)
+@remember: protect system from any spamming of any backend request (from single user)
 @remember: look into general security protections
 @remember: each server needs to have region environment variable accuratley set in apache config
 @remember: see if anything might need to be paginated
 @remember: if a margin or size shouldn't be stretchable then don't use vw and vh factor stuff?
-@remember: replace jquery ajax with XMLHttpRequest then should be able to avoid needing to load jquery
