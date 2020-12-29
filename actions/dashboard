@@ -98,9 +98,9 @@ print %(
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
     <div id="start_date"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
     <div class="date_wheel_picker" id="start_date_picker">
-      <ul class="month_wheel" id="start_month_wheel"><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li></ul>
-      <ul class="day_wheel" id="start_day_wheel"><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li></ul>
-      <ul class="year_wheel" id="start_year_wheel"><li>TBD</li></ul>
+      <ul class="month_wheel" id="start_month_wheel"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+      <ul class="day_wheel" id="start_day_wheel"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+      <ul class="year_wheel" id="start_year_wheel"><li></li><li>TBD</li></ul>
     </div>
   </div>
   <script>
@@ -197,11 +197,14 @@ print %(
 
       var start_year_wheel = document.getElementById("start_year_wheel");
       var current_year = new Date().getFullYear();
-      for(var i=current_year; i < (current_year + 11); i++) { 
+      for(var i=current_year; i < (current_year + 101); i++) { 
         start_year_wheel.insertAdjacentHTML("beforeend", `
           <li>${i}</li>
         `);
       }
+      start_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
 
       hideExtraDays();
     }
@@ -719,7 +722,7 @@ print %(
     }
     .date_wheel_picker {
       display: inline-block;
-      height: #{12 * VH_FACTOR}vh;
+      height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
     .month_wheel, .day_wheel, .year_wheel {
@@ -727,9 +730,7 @@ print %(
       height: 100%;
       overflow:hidden;
       overflow-y:scroll;
-      scroll-snap-type: mandatory;
       scroll-snap-type: y mandatory;
-      scroll-snap-points-y: repeat(#{2.25 * FONT_FACTOR}rem);
     }
     .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar {
       display: none;
@@ -745,9 +746,13 @@ print %(
     }
     .month_wheel li, .day_wheel li, .year_wheel li {
       list-style-type: none;
-      margin-bottom: #{2.5 * VH_FACTOR}vh;
+      padding-top: #{1.5 * VH_FACTOR}vh;
+      padding-bottom: #{1.5 * VH_FACTOR}vh;
       font-size: #{2.25 * FONT_FACTOR}rem;
       scroll-snap-align: start;
+      height: #{3 * VH_FACTOR}vh;
+      line-height: #{3 * VH_FACTOR}vh;
+      vertical-align: middle;
     }
   </style>
 </html>
