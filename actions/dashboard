@@ -96,7 +96,12 @@ print %(
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
     <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
-    <div id="start_date"><input type="text" id="start_datepicker" placeholder="Add start date"></div>
+    <div id="start_date"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
+    <div class="date_wheel_picker" id="start_date_picker">
+      <ul class="month_wheel" id="start_month_wheel"><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li></ul>
+      <ul class="day_wheel" id="start_day_wheel"><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li></ul>
+      <ul class="year_wheel" id="start_year_wheel"><li>TBD</li></ul>
+    </div>
   </div>
   <script>
     var current_settings_page = "settings";
@@ -188,6 +193,17 @@ print %(
         }
       }
       request.send('');
+
+
+      var start_year_wheel = document.getElementById("start_year_wheel");
+      var current_year = new Date().getFullYear();
+      for(var i=current_year; i < (current_year + 11); i++) { 
+        start_year_wheel.insertAdjacentHTML("beforeend", `
+          <li>${i}</li>
+        `);
+      }
+
+      hideExtraDays();
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -303,6 +319,13 @@ print %(
       // clear form
 
       onCreateClose();
+    }
+    function hideExtraDays() {
+      var start_year_wheel  = document.getElementById("start_day_wheel");
+      var start_month_wheel = document.getElementById("start_day_wheel");
+      var start_day_wheel   = document.getElementById("start_day_wheel");
+
+      //var last_day_in_month = new Date(2008, month + 1, 0);
     }
   </script>
   <style>
@@ -510,21 +533,6 @@ print %(
     #create_form_title input::placeholder {
       color: #757575;
     }
-    .event_datetime {
-      margin: 0;
-      padding: 0;
-      width: 60%;
-    }
-    .event_datetime_text {
-      display: inline-block;
-      float: left;
-      margin-top: 36px;
-      margin-left: 8px;
-      margin-right: 8px;
-      text-align: center;
-      font-size: 15;
-      color: #424242;
-    }
     #start_date {
       display: inline-block;
       float: left;
@@ -708,6 +716,38 @@ print %(
     }
     #save_event_btn:hover {
       background-color: #3986eb;
+    }
+    .date_wheel_picker {
+      display: inline-block;
+      height: #{12 * VH_FACTOR}vh;
+      width: 100%;
+    }
+    .month_wheel, .day_wheel, .year_wheel {
+      display: inline-block;
+      height: 100%;
+      overflow:hidden;
+      overflow-y:scroll;
+      scroll-snap-type: mandatory;
+      scroll-snap-type: y mandatory;
+      scroll-snap-points-y: repeat(#{2.25 * FONT_FACTOR}rem);
+    }
+    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar {
+      display: none;
+    }
+    .month_wheel {
+      width: #{24 * VW_FACTOR}vw;
+    }
+    .day_wheel {
+      width: #{12 * VW_FACTOR}vw;
+    }
+    .year_wheel {
+      width: #{24 * VW_FACTOR}vw;
+    }
+    .month_wheel li, .day_wheel li, .year_wheel li {
+      list-style-type: none;
+      margin-bottom: #{2.5 * VH_FACTOR}vh;
+      font-size: #{2.25 * FONT_FACTOR}rem;
+      scroll-snap-align: start;
     }
   </style>
 </html>
