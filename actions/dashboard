@@ -3,6 +3,7 @@
 # @remember: should download the header link libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: figure out how to scale radius?
+# @remember: need to double tap Add start date on create form????
 # @test:     user agent detection on several platforms
 
 # @current: create form
@@ -97,8 +98,8 @@ print %(
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
     <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
-    <div id="start_date"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
-    <div class="date_wheel_picker" id="start_date_picker">
+    <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
+    <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
       <div class="date_wheel_select_box_cover_bottom"></div>
@@ -340,11 +341,18 @@ print %(
 
       date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time
 
-      //var angle = 180 - (all_date_wheel_elements[index].offsetHeight - date_wheel.childNodes[0].offsetHeight);
-
-      //date_wheel.getElementsByTagName("li")[index - 1].style.transform = "rotateX(45deg)";
-      //date_wheel.getElementsByTagName("li")[index].style.transform = "rotateX(0deg)";
-      //date_wheel.getElementsByTagName("li")[index + 1].style.transform = "rotateX(45deg)";
+      //date_wheel.getElementsByTagName("li")[index - 1].style.transform = "rotateX(${ 90 * (date_wheel.scrollTop / all_date_wheel_elements[index - 1].offsetHeight) }deg)";
+    }
+    function toggleStartDate() {
+      var start_datepicker = document.getElementById("start_datepicker");
+      if (start_datepicker.style.display == "none") {
+        start_datepicker.style.display = "inline-block";
+      }
+      else {
+        start_datepicker.style.display = "none";
+      }
+      document.getElementById("create_form_title").blur();
+      start_datepicker.focus();
     }
   </script>
   <style>
@@ -557,10 +565,11 @@ print %(
       float: left;
       margin-top: #{2 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
+      cursor: pointer;
     }
     #start_date input[type=text] {
       border: none;
-      width: #{38 * VW_FACTOR}vw;
+      width: #{36 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
@@ -737,7 +746,8 @@ print %(
       background-color: #3986eb;
     }
     .date_wheel_picker {
-      display: inline-block;
+      //display: inline-block;
+      display: none;
       height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
@@ -801,6 +811,9 @@ print %(
       margin: auto;
       margin-top: #{13 * VH_FACTOR}vh;
       background-color: rgba(254, 255, 254, .5);
+      pointer-events:none;
+    }
+    #start_datepicker_txt {
       pointer-events:none;
     }
   </style>
