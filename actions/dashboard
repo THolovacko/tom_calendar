@@ -2,6 +2,7 @@
 
 # @remember: should download the header link libs locally (maybe concatenate?)
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
+# @remember: figure out how to scale radius?
 # @test:     user agent detection on several platforms
 
 # @current: create form
@@ -98,10 +99,12 @@ print %(
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
     <div id="start_date"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
     <div class="date_wheel_picker" id="start_date_picker">
+      <div class="date_wheel_select_box_cover_top"></div>
+      <div class="date_wheel_select_box"></div>
+      <div class="date_wheel_select_box_cover_bottom"></div>
       <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
       <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
       <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
-      <div class="date_wheel_select_box"></div>
     </div>
   </div>
   <script>
@@ -332,8 +335,16 @@ print %(
     }
     function onDateWheelScroll(id) {
       var date_wheel = document.getElementById(id);
-      var index = Math.ceil(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
-      date_wheel.setAttribute('data-selected-value', date_wheel.getElementsByTagName("li")[index].innerText); // @optimize: shouldn't need to query all li elements every time
+      var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+      var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
+
+      date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time
+
+      //var angle = 180 - (all_date_wheel_elements[index].offsetHeight - date_wheel.childNodes[0].offsetHeight);
+
+      //date_wheel.getElementsByTagName("li")[index - 1].style.transform = "rotateX(45deg)";
+      //date_wheel.getElementsByTagName("li")[index].style.transform = "rotateX(0deg)";
+      //date_wheel.getElementsByTagName("li")[index + 1].style.transform = "rotateX(45deg)";
     }
   </script>
   <style>
@@ -760,11 +771,37 @@ print %(
       vertical-align: middle;
     }
     .date_wheel_select_box {
-      width: 100%;
-      margin-bottom: #{7 * VH_FACTOR}vh;
+      width: 95%;
       height: #{6 * VH_FACTOR}vh;
       background-color: rgba(238, 238, 239, 1);
       position: absolute;
+      z-index: -1;
+      border-radius: 16px;
+      right: 0;
+      left: 0;
+      margin: auto;
+      margin-top: #{7 * VH_FACTOR}vh;
+    }
+    .date_wheel_select_box_cover_top {
+      width: 100%;
+      height: #{7 * VH_FACTOR}vh;
+      position: absolute;
+      right: 0;
+      left: 0;
+      margin: auto;
+      background-color: rgba(254, 255, 254, .5);
+      pointer-events:none;
+    }
+    .date_wheel_select_box_cover_bottom {
+      width: 100%;
+      height: #{7 * VH_FACTOR}vh;
+      position: absolute;
+      right: 0;
+      left: 0;
+      margin: auto;
+      margin-top: #{13 * VH_FACTOR}vh;
+      background-color: rgba(254, 255, 254, .5);
+      pointer-events:none;
     }
   </style>
 </html>
