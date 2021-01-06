@@ -374,6 +374,7 @@ print %(
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
       date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
       hideExtraDays();
+      updateCreateFormDates();
     }
     function toggleStartDate() {
       var start_datepicker = document.getElementById("start_datepicker");
@@ -383,6 +384,35 @@ print %(
       else {
         start_datepicker.style.display = "none";
       }
+    }
+    function updateCreateFormDates() {
+      var start_datepicker_txt = document.getElementById("start_datepicker_txt");
+      var start_year = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
+      var start_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
+      var start_day = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
+
+      // @refactor
+      var date_str = "";
+      if (start_month && (start_month != "TBD")) {
+        if (start_day && (start_day != "TBD") && start_year && (start_year != "TBD")) {
+          date_str += start_month.slice(0,3);
+        }
+        else {
+          date_str += start_month;
+        }
+
+        if (start_day && (start_day != "TBD")) {
+          date_str += (' ' + start_day);
+        }
+      }
+      if (start_year && (start_year != "TBD")) {
+        if(start_month && (start_month != "TBD")) {
+          date_str += ', ';
+        }
+        date_str += start_year;
+      }
+
+      start_datepicker_txt.value = date_str;
     }
   </script>
   <style>
@@ -599,7 +629,7 @@ print %(
     }
     #start_date input[type=text] {
       border: none;
-      width: #{36 * VW_FACTOR}vw;
+      width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
