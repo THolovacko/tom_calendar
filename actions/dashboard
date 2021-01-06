@@ -350,9 +350,18 @@ print %(
           day_li.style.display = "none";
       }
 
-      if ( start_year && start_month && (start_year != "TBD") && (start_month != "TBD") ) {
-        var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
+      if ( start_month && (start_month != "TBD") ) {
+        if (!start_year || (start_year == "TBD")) {
+          if (start_month != "February") {
+            start_year = 2021;  // year is arbitrary
+          }
+          else
+          {
+            return;
+          }
+        }
 
+        var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
         for(var i=29; i <= last_day_in_month ; i++) {
           var day_li = document.getElementById("start_day_" + i);
           day_li.style.display = "block";
