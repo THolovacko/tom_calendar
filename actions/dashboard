@@ -4,6 +4,7 @@
 # @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: figure out how to scale radius?
 # @remember: need to double tap Add start date on create form????
+# @remember: replace click hooks on create form
 # @test:     user agent detection on several platforms
 
 # @current: create form
@@ -98,7 +99,7 @@ print %(
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
     <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
-    <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date"></div>
+    <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
     <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -110,6 +111,20 @@ print %(
   </div>
   <script>
     var current_settings_page = "settings";
+    var months = {
+      'January'   : '00',
+      'February'  : '01',
+      'March'     : '02',
+      'April'     : '03',
+      'May'       : '04',
+      'June'      : '05',
+      'July'      : '06',
+      'August'    : '07',
+      'September' : '08',
+      'October'   : '09',
+      'November'  : '10',
+      'December'  : '11'
+    }
 
     function init() {
       var http = new XMLHttpRequest();
@@ -309,14 +324,12 @@ print %(
     }
     function onViewSessions() {
       unactivateAllPages();
-
       current_settings_page = "sessions";
       var sessions_page = document.getElementById("sessions_page");
       sessions_page.style.display = "block";
     }
     function onDeactivate() {
       unactivateAllPages();
-
       current_settings_page = "deactivate";
       var deactivate_page = document.getElementById("deactivate_page");
       deactivate_page.style.display = "block";
@@ -328,31 +341,39 @@ print %(
       onCreateClose();
     }
     function hideExtraDays() {
-      var start_year_wheel  = document.getElementById("start_day_wheel");
-      var start_month_wheel = document.getElementById("start_day_wheel");
-      var start_day_wheel   = document.getElementById("start_day_wheel");
+      var start_year  = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
+      var start_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
+      var start_day   = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
 
-      //var last_day_in_month = new Date(2008, month + 1, 0);
+      for(var i=29; i <= 31 ; i++) {
+          var day_li = document.getElementById("start_day_" + i);
+          day_li.style.display = "none";
+      }
+
+      if ( start_year && start_month && (start_year != "TBD") && (start_month != "TBD") ) {
+        var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
+
+        for(var i=29; i <= last_day_in_month ; i++) {
+          var day_li = document.getElementById("start_day_" + i);
+          day_li.style.display = "block";
+        }
+      }
     }
     function onDateWheelScroll(id) {
       var date_wheel = document.getElementById(id);
       var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
-
-      date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time
-
-      //date_wheel.getElementsByTagName("li")[index - 1].style.transform = "rotateX(${ 90 * (date_wheel.scrollTop / all_date_wheel_elements[index - 1].offsetHeight) }deg)";
+      date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
+      hideExtraDays();
     }
     function toggleStartDate() {
       var start_datepicker = document.getElementById("start_datepicker");
-      if (start_datepicker.style.display == "none") {
+      if (start_datepicker.style.display != "inline-block") {
         start_datepicker.style.display = "inline-block";
       }
       else {
         start_datepicker.style.display = "none";
       }
-      document.getElementById("create_form_title").blur();
-      start_datepicker.focus();
     }
   </script>
   <style>
@@ -565,7 +586,7 @@ print %(
       float: left;
       margin-top: #{2 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
-      cursor: pointer;
+      z-index: 1;
     }
     #start_date input[type=text] {
       border: none;
@@ -746,7 +767,6 @@ print %(
       background-color: #3986eb;
     }
     .date_wheel_picker {
-      //display: inline-block;
       display: none;
       height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
@@ -779,6 +799,7 @@ print %(
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
       vertical-align: middle;
+      transition: transform .175s;
     }
     .date_wheel_select_box {
       width: 95%;
@@ -811,9 +832,6 @@ print %(
       margin: auto;
       margin-top: #{13 * VH_FACTOR}vh;
       background-color: rgba(254, 255, 254, .5);
-      pointer-events:none;
-    }
-    #start_datepicker_txt {
       pointer-events:none;
     }
   </style>
