@@ -35,6 +35,12 @@ VH_FACTOR   = IS_DESKTOP ? 1 : 1
 FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
 SCALE       = IS_DESKTOP ? 0.6 : 1
 
+#VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
+#VH_FACTOR   = IS_DESKTOP ? 1 : 1
+#FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
+#SCALE       = IS_DESKTOP ? 0.6 : 1
+
+
 # render dashboard
 print "Content-type: text/html\n\n"
 print %(
@@ -43,6 +49,7 @@ print %(
   <head>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body onload="onNavIconSelect('explore'); init();">
     <div id="background">
@@ -65,7 +72,7 @@ print %(
         <h1>profile</h1>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{6 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
+        <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
@@ -84,8 +91,8 @@ print %(
           <div class="settings_page_title">Deactivate account</div> 
         </div>
         <div style="text-align:left;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{2 * VH_FACTOR}vh;">
-          <h2 style="font-size:#{2.75 * FONT_FACTOR}rem;">This action is permanent</h2>
-          <ul style="font-size:#{2 * FONT_FACTOR}rem;">
+          <h2 style="font-size:#{4 * FONT_FACTOR}rem;">This action is permanent</h2>
+          <ul style="font-size:#{4 * FONT_FACTOR}rem;">
             <li>You CAN NOT restore your TomCalendar account after deactivation.</li>
             <li>Some account information may still be available in search engines, such as Google or Bing.</li>
             <li>All Tomcalendar events in your Google Calendar will be deleted.</li>
@@ -309,6 +316,16 @@ print %(
       var popup_close_layer = document.getElementById("popup_close_layer");
       popup_close_layer.style.display = "none";
       create_form.style.display = "none";
+
+
+      var create_form_title_input = document.getElementById("create_form_title_input");
+      create_form_title_input.blur();
+      create_form_title_input.value = "";
+      var start_datepicker = document.getElementById("start_datepicker");
+      if (start_datepicker.style != 'none') {
+        start_datepicker.style = 'none';
+        document.getElementById("start_datepicker_txt").value = "";
+      }
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -420,7 +437,7 @@ print %(
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
-      font-size: 16px;
+      font-size: 4px;
     }
     body {
       background-color: #FEFFFE;
@@ -485,8 +502,8 @@ print %(
     }
     .material-icons.nav {
       margin-top: #{1.5 * VH_FACTOR}vh;
-      margin-bottom: #{1 * VH_FACTOR}vh;
-      font-size: #{4.35 * FONT_FACTOR}rem;
+      margin-bottom: #{0.75 * VH_FACTOR}vh;
+      font-size: #{7.5 * FONT_FACTOR}rem;
       color: #000000;
       text-align: center;
       transition: color .175s;
@@ -500,7 +517,7 @@ print %(
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
-      border-width: medium;
+      border-width: #{0.5 * VW_FACTOR}vw;
       border-radius: 8%; 
       padding-right:  #{3 * VW_FACTOR}vw;
       margin-right:   #{9 * VW_FACTOR}vw;
@@ -519,7 +536,7 @@ print %(
       margin-top: #{3 * VH_FACTOR}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{8 * FONT_FACTOR}rem;
       color: #616161;
       padding: 4px;
     }
@@ -578,7 +595,7 @@ print %(
       display: inline-block;
       width: 100%;
       height: #{5.25 * VH_FACTOR}vh;
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       font-weight: bold;
       outline: none;
       border-top-style: solid;
@@ -607,7 +624,7 @@ print %(
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{8 * FONT_FACTOR}rem;
       margin-top: #{2 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
@@ -633,7 +650,7 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
-      font-size: #{2.75 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       float: left;
     }
     #start_date input::placeholder {
@@ -651,7 +668,7 @@ print %(
       display: inline-block;
       width: #{100 - (6 * VW_FACTOR)}vw;
       height: #{5.25 * VH_FACTOR}vh;
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       outline: none;
       text-align: left;
       line-height: #{5.25 * VH_FACTOR}vh;
@@ -676,7 +693,7 @@ print %(
       background-color: #e5ffe5;
     }
     .settings_navigate_next {
-      font-size: #{4.2 * FONT_FACTOR}rem;
+      font-size: #{8 * FONT_FACTOR}rem;
       float: right;
       line-height: #{5.25 * VH_FACTOR}vh;
       margin-right: #{4 * VW_FACTOR}vw;
@@ -687,7 +704,7 @@ print %(
       float:left;
       margin-left: #{4 * VW_FACTOR}vw;
       line-height: #{6 * VH_FACTOR}vh;
-      font-size: #{4.2 * FONT_FACTOR}rem;
+      font-size: #{8 * FONT_FACTOR}rem;
       color: #0F82FF;
       cursor: pointer;
       vertical-align: middle;
@@ -695,7 +712,7 @@ print %(
     }
     .settings_page_title {
       text-align: center;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{8 * FONT_FACTOR}rem;
       line-height: #{6 * VH_FACTOR}vh;
       float:left;
       vertical-align: middle;
@@ -705,7 +722,7 @@ print %(
       display: inline-block;
       width: #{100 - (6 * VW_FACTOR)}vw;
       height: #{7 * VH_FACTOR}vh;
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       outline: none;
       text-align: left;
       line-height: #{7 * VH_FACTOR}vh;
@@ -721,19 +738,19 @@ print %(
       color: black;
     }
     .material-icons.session_icon {
-      font-size: #{5.5 * FONT_FACTOR}rem;
+      font-size: #{10 * FONT_FACTOR}rem;
       vertical-align: middle;
     }
     .session_device_type {
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
     }
     .session_last_updated {
-      font-size: #{1.75 * FONT_FACTOR}rem;
+      font-size: #{3 * FONT_FACTOR}rem;
       color: #757575;
     }
     .session_log_out {
       display: inline-block;
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       color: red;
       float: right;
       padding-right: #{8 * VW_FACTOR}vw;
@@ -750,7 +767,7 @@ print %(
       display: inline-block;
       width: 100%;
       height: #{5 * VH_FACTOR}vh;
-      font-size: #{2 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       font-weight: bold;
       outline: none;
       border-top-style: solid;
@@ -777,7 +794,7 @@ print %(
     #deactivate_btn {
       display: inline-block;
       height: #{5 * VH_FACTOR}vh;
-      font-size: #{2 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       font-weight: bold;
       outline: none;
       cursor: pointer;
@@ -794,7 +811,7 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       line-height: #{4 * VH_FACTOR}vh;
       width: #{16 * VW_FACTOR}vw;
-      font-size: #{2 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       text-align: center;
       margin-right: #{5.25 * VW_FACTOR}vw;
       margin-top: #{2.4 * VH_FACTOR}vh;
@@ -833,7 +850,7 @@ print %(
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
-      font-size: #{2.25 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       scroll-snap-align: start;
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
