@@ -97,10 +97,11 @@ print %(
   </body>
   <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
   <div id="create_form">
-    <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose()">close</i>
-    <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="saveEvent()">Save</button>
+    <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
+    <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
     <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
+    <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartTime()"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
     <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -108,6 +109,14 @@ print %(
       <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
       <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
       <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
+    </div>
+    <div class="time_wheel_picker" id="start_timepicker">
+      <div class="time_wheel_select_box_cover_top"></div>
+      <div class="time_wheel_select_box"></div>
+      <div class="time_wheel_select_box_cover_bottom"></div>
+      <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+      <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+      <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
   </div>
   <script>
@@ -425,6 +434,44 @@ print %(
 
       start_datepicker_txt.value = date_str;
     }
+    function onTimeWheelScroll(id) {
+      var time_wheel = document.getElementById(id);
+      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+      var all_time_wheel_elements = date_wheel.getElementsByTagName("li");
+      time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
+      updateTimeFormDates();
+    }
+    function toggleStartTime() {
+      var start_timepicker = document.getElementById("start_timepicker");
+      if (start_timepicker.style.display != "inline-block") {
+        start_timepicker.style.display = "inline-block";
+      }
+      else {
+        start_timepicker.style.display = "none";
+      }
+    }
+    function updateTimeFormDates() {
+      var start_timepicker_txt = document.getElementById("start_timepicker_txt");
+      var start_hour = document.getElementById("start_hour_wheel").getAttribute('data-selected-value');
+      var start_minute = document.getElementById("start_minute_wheel").getAttribute('data-selected-value');
+      var start_period = document.getElementById("start_period_wheel").getAttribute('data-selected-value');
+
+      // @refactor
+      var time_str = "";
+
+      if (start_hour && (start_hour != "TBD")) {
+        time_str += start_hour;
+        if ( start_minute && (start_minute != "00") && (start_minute != "TBD")) {
+          time_str += ':';
+          time_str += start_minute;
+        }
+        if ( start_period && (start_period != "TBD")) {
+          time_str += ' ';
+          time_str += start_period;
+        }
+      }
+      start_timepicker_txt.value = time_str;
+    }
   </script>
   <style>
     html {
@@ -638,7 +685,14 @@ print %(
       margin-left: #{14 * VW_FACTOR}vw;
       z-index: 1;
     }
-    #start_date input[type=text] {
+    #start_time {
+      display: inline-block;
+      float: right;
+      margin-top: #{2 * VH_FACTOR}vh;
+      margin-right: #{14 * VW_FACTOR}vw;
+      z-index: 1;
+    }
+    #start_date input[type=text], #start_time input[type=text] {
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -647,10 +701,10 @@ print %(
       font-size: #{4.5 * FONT_FACTOR}rem;
       float: left;
     }
-    #start_date input::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder {
       color: #757575;
     }
-    #start_date input[type=text]:focus {
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus {
       outline: none;
     }
     .sessions_page_header {
@@ -818,19 +872,21 @@ print %(
     #save_event_btn:hover {
       background-color: #3986eb;
     }
-    .date_wheel_picker {
+    .date_wheel_picker, .time_wheel_picker {
       display: none;
       height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
-    .month_wheel, .day_wheel, .year_wheel {
+    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel {
       display: inline-block;
       height: 100%;
       overflow:hidden;
       overflow-y:scroll;
       scroll-snap-type: y mandatory;
+      scroll-snap-type: proximity;
+      text-align: center;
     }
-    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar {
+    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar {
       display: none;
     }
     .month_wheel {
@@ -842,7 +898,10 @@ print %(
     .year_wheel {
       width: #{20 * VW_FACTOR}vw;
     }
-    .month_wheel li, .day_wheel li, .year_wheel li {
+    .hour_wheel, .minute_wheel, .period_wheel {
+      width: #{10 * VW_FACTOR}vw;
+    }
+    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li {
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
@@ -851,9 +910,8 @@ print %(
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
       vertical-align: middle;
-      transition: transform .175s;
     }
-    .date_wheel_select_box {
+    .date_wheel_select_box, .time_wheel_select_box {
       width: 95%;
       height: #{6 * VH_FACTOR}vh;
       background-color: rgba(238, 238, 239, 1);
@@ -865,7 +923,7 @@ print %(
       margin: auto;
       margin-top: #{6 * VH_FACTOR}vh;
     }
-    .date_wheel_select_box_cover_top {
+    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
@@ -875,7 +933,7 @@ print %(
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
-    .date_wheel_select_box_cover_bottom {
+    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
