@@ -102,6 +102,8 @@ print %(
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
     <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
     <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartTime()"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
+    <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndDate()"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
+    <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndTime()"><input type="text" id="end_timepicker_txt" placeholder="Add end time" readonly></div>
     <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -117,6 +119,22 @@ print %(
       <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
       <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
       <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
+    </div>
+    <div class="date_wheel_picker" id="end_datepicker">
+      <div class="date_wheel_select_box_cover_top"></div>
+      <div class="date_wheel_select_box"></div>
+      <div class="date_wheel_select_box_cover_bottom"></div>
+      <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+      <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+      <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
+    </div>
+    <div class="time_wheel_picker" id="end_timepicker">
+      <div class="time_wheel_select_box_cover_top"></div>
+      <div class="time_wheel_select_box"></div>
+      <div class="time_wheel_select_box_cover_bottom"></div>
+      <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+      <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+      <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
   </div>
   <script>
@@ -235,6 +253,17 @@ print %(
         <li></li>
       `);
 
+
+      var end_year_wheel = document.getElementById("end_year_wheel");
+      for(var i=current_year; i < (current_year + 101); i++) { 
+        end_year_wheel.insertAdjacentHTML("beforeend", `
+          <li>${i}</li>
+        `);
+      }
+      end_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+
       hideExtraDays();
     }
     function signOut() {
@@ -320,7 +349,6 @@ print %(
       popup_close_layer.style.display = "none";
       create_form.style.display = "none";
 
-
       var create_form_title_input = document.getElementById("create_form_title_input");
       create_form_title_input.blur();
       create_form_title_input.value = "";
@@ -328,6 +356,11 @@ print %(
       if (start_datepicker.style != 'none') {
         start_datepicker.style = 'none';
         document.getElementById("start_datepicker_txt").value = "";
+      }
+      var start_timepicker = document.getElementById("start_timepicker");
+      if (start_timepicker.style != 'none') {
+        start_timepicker.style = 'none';
+        document.getElementById("start_timepicker_txt").value = "";
       }
     }
     function unactivateAllNavIcons() {
@@ -387,6 +420,33 @@ print %(
           day_li.style.display = "block";
         }
       }
+
+      var end_year  = document.getElementById("end_year_wheel").getAttribute('data-selected-value');
+      var end_month = document.getElementById("end_month_wheel").getAttribute('data-selected-value');
+      var end_day   = document.getElementById("end_day_wheel").getAttribute('data-selected-value');
+
+      for(var i=29; i <= 31 ; i++) {
+          var day_li = document.getElementById("end_day_" + i);
+          day_li.style.display = "none";
+      }
+
+      if ( end_month && (end_month != "TBD") ) {
+        if (!end_year || (end_year == "TBD")) {
+          if (end_month != "February") {
+            end_year = 2021;  // year is arbitrary
+          }
+          else
+          {
+            return;
+          }
+        }
+
+        var last_day_in_month = new Date(parseInt(end_year), parseInt(months[end_month]) + 1, 0).getDate();
+        for(var i=29; i <= last_day_in_month ; i++) {
+          var day_li = document.getElementById("end_day_" + i);
+          day_li.style.display = "block";
+        }
+      }
     }
     function onDateWheelScroll(id) {
       var date_wheel = document.getElementById(id);
@@ -397,12 +457,27 @@ print %(
       updateCreateFormDates();
     }
     function toggleStartDate() {
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
       var start_datepicker = document.getElementById("start_datepicker");
       if (start_datepicker.style.display != "inline-block") {
         start_datepicker.style.display = "inline-block";
       }
       else {
         start_datepicker.style.display = "none";
+      }
+    }
+    function toggleEndDate() {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      var end_datepicker = document.getElementById("end_datepicker");
+      if (end_datepicker.style.display != "inline-block") {
+        end_datepicker.style.display = "inline-block";
+      }
+      else {
+        end_datepicker.style.display = "none";
       }
     }
     function updateCreateFormDates() {
@@ -433,21 +508,64 @@ print %(
       }
 
       start_datepicker_txt.value = date_str;
+
+      var end_datepicker_txt = document.getElementById("start_datepicker_txt");
+      var end_year = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
+      var end_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
+      var end_day = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
+
+      if (end_month && (end_month != "TBD")) {
+        if (end_day && (end_day != "TBD") && end_year && (end_year != "TBD")) {
+          date_str += end_month.slice(0,3);
+        }
+        else {
+          date_str += end_month;
+        }
+
+        if (end_day && (end_day != "TBD")) {
+          date_str += (' ' + end_day);
+        }
+      }
+      if (end_year && (end_year != "TBD")) {
+        if(end_month && (end_month != "TBD")) {
+          date_str += ', ';
+        }
+        date_str += end_year;
+      }
+
+      end_datepicker_txt.value = date_str;
     }
     function onTimeWheelScroll(id) {
       var time_wheel = document.getElementById(id);
       var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
-      var all_time_wheel_elements = date_wheel.getElementsByTagName("li");
+      var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
       time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
       updateTimeFormDates();
     }
     function toggleStartTime() {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+
       var start_timepicker = document.getElementById("start_timepicker");
       if (start_timepicker.style.display != "inline-block") {
         start_timepicker.style.display = "inline-block";
       }
       else {
         start_timepicker.style.display = "none";
+      }
+    }
+    function toggleEndTime() {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("start_timepicker").style.display = "none";
+
+      var end_timepicker = document.getElementById("end_timepicker");
+      if (end_timepicker.style.display != "inline-block") {
+        end_timepicker.style.display = "inline-block";
+      }
+      else {
+        end_timepicker.style.display = "none";
       }
     }
     function updateTimeFormDates() {
@@ -471,6 +589,24 @@ print %(
         }
       }
       start_timepicker_txt.value = time_str;
+
+      var end_timepicker_txt = document.getElementById("end_timepicker_txt");
+      var end_hour = document.getElementById("end_hour_wheel").getAttribute('data-selected-value');
+      var end_minute = document.getElementById("end_minute_wheel").getAttribute('data-selected-value');
+      var end_period = document.getElementById("end_period_wheel").getAttribute('data-selected-value');
+
+      if (end_hour && (end_hour != "TBD")) {
+        time_str += end_hour;
+        if ( end_minute && (end_minute != "00") && (end_minute != "TBD")) {
+          time_str += ':';
+          time_str += end_minute;
+        }
+        if ( end_period && (end_period != "TBD")) {
+          time_str += ' ';
+          time_str += end_period;
+        }
+      }
+      end_timepicker_txt.value = time_str;
     }
   </script>
   <style>
@@ -497,7 +633,7 @@ print %(
     }
     #background {
       border: none;
-      transition: all 5s;
+      transition: all 5s, font-size: 0s;
     }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
@@ -678,21 +814,14 @@ print %(
     #create_form_title input::placeholder {
       color: #757575;
     }
-    #start_date {
+    #start_date, #end_date {
       display: inline-block;
       float: left;
       margin-top: #{2 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
       z-index: 1;
     }
-    #start_time {
-      display: inline-block;
-      float: right;
-      margin-top: #{2 * VH_FACTOR}vh;
-      margin-right: #{14 * VW_FACTOR}vw;
-      z-index: 1;
-    }
-    #start_date input[type=text], #start_time input[type=text] {
+    #start_date input[type=text], #end_date input[type=text] {
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -701,11 +830,28 @@ print %(
       font-size: #{4.5 * FONT_FACTOR}rem;
       float: left;
     }
-    #start_date input::placeholder, #start_time input::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder {
       color: #757575;
     }
-    #start_date input[type=text]:focus, #start_time input[type=text]:focus {
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus {
       outline: none;
+    }
+    #start_time, #end_time {
+      display: inline-block;
+      float: right;
+      right: 0;
+      margin-top: #{2 * VH_FACTOR}vh;
+      z-index: 1;
+    }
+    #start_time input[type=text], end_time input[type=text] {
+      border: none;
+      width: #{38 * VW_FACTOR}vw;
+      height: #{4 * VH_FACTOR}vh;
+      background-color: white;
+      color: #424242;
+      font-size: #{4.5 * FONT_FACTOR}rem;
+      text-align: right;
+      margin-right: #{IS_DESKTOP ? 6 : 4}vw;
     }
     .sessions_page_header {
       width: 100%;
