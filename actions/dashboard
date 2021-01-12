@@ -102,8 +102,6 @@ print %(
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
     <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
     <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartTime()"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
-    <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndDate()"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
-    <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndTime()"><input type="text" id="end_timepicker_txt" placeholder="Add end time" readonly></div>
     <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -120,12 +118,14 @@ print %(
       <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
       <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
+    <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndDate()"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
+    <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndTime()"><input type="text" id="end_timepicker_txt" placeholder="Add end time" readonly></div>
     <div class="date_wheel_picker" id="end_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
       <div class="date_wheel_select_box_cover_bottom"></div>
       <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
-      <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+      <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
       <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
     </div>
     <div class="time_wheel_picker" id="end_timepicker">
@@ -399,8 +399,8 @@ print %(
       var start_day   = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
 
       for(var i=29; i <= 31 ; i++) {
-          var day_li = document.getElementById("start_day_" + i);
-          day_li.style.display = "none";
+        var day_li = document.getElementById("start_day_" + i);
+        day_li.style.display = "none";
       }
 
       if ( start_month && (start_month != "TBD") ) {
@@ -426,8 +426,8 @@ print %(
       var end_day   = document.getElementById("end_day_wheel").getAttribute('data-selected-value');
 
       for(var i=29; i <= 31 ; i++) {
-          var day_li = document.getElementById("end_day_" + i);
-          day_li.style.display = "none";
+        var day_li = document.getElementById("end_day_" + i);
+        day_li.style.display = "none";
       }
 
       if ( end_month && (end_month != "TBD") ) {
@@ -509,10 +509,11 @@ print %(
 
       start_datepicker_txt.value = date_str;
 
-      var end_datepicker_txt = document.getElementById("start_datepicker_txt");
-      var end_year = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
-      var end_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
-      var end_day = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
+      date_str = "";
+      var end_datepicker_txt = document.getElementById("end_datepicker_txt");
+      var end_year = document.getElementById("end_year_wheel").getAttribute('data-selected-value');
+      var end_month = document.getElementById("end_month_wheel").getAttribute('data-selected-value');
+      var end_day = document.getElementById("end_day_wheel").getAttribute('data-selected-value');
 
       if (end_month && (end_month != "TBD")) {
         if (end_day && (end_day != "TBD") && end_year && (end_year != "TBD")) {
@@ -590,6 +591,7 @@ print %(
       }
       start_timepicker_txt.value = time_str;
 
+      time_str = "";
       var end_timepicker_txt = document.getElementById("end_timepicker_txt");
       var end_hour = document.getElementById("end_hour_wheel").getAttribute('data-selected-value');
       var end_minute = document.getElementById("end_minute_wheel").getAttribute('data-selected-value');
@@ -814,10 +816,17 @@ print %(
     #create_form_title input::placeholder {
       color: #757575;
     }
-    #start_date, #end_date {
+    #start_date {
       display: inline-block;
       float: left;
       margin-top: #{2 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 1;
+    }
+    #end_date {
+      display: inline-block;
+      float: left;
+      margin-top: #{4 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
       z-index: 1;
     }
@@ -836,14 +845,21 @@ print %(
     #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus {
       outline: none;
     }
-    #start_time, #end_time {
+    #start_time {
       display: inline-block;
       float: right;
       right: 0;
       margin-top: #{2 * VH_FACTOR}vh;
       z-index: 1;
     }
-    #start_time input[type=text], end_time input[type=text] {
+    #end_time {
+      display: inline-block;
+      float: right;
+      right: 0;
+      margin-top: #{4 * VH_FACTOR}vh;
+      z-index: 1;
+    }
+    #start_time input[type=text], #end_time input[type=text] {
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
