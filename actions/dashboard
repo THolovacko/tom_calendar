@@ -30,9 +30,9 @@ end
 
 user_agent_str = ENV['HTTP_USER_AGENT'].downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
-VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
+VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
-FONT_FACTOR = IS_DESKTOP ? 0.6 : 1
+FONT_FACTOR = IS_DESKTOP ? 1.25 : 1
 SCALE       = IS_DESKTOP ? 0.6 : 1
 
 #VW_FACTOR   = IS_DESKTOP ? 0.35 : 1
@@ -517,7 +517,7 @@ print %(
       color: #0F9D58;
       border-style: solid;
       border-color: #4285F4;
-      border-width: #{0.5 * VW_FACTOR}vw;
+      border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
       border-radius: 8%; 
       padding-right:  #{3 * VW_FACTOR}vw;
       margin-right:   #{9 * VW_FACTOR}vw;
@@ -533,12 +533,12 @@ print %(
     .material-icons.create_close {
       float: left;
       margin-left: #{4 * VW_FACTOR}vw;
-      margin-top: #{3 * VH_FACTOR}vh;
+      margin-top: #{2 * VH_FACTOR}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{8 * FONT_FACTOR}rem;
+      font-size: #{7.5 * FONT_FACTOR}rem;
       color: #616161;
-      padding: 4px;
+      padding: 6px;
     }
     .material-icons.create_close:hover {
       background-color: #EEEEEE;
@@ -619,13 +619,13 @@ print %(
       border-right-style: hidden;
       border-left-style: hidden;
       border-bottom-style: solid;
-      border-bottom-width: 2px;
+      border-bottom-width: 1px;
       border-bottom-color: #E8E8EB;
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      font-size: #{8 * FONT_FACTOR}rem;
-      margin-top: #{2 * VH_FACTOR}vh;
+      font-size: #{7 * FONT_FACTOR}rem;
+      margin-top: #{1.5 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
       text-align: center;
@@ -650,7 +650,7 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{4.5 * FONT_FACTOR}rem;
       float: left;
     }
     #start_date input::placeholder {
@@ -803,21 +803,23 @@ print %(
       color: #0F82FF;
     }
     #save_event_btn {
+      margin: 0;
+      padding: 0;
       float: right;
       background-color: #1A73E8;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       height: #{4 * VH_FACTOR}vh;
       line-height: #{4 * VH_FACTOR}vh;
       width: #{16 * VW_FACTOR}vw;
       font-size: #{4 * FONT_FACTOR}rem;
       text-align: center;
       margin-right: #{5.25 * VW_FACTOR}vw;
-      margin-top: #{2.4 * VH_FACTOR}vh;
+      margin-top: #{2 * VH_FACTOR}vh;
       cursor: pointer;
       outline: none;
-      font-weight: bold;
+      font-weight: normal;
     }
     #save_event_btn:hover {
       background-color: #3986eb;
@@ -838,19 +840,19 @@ print %(
       display: none;
     }
     .month_wheel {
-      width: #{24 * VW_FACTOR}vw;
+      width: #{20 * VW_FACTOR}vw;
     }
     .day_wheel {
-      width: #{12 * VW_FACTOR}vw;
+      width: #{10 * VW_FACTOR}vw;
     }
     .year_wheel {
-      width: #{24 * VW_FACTOR}vw;
+      width: #{20 * VW_FACTOR}vw;
     }
     .month_wheel li, .day_wheel li, .year_wheel li {
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
       scroll-snap-align: start;
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
@@ -863,15 +865,15 @@ print %(
       background-color: rgba(238, 238, 239, 1);
       position: absolute;
       z-index: -1;
-      border-radius: 16px;
+      border-radius: 8px;
       right: 0;
       left: 0;
       margin: auto;
-      margin-top: #{7 * VH_FACTOR}vh;
+      margin-top: #{6 * VH_FACTOR}vh;
     }
     .date_wheel_select_box_cover_top {
       width: 100%;
-      height: #{7 * VH_FACTOR}vh;
+      height: #{6 * VH_FACTOR}vh;
       position: absolute;
       right: 0;
       left: 0;
@@ -881,12 +883,12 @@ print %(
     }
     .date_wheel_select_box_cover_bottom {
       width: 100%;
-      height: #{7 * VH_FACTOR}vh;
+      height: #{6 * VH_FACTOR}vh;
       position: absolute;
       right: 0;
       left: 0;
       margin: auto;
-      margin-top: #{13 * VH_FACTOR}vh;
+      margin-top: #{12 * VH_FACTOR}vh;
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
