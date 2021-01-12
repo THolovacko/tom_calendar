@@ -319,6 +319,8 @@ print %(
       
       var session_widget = document.getElementById(session_index);
       session_widget.remove();
+
+      document.getElementById("all_sessions_log_out").blur(); // this fixes auto focus bug on mobile
     }
     function onNavIconSelect(nav_icon_id) {
       unactivateAllNavIcons();
@@ -792,6 +794,12 @@ print %(
       margin-top: #{4 * VH_FACTOR}vh;
       color: #0F82FF;
     }
+    #log_out_btn:hover {
+      background-color: #f1fff1;
+    }
+    #log_out_btn:active {
+      background-color: #e5ffe5;
+    }
     #create_form_title input[type=text] {
       float: left;
       border-top-style: hidden;
@@ -896,10 +904,10 @@ print %(
       transition-timing-function: ease-out;
       color: black;
     }
-    .settings_btn:hover, #log_out_btn:hover {
+    .settings_btn:hover {
       background-color: #f1fff1;
     }
-    .settings_btn:active, #log_out_btn:active {
+    .settings_btn:active {
       background-color: #e5ffe5;
     }
     .settings_navigate_next {
@@ -966,12 +974,6 @@ print %(
       padding-right: #{8 * VW_FACTOR}vw;
       padding-left: #{4 * VW_FACTOR}vw;
       cursor: pointer;
-    }
-    .session_log_out:hover {
-      background-color: #f1fff1;
-    }
-    .session_log_out:active {
-      background-color: #e5ffe5;
     }
     #all_sessions_log_out {
       display: inline-block;
