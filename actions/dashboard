@@ -619,7 +619,7 @@ print %(
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
-      font-size: 4px;
+      font-size: 40px;
     }
     body {
       background-color: #FEFFFE;
