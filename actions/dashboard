@@ -637,7 +637,8 @@ print %(
     }
     #background {
       border: none;
-      transition: all 5s, font-size: 0s;
+      transition: all 5s;
+      transition: font-size: 0s;
     }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
