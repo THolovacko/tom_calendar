@@ -3,5 +3,6 @@
 /log/*
 !/tmp
 /tmp/*
-.*.swp
-/*/.*.swp
+*~
+*.swp
+*.swo
