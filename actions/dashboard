@@ -540,7 +540,8 @@ print %(
     }
     function onTimeWheelScroll(id) {
       var time_wheel = document.getElementById(id);
-      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1;
+                                                        // +1 handles empty li ------------^
       var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
       time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
       updateTimeFormDates();
@@ -638,8 +639,6 @@ print %(
     #background {
       border: none;
       transition: filter 5s;
-      //transition: all 5s;
-      //transition: font-size: 0s;
     }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
@@ -813,7 +812,7 @@ print %(
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
-      font-size: #{7 * FONT_FACTOR}rem;
+      font-size: #{6 * FONT_FACTOR}rem;
       margin-top: #{1.5 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
@@ -846,7 +845,7 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
-      font-size: #{4.5 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       float: left;
     }
     #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder {
@@ -875,7 +874,7 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       background-color: white;
       color: #424242;
-      font-size: #{4.5 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       text-align: right;
       margin-right: #{IS_DESKTOP ? 6 : 4}vw;
     }
