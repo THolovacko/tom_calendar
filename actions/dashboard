@@ -4,8 +4,6 @@
 # @remember: figure out how to scale radius?
 # @test:     user agent detection on several platforms
 
-# testing remote deploy againnn
-
 # @current: create form
 
 
@@ -621,7 +619,8 @@ print %(
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
-      font-size: 4px;
+      //font-size: 4px;
+      font-size: 40px;
     }
     body {
       background-color: #FEFFFE;
