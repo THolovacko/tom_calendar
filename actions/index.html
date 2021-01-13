@@ -63,6 +63,14 @@ print %(
     authorization_code = #{code ? "\"#{code}\"" : 'null'};
 
     function init() {
+      if ( localStorage.getItem("session_id") ) {
+        var today_time = new Date().getTime();
+        var expiration_date = new Date();
+        expiration_date.setTime(today_time + (31 * 86400000));
+        document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() +";secure";
+        window.location = "https://tomcalendar.com/dashboard";
+      }
+
       gapi.signin2.render('my-signin2', {
         'scope': 'profile email',
         'width': 240,
@@ -116,6 +124,7 @@ print %(
           var today_time = new Date().getTime();
           var expiration_date = new Date();
           expiration_date.setTime(today_time + (31 * 86400000));
+          localStorage.setItem("session_id", result);
           document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() +";secure";
           window.location = "https://tomcalendar.com/dashboard";
         }

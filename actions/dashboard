@@ -1,10 +1,7 @@
 #! /usr/bin/ruby
 
 # @remember: should download the header link libs locally (maybe concatenate?)
-# @remember: decide if delete session item on logout or periodically delete "expired" sessions
 # @remember: figure out how to scale radius?
-# @remember: need to double tap Add start date on create form????
-# @remember: replace click hooks on create form
 # @test:     user agent detection on several platforms
 
 # @current: create form
@@ -172,6 +169,7 @@ print %(
 
             // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
+            localStorage.removeItem("session_id");
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
           }
@@ -273,6 +271,7 @@ print %(
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if(http.status == 200) {
+          localStorage.removeItem("session_id");
           document.cookie = "session_id=;secure";
           window.location = "https://tomcalendar.com/";
         }
@@ -287,6 +286,7 @@ print %(
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.onload = function() {
           if(http.status == 200) {
+            localStorage.removeItem("session_id");
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
           }
@@ -637,8 +637,9 @@ print %(
     }
     #background {
       border: none;
-      transition: all 5s;
-      transition: font-size: 0s;
+      transition: filter 5s;
+      //transition: all 5s;
+      //transition: font-size: 0s;
     }
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
