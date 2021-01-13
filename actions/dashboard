@@ -622,7 +622,8 @@ print %(
       font-size: 4px;
     }
     body {
-      background-color: #FEFFFE;
+      //background-color: #FEFFFE;
+      background-color: orange;
     }
     #navbar {
       margin: 0;
