@@ -457,7 +457,9 @@ print %(
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
       date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
       hideExtraDays();
-      updateCreateFormDates();
+
+      const start_regex = RegExp('start');
+      updateCreateFormDates( start_regex.test(id) );
     }
     function toggleStartDate() {
       document.getElementById("end_datepicker").style.display = "none";
@@ -483,13 +485,12 @@ print %(
         end_datepicker.style.display = "none";
       }
     }
-    function updateCreateFormDates() {
+    function updateCreateFormDates(is_start_date=false) { // @refactor
       var start_datepicker_txt = document.getElementById("start_datepicker_txt");
       var start_year = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
       var start_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
       var start_day = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
 
-      // @refactor
       var date_str = "";
       if (start_month && (start_month != "TBD")) {
         if (start_day && (start_day != "TBD") && start_year && (start_year != "TBD")) {
@@ -511,6 +512,11 @@ print %(
       }
 
       start_datepicker_txt.value = date_str;
+
+      if (is_start_date) {
+        document.getElementById("end_datepicker_txt").value = date_str;
+        return;
+      }
 
       date_str = "";
       var end_datepicker_txt = document.getElementById("end_datepicker_txt");
@@ -545,7 +551,9 @@ print %(
                                                         // +1 handles empty li ------------^
       var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
       time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
-      updateTimeFormDates();
+
+      const start_regex = RegExp('start');
+      updateTimeFormDates( start_regex.test(id) );
     }
     function toggleStartTime() {
       document.getElementById("start_datepicker").style.display = "none";
@@ -573,27 +581,56 @@ print %(
         end_timepicker.style.display = "none";
       }
     }
-    function updateTimeFormDates() {
+    function updateTimeFormDates(is_start_time=false) { // @refactor
       var start_timepicker_txt = document.getElementById("start_timepicker_txt");
       var start_hour = document.getElementById("start_hour_wheel").getAttribute('data-selected-value');
       var start_minute = document.getElementById("start_minute_wheel").getAttribute('data-selected-value');
       var start_period = document.getElementById("start_period_wheel").getAttribute('data-selected-value');
 
-      // @refactor
       var time_str = "";
+      var offset_time_str = "";
+      var switch_period = false;
 
       if (start_hour && (start_hour != "TBD")) {
         time_str += start_hour;
+        var offset_hour = parseInt(start_hour) + 1;
+        if (start_hour == 11) {
+          switch_period = true;
+        }
+        if (offset_hour > 12) {
+          offset_hour = 1;
+        }
+        offset_time_str += offset_hour;
+        
         if ( start_minute && (start_minute != "00") && (start_minute != "TBD")) {
           time_str += ':';
           time_str += start_minute;
+          offset_time_str += ':';
+          offset_time_str += start_minute;
         }
         if ( start_period && (start_period != "TBD")) {
           time_str += ' ';
           time_str += start_period;
+
+          offset_time_str += ' ';
+          if (switch_period) {
+            if (start_period == "AM") {
+              offset_time_str += "PM";
+            } else if (start_period == "PM") {
+              offset_time_str += "AM";
+            }
+          }
+          else {
+            offset_time_str += start_period;
+          }
         }
       }
       start_timepicker_txt.value = time_str;
+
+      if (is_start_time) {
+        document.getElementById("end_timepicker_txt").value = offset_time_str;
+        return;
+      }
 
       time_str = "";
       var end_timepicker_txt = document.getElementById("end_timepicker_txt");
