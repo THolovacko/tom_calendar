@@ -455,17 +455,37 @@ print %(
       var date_wheel = document.getElementById(id);
       var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
-      date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
+      if (index < all_date_wheel_elements.length) {
+        date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
+      }
       hideExtraDays();
 
       const start_regex = RegExp('start');
       updateCreateFormDates( start_regex.test(id) );
     }
-    function toggleStartDate() {
+    function toggleStartDate() {  // @refactor
       document.getElementById("end_datepicker").style.display = "none";
       document.getElementById("start_timepicker").style.display = "none";
       document.getElementById("end_timepicker").style.display = "none";
       var start_datepicker = document.getElementById("start_datepicker");
+
+
+    /*
+      var start_datepicker_txt = document.getElementById("start_datepicker_txt").value;
+
+      var start_month_wheel = document.getElementById("start_month_wheel");
+      var start_day_wheel   = document.getElementById("start_day_wheel");
+      var start_year_wheel  = document.getElementById("start_year_wheel");
+
+      var all_start_month_elements = start_month_wheel.getElementsByTagName("li");
+      for(var i=0; i < all_start_month_elements.length; i++) {
+        if(all_start_month_elements[i].innerText == start_month) {
+          start_month_wheel.scrollTop = start_month_wheel.childNodes[0].offsetHeight * (i - 1);
+        }
+      }
+    */
+
+
       if (start_datepicker.style.display != "inline-block") {
         start_datepicker.style.display = "inline-block";
       }

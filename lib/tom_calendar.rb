@@ -112,7 +112,6 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     item = dynamodb.get_item(params).item
 
-    # @test: localstroage solution for safari mobile max 24 hours cookie lifetime
     return false unless item
     google_authorizer = get_google_authorizer(dynamodb)
     google_credentials = google_authorizer.get_credentials(item['google_id'])
