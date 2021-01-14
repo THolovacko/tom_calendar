@@ -1128,7 +1128,8 @@ print %(
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
-      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
+      font-weight: 1;
       scroll-snap-align: start;
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
