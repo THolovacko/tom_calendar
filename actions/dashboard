@@ -517,13 +517,14 @@ print %(
     }
     function onTimeWheelScroll(id) {
       var time_wheel = document.getElementById(id);
-      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1;
-                                                        // +1 handles empty li ------------^
+      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
       var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
       time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
+      var offset_time_str = updateCreateFormTime(id);
 
-      const start_regex = RegExp('start');
-      updateTimeFormDates( start_regex.test(id) );
+      if ( RegExp('start').test(id) ) {
+        document.getElementById("end_timepicker_txt").value = offset_time_str;
+      }
     }
     function toggleTime(start_or_end_str) {
       document.getElementById("start_datepicker").style.display = "none";
@@ -544,20 +545,22 @@ print %(
         timepicker.style.display = "none";
       }
     }
-    function updateTimeFormDates(is_start_time=false) { // @refactor
-      var start_timepicker_txt = document.getElementById("start_timepicker_txt");
-      var start_hour = document.getElementById("start_hour_wheel").getAttribute('data-selected-value');
-      var start_minute = document.getElementById("start_minute_wheel").getAttribute('data-selected-value');
-      var start_period = document.getElementById("start_period_wheel").getAttribute('data-selected-value');
+    function updateCreateFormTime(current_wheel_id) {
+      var date = RegExp('start').test(current_wheel_id) ? "start": "end";
+
+      var timepicker_txt = document.getElementById(`${date}_timepicker_txt`);
+      var hour = document.getElementById(`${date}_hour_wheel`).getAttribute('data-selected-value');
+      var minute = document.getElementById(`${date}_minute_wheel`).getAttribute('data-selected-value');
+      var period = document.getElementById(`${date}_period_wheel`).getAttribute('data-selected-value');
 
       var time_str = "";
       var offset_time_str = "";
       var switch_period = false;
 
-      if (start_hour && (start_hour != "TBD")) {
-        time_str += start_hour;
-        var offset_hour = parseInt(start_hour) + 1;
-        if (start_hour == 11) {
+      if (hour && (hour != "TBD")) {
+        time_str += hour;
+        var offset_hour = parseInt(hour) + 1;
+        if (hour == 11) {
           switch_period = true;
         }
         if (offset_hour > 12) {
@@ -565,59 +568,35 @@ print %(
         }
         offset_time_str += offset_hour;
         
-        if ( start_minute && (start_minute != "00") && (start_minute != "TBD")) {
+        if ( minute && (minute != "00") && (minute != "TBD")) {
           time_str += ':';
-          time_str += start_minute;
+          time_str += minute;
           offset_time_str += ':';
-          offset_time_str += start_minute;
+          offset_time_str += minute;
         }
-        if ( start_period && (start_period != "TBD")) {
+        if ( period && (period != "TBD")) {
           time_str += ' ';
-          time_str += start_period;
+          time_str += period;
 
           offset_time_str += ' ';
           if (switch_period) {
-            if (start_period == "AM") {
+            if (period == "AM") {
               offset_time_str += "PM";
-            } else if (start_period == "PM") {
+            } else if (period == "PM") {
               offset_time_str += "AM";
             }
           }
           else {
-            offset_time_str += start_period;
+            offset_time_str += period;
           }
         }
       }
 
       if (time_str) {
-        start_timepicker_txt.value = time_str;
+        timepicker_txt.value = time_str;
+        return offset_time_str;
       }
-
-      if (is_start_time) {
-        document.getElementById("end_timepicker_txt").value = offset_time_str;
-        return;
-      }
-
-      time_str = "";
-      var end_timepicker_txt = document.getElementById("end_timepicker_txt");
-      var end_hour = document.getElementById("end_hour_wheel").getAttribute('data-selected-value');
-      var end_minute = document.getElementById("end_minute_wheel").getAttribute('data-selected-value');
-      var end_period = document.getElementById("end_period_wheel").getAttribute('data-selected-value');
-
-      if (end_hour && (end_hour != "TBD")) {
-        time_str += end_hour;
-        if ( end_minute && (end_minute != "00") && (end_minute != "TBD")) {
-          time_str += ':';
-          time_str += end_minute;
-        }
-        if ( end_period && (end_period != "TBD")) {
-          time_str += ' ';
-          time_str += end_period;
-        }
-      }
-      if (time_str) {
-        end_timepicker_txt.value = time_str;
-      }
+      return '';
     }
   </script>
   <style>
