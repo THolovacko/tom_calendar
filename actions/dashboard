@@ -97,8 +97,8 @@ print %(
     <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
     <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
     <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
-    <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartDate()"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
-    <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleStartTime()"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
+    <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
+    <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
     <div class="date_wheel_picker" id="start_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -116,8 +116,8 @@ print %(
       <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
     <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
-    <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndDate()"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
-    <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleEndTime()"><input type="text" id="end_timepicker_txt" placeholder="Add end time " readonly></div><!-- extra space character in placeholder is for txt alignment -->
+    <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
+    <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('end')"><input type="text" id="end_timepicker_txt" placeholder="Add end time " readonly></div><!-- extra space character in placeholder is for txt alignment -->
     <div class="date_wheel_picker" id="end_datepicker">
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
@@ -241,29 +241,21 @@ print %(
       }
       request.send('');
 
+      // initialize wheel pickers
       var start_year_wheel = document.getElementById("start_year_wheel");
+      var end_year_wheel = document.getElementById("end_year_wheel");
       var current_year = new Date().getFullYear();
       for(var i=current_year; i < (current_year + 101); i++) { 
-        start_year_wheel.insertAdjacentHTML("beforeend", `
-          <li>${i}</li>
-        `);
+        start_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
+        end_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
       }
       start_year_wheel.insertAdjacentHTML("beforeend", `
         <li></li>
       `);
-
-
-      var end_year_wheel = document.getElementById("end_year_wheel");
-      for(var i=current_year; i < (current_year + 101); i++) { 
-        end_year_wheel.insertAdjacentHTML("beforeend", `
-          <li>${i}</li>
-        `);
-      }
       end_year_wheel.insertAdjacentHTML("beforeend", `
         <li></li>
       `);
-
-      hideExtraDays();
+      hideExtraDaysOnDayWheelPickers();
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -360,10 +352,20 @@ print %(
         start_datepicker.style = 'none';
         document.getElementById("start_datepicker_txt").value = "";
       }
+      var end_datepicker = document.getElementById("end_datepicker");
+      if (end_datepicker.style != 'none') {
+        end_datepicker.style = 'none';
+        document.getElementById("end_datepicker_txt").value = "";
+      }
       var start_timepicker = document.getElementById("start_timepicker");
       if (start_timepicker.style != 'none') {
         start_timepicker.style = 'none';
         document.getElementById("start_timepicker_txt").value = "";
+      }
+      var end_timepicker = document.getElementById("end_timepicker");
+      if (end_timepicker.style != 'none') {
+        end_timepicker.style = 'none';
+        document.getElementById("end_timepicker_txt").value = "";
       }
     }
     function unactivateAllNavIcons() {
@@ -396,78 +398,62 @@ print %(
 
       onCreateClose();
     }
-    function hideExtraDays() {
-      var start_year  = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
-      var start_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
-      var start_day   = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
+    function hideExtraDaysOnDayWheelPickers() {
+      ["start","end"].forEach(function(date) {
+        var year  = document.getElementById(`${date}_year_wheel`).getAttribute('data-selected-value');
+        var month = document.getElementById(`${date}_month_wheel`).getAttribute('data-selected-value');
+        var day   = document.getElementById(`${date}_day_wheel`).getAttribute('data-selected-value');
 
-      for(var i=29; i <= 31 ; i++) {
-        var day_li = document.getElementById("start_day_" + i);
-        day_li.style.display = "none";
-      }
+        var is_year_not_selected = !year || (year == "TBD");
+        var is_month_selected    = month && (month != "TBD");
 
-      if ( start_month && (start_month != "TBD") ) {
-        if (!start_year || (start_year == "TBD")) {
-          if (start_month != "February") {
-            start_year = 2021;  // year is arbitrary
-          }
-          else
-          {
-            return;
-          }
+        for(var i=29; i <= 31 ; i++) {
+          document.getElementById(`${date}_day_` + i).style.display = "none";
         }
 
-        var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
-        for(var i=29; i <= last_day_in_month ; i++) {
-          var day_li = document.getElementById("start_day_" + i);
-          day_li.style.display = "block";
-        }
-      }
-
-      var end_year  = document.getElementById("end_year_wheel").getAttribute('data-selected-value');
-      var end_month = document.getElementById("end_month_wheel").getAttribute('data-selected-value');
-      var end_day   = document.getElementById("end_day_wheel").getAttribute('data-selected-value');
-
-      for(var i=29; i <= 31 ; i++) {
-        var day_li = document.getElementById("end_day_" + i);
-        day_li.style.display = "none";
-      }
-
-      if ( end_month && (end_month != "TBD") ) {
-        if (!end_year || (end_year == "TBD")) {
-          if (end_month != "February") {
-            end_year = 2021;  // year is arbitrary
+        if (is_month_selected) {
+          if (is_year_not_selected) {
+            if (month != "February") {
+              year = 2021;  // year is arbitrary
+            }
+            else
+            {
+              return; // default to 28 days if no month selected
+            }
           }
-          else
-          {
-            return;
+
+          var last_day_in_month = new Date(parseInt(year), parseInt(months[month]) + 1, 0).getDate();
+          for(var i=29; i <= last_day_in_month; i++) {
+            document.getElementById(`${date}_day_` + i).style.display = "block";
           }
         }
-
-        var last_day_in_month = new Date(parseInt(end_year), parseInt(months[end_month]) + 1, 0).getDate();
-        for(var i=29; i <= last_day_in_month ; i++) {
-          var day_li = document.getElementById("end_day_" + i);
-          day_li.style.display = "block";
-        }
-      }
+      });
     }
     function onDateWheelScroll(id) {
       var date_wheel = document.getElementById(id);
       var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
       if (index < all_date_wheel_elements.length) {
-        date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText); // @optimize: shouldn't need to query all li elements every time but childNodes isn't working for years wheel due to being the html being inserted dynamically
+        date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText);
       }
-      hideExtraDays();
+      hideExtraDaysOnDayWheelPickers();
+      var date_str = updateCreateFormDate(id);
 
-      const start_regex = RegExp('start');
-      updateCreateFormDates( start_regex.test(id) );
+      if ( RegExp('start').test(id) ) {
+        document.getElementById("end_datepicker_txt").value = date_str;
+      }
     }
-    function toggleStartDate() {  // @refactor
-      document.getElementById("end_datepicker").style.display = "none";
+    function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
       document.getElementById("end_timepicker").style.display = "none";
-      var start_datepicker = document.getElementById("start_datepicker");
+      if (start_or_end_str == "start") {
+        document.getElementById("end_datepicker").style.display = "none";
+      }
+      else {
+        document.getElementById("start_datepicker").style.display = "none";
+      }
+
+      var datepicker = document.getElementById(`${start_or_end_str}_datepicker`);
 
 
     /*
@@ -486,84 +472,48 @@ print %(
     */
 
 
-      if (start_datepicker.style.display != "inline-block") {
-        start_datepicker.style.display = "inline-block";
+      if (datepicker.style.display != "inline-block") {
+        datepicker.style.display = "inline-block";
       }
       else {
-        start_datepicker.style.display = "none";
+        datepicker.style.display = "none";
       }
     }
-    function toggleEndDate() {
-      document.getElementById("start_datepicker").style.display = "none";
-      document.getElementById("start_timepicker").style.display = "none";
-      document.getElementById("end_timepicker").style.display = "none";
-      var end_datepicker = document.getElementById("end_datepicker");
-      if (end_datepicker.style.display != "inline-block") {
-        end_datepicker.style.display = "inline-block";
-      }
-      else {
-        end_datepicker.style.display = "none";
-      }
-    }
-    function updateCreateFormDates(is_start_date=false) { // @refactor
-      var start_datepicker_txt = document.getElementById("start_datepicker_txt");
-      var start_year = document.getElementById("start_year_wheel").getAttribute('data-selected-value');
-      var start_month = document.getElementById("start_month_wheel").getAttribute('data-selected-value');
-      var start_day = document.getElementById("start_day_wheel").getAttribute('data-selected-value');
+    function updateCreateFormDate(current_wheel_id) {
+      var date = RegExp('start').test(current_wheel_id) ? "start": "end";
+
+      var datepicker_txt = document.getElementById(`${date}_datepicker_txt`);
+      var year = document.getElementById(`${date}_year_wheel`).getAttribute('data-selected-value');
+      var month = document.getElementById(`${date}_month_wheel`).getAttribute('data-selected-value');
+      var day = document.getElementById(`${date}_day_wheel`).getAttribute('data-selected-value');
 
       var date_str = "";
-      if (start_month && (start_month != "TBD")) {
-        if (start_day && (start_day != "TBD") && start_year && (start_year != "TBD")) {
-          date_str += start_month.slice(0,3);
+      if (month && (month != "TBD")) {
+        if (day && (day != "TBD") && year && (year != "TBD")) {
+          date_str += month.slice(0,3);
         }
         else {
-          date_str += start_month;
+          date_str += month;
         }
 
-        if (start_day && (start_day != "TBD")) {
-          date_str += (' ' + start_day);
+        if (day && (day != "TBD")) {
+          date_str += (' ' + day);
         }
       }
-      if (start_year && (start_year != "TBD")) {
-        if(start_month && (start_month != "TBD")) {
+
+      if (year && (year != "TBD")) {
+        if(month && (month != "TBD")) {
           date_str += ', ';
         }
-        date_str += start_year;
+        date_str += year;
       }
 
-      start_datepicker_txt.value = date_str;
-
-      if (is_start_date) {
-        document.getElementById("end_datepicker_txt").value = date_str;
-        return;
+      if (date_str) {
+        datepicker_txt.value = date_str;
+        return date_str;
       }
 
-      date_str = "";
-      var end_datepicker_txt = document.getElementById("end_datepicker_txt");
-      var end_year = document.getElementById("end_year_wheel").getAttribute('data-selected-value');
-      var end_month = document.getElementById("end_month_wheel").getAttribute('data-selected-value');
-      var end_day = document.getElementById("end_day_wheel").getAttribute('data-selected-value');
-
-      if (end_month && (end_month != "TBD")) {
-        if (end_day && (end_day != "TBD") && end_year && (end_year != "TBD")) {
-          date_str += end_month.slice(0,3);
-        }
-        else {
-          date_str += end_month;
-        }
-
-        if (end_day && (end_day != "TBD")) {
-          date_str += (' ' + end_day);
-        }
-      }
-      if (end_year && (end_year != "TBD")) {
-        if(end_month && (end_month != "TBD")) {
-          date_str += ', ';
-        }
-        date_str += end_year;
-      }
-
-      end_datepicker_txt.value = date_str;
+      return '';
     }
     function onTimeWheelScroll(id) {
       var time_wheel = document.getElementById(id);
@@ -575,30 +525,23 @@ print %(
       const start_regex = RegExp('start');
       updateTimeFormDates( start_regex.test(id) );
     }
-    function toggleStartTime() {
+    function toggleTime(start_or_end_str) {
       document.getElementById("start_datepicker").style.display = "none";
       document.getElementById("end_datepicker").style.display = "none";
-      document.getElementById("end_timepicker").style.display = "none";
 
-      var start_timepicker = document.getElementById("start_timepicker");
-      if (start_timepicker.style.display != "inline-block") {
-        start_timepicker.style.display = "inline-block";
+      if (start_or_end_str == "start") {
+        document.getElementById("end_timepicker").style.display = "none";
       }
       else {
-        start_timepicker.style.display = "none";
+        document.getElementById("start_timepicker").style.display = "none";
       }
-    }
-    function toggleEndTime() {
-      document.getElementById("start_datepicker").style.display = "none";
-      document.getElementById("end_datepicker").style.display = "none";
-      document.getElementById("start_timepicker").style.display = "none";
 
-      var end_timepicker = document.getElementById("end_timepicker");
-      if (end_timepicker.style.display != "inline-block") {
-        end_timepicker.style.display = "inline-block";
+      var timepicker = document.getElementById(`${start_or_end_str}_timepicker`);
+      if (timepicker.style.display != "inline-block") {
+        timepicker.style.display = "inline-block";
       }
       else {
-        end_timepicker.style.display = "none";
+        timepicker.style.display = "none";
       }
     }
     function updateTimeFormDates(is_start_time=false) { // @refactor
@@ -645,7 +588,10 @@ print %(
           }
         }
       }
-      start_timepicker_txt.value = time_str;
+
+      if (time_str) {
+        start_timepicker_txt.value = time_str;
+      }
 
       if (is_start_time) {
         document.getElementById("end_timepicker_txt").value = offset_time_str;
@@ -669,7 +615,9 @@ print %(
           time_str += end_period;
         }
       }
-      end_timepicker_txt.value = time_str;
+      if (time_str) {
+        end_timepicker_txt.value = time_str;
+      }
     }
   </script>
   <style>
