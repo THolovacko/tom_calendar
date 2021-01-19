@@ -508,12 +508,8 @@ print %(
         date_str += year;
       }
 
-      if (date_str) {
-        datepicker_txt.value = date_str;
-        return date_str;
-      }
-
-      return '';
+      datepicker_txt.value = date_str;
+      return date_str;
     }
     function onTimeWheelScroll(id) {
       var time_wheel = document.getElementById(id);
@@ -592,11 +588,8 @@ print %(
         }
       }
 
-      if (time_str) {
-        timepicker_txt.value = time_str;
-        return offset_time_str;
-      }
-      return '';
+      timepicker_txt.value = time_str;
+      return offset_time_str;
     }
   </script>
   <style>
