@@ -103,17 +103,17 @@ print %(
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
       <div class="date_wheel_select_box_cover_bottom"></div>
-      <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
-      <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
-      <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
+      <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+      <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+      <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
     </div>
     <div class="time_wheel_picker" id="start_timepicker">
       <div class="time_wheel_select_box_cover_top"></div>
       <div class="time_wheel_select_box"></div>
       <div class="time_wheel_select_box_cover_bottom"></div>
-      <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
-      <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
-      <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
+      <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+      <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+      <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
     <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
     <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
@@ -122,17 +122,17 @@ print %(
       <div class="date_wheel_select_box_cover_top"></div>
       <div class="date_wheel_select_box"></div>
       <div class="date_wheel_select_box_cover_bottom"></div>
-      <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
-      <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
-      <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li></ul>
+      <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+      <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
+      <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
     </div>
     <div class="time_wheel_picker" id="end_timepicker">
       <div class="time_wheel_select_box_cover_top"></div>
       <div class="time_wheel_select_box"></div>
       <div class="time_wheel_select_box_cover_bottom"></div>
-      <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
-      <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
-      <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)" data-selected-value="TBD"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
+      <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+      <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+      <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
     </div>
   </div>
   <script>
@@ -151,6 +151,23 @@ print %(
       'November'  : '10',
       'December'  : '11'
     }
+    var data_selected_value = {}; // maps an element id to its current_value (made to replace data attributes)
+    var scroll_tops = {
+      'start_month_wheel'  : 0,
+      'start_year_wheel'   : 0,
+      'start_day_wheel'    : 0,
+      'start_hour_wheel'   : 0,
+      'start_minute_wheel' : 0,
+      'start_period_wheel' : 0,
+      'end_month_wheel'    : 0,
+      'end_year_wheel'     : 0,
+      'end_day_wheel'      : 0,
+      'end_hour_wheel'     : 0,
+      'end_minute_wheel'   : 0,
+      'end_period_wheel'   : 0
+    }
+    var sync_end_date = true;
+    var sync_end_time = true;
 
     function init() {
       var http = new XMLHttpRequest();
@@ -344,6 +361,10 @@ print %(
       popup_close_layer.style.display = "none";
       create_form.style.display = "none";
 
+      sync_end_date = true;
+      sync_end_time = true;
+      Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
+
       var create_form_title_input = document.getElementById("create_form_title_input");
       create_form_title_input.blur();
       create_form_title_input.value = "";
@@ -400,9 +421,9 @@ print %(
     }
     function hideExtraDaysOnDayWheelPickers() {
       ["start","end"].forEach(function(date) {
-        var year  = document.getElementById(`${date}_year_wheel`).getAttribute('data-selected-value');
-        var month = document.getElementById(`${date}_month_wheel`).getAttribute('data-selected-value');
-        var day   = document.getElementById(`${date}_day_wheel`).getAttribute('data-selected-value');
+        var year  = data_selected_value[`${date}_year_wheel`];
+        var month = data_selected_value[`${date}_month_wheel`];
+        var day   = data_selected_value[`${date}_day_wheel`];
 
         var is_year_not_selected = !year || (year == "TBD");
         var is_month_selected    = month && (month != "TBD");
@@ -434,14 +455,19 @@ print %(
       var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
       if (index < all_date_wheel_elements.length) {
-        date_wheel.setAttribute('data-selected-value', all_date_wheel_elements[index].innerText);
+        data_selected_value[id] = all_date_wheel_elements[index].innerText;
       }
       hideExtraDaysOnDayWheelPickers();
-      var date_str = updateCreateFormDate(id);
+      var end_date_str = updateCreateFormDate(id);
 
-      if ( RegExp('start').test(id) ) {
-        document.getElementById("end_datepicker_txt").value = date_str;
+      if ( sync_end_date && (RegExp('start').test(id)) ) {
+        document.getElementById("end_datepicker_txt").value = end_date_str;
+        scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
+        scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
+        scroll_tops["end_year_wheel"]  = document.getElementById("start_year_wheel").scrollTop;
       }
+
+      scroll_tops[id] = date_wheel.scrollTop;
     }
     function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
@@ -455,37 +481,33 @@ print %(
 
       var datepicker = document.getElementById(`${start_or_end_str}_datepicker`);
 
-
-    /*
-      var start_datepicker_txt = document.getElementById("start_datepicker_txt").value;
-
-      var start_month_wheel = document.getElementById("start_month_wheel");
-      var start_day_wheel   = document.getElementById("start_day_wheel");
-      var start_year_wheel  = document.getElementById("start_year_wheel");
-
-      var all_start_month_elements = start_month_wheel.getElementsByTagName("li");
-      for(var i=0; i < all_start_month_elements.length; i++) {
-        if(all_start_month_elements[i].innerText == start_month) {
-          start_month_wheel.scrollTop = start_month_wheel.childNodes[0].offsetHeight * (i - 1);
-        }
-      }
-    */
-
-
       if (datepicker.style.display != "inline-block") {
         datepicker.style.display = "inline-block";
       }
       else {
         datepicker.style.display = "none";
       }
+      
+      // update wheel scrollTops
+      document.getElementById("start_month_wheel").scrollTop = scroll_tops["start_month_wheel"];
+      document.getElementById("start_day_wheel").scrollTop   = scroll_tops["start_day_wheel"];
+      document.getElementById("start_year_wheel").scrollTop  = scroll_tops["start_year_wheel"];
+      document.getElementById("end_month_wheel").scrollTop   = scroll_tops["end_month_wheel"];
+      document.getElementById("end_day_wheel").scrollTop     = scroll_tops["end_day_wheel"];
+      document.getElementById("end_year_wheel").scrollTop    = scroll_tops["end_year_wheel"];
+
+      // sync start and end date until user edits end date
+      if (start_or_end_str === "end") {
+        sync_end_date = (document.getElementById("end_datepicker_txt").value === "");
+      }
     }
     function updateCreateFormDate(current_wheel_id) {
       var date = RegExp('start').test(current_wheel_id) ? "start": "end";
 
       var datepicker_txt = document.getElementById(`${date}_datepicker_txt`);
-      var year = document.getElementById(`${date}_year_wheel`).getAttribute('data-selected-value');
-      var month = document.getElementById(`${date}_month_wheel`).getAttribute('data-selected-value');
-      var day = document.getElementById(`${date}_day_wheel`).getAttribute('data-selected-value');
+      var year  = data_selected_value[`${date}_year_wheel`];
+      var month = data_selected_value[`${date}_month_wheel`];
+      var day   = data_selected_value[`${date}_day_wheel`];
 
       var date_str = "";
       if (month && (month != "TBD")) {
@@ -515,12 +537,30 @@ print %(
       var time_wheel = document.getElementById(id);
       var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
       var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
-      time_wheel.setAttribute('data-selected-value', all_time_wheel_elements[index].innerText);
+      data_selected_value[id] = all_time_wheel_elements[index].innerText;
       var offset_time_str = updateCreateFormTime(id);
 
-      if ( RegExp('start').test(id) ) {
+      if ( sync_end_time && (RegExp('start').test(id)) ) {
         document.getElementById("end_timepicker_txt").value = offset_time_str;
+        var start_hour_wheel = document.getElementById("start_hour_wheel");
+        if (data_selected_value["start_hour_wheel"]) {
+          if (data_selected_value["start_hour_wheel"] != "TBD") {
+            scroll_tops["end_hour_wheel"] = start_hour_wheel.scrollTop + start_hour_wheel.childNodes[0].offsetHeight;
+          }
+          scroll_tops["end_minute_wheel"] = document.getElementById("start_minute_wheel").scrollTop;
+          if (data_selected_value["start_hour_wheel"] != 11) {
+            scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop;
+          } else {
+            if (data_selected_value["start_period_wheel"] == "AM") {
+              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop + document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+            } else if (data_selected_value["start_period_wheel"] == "PM") {
+              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop - document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+            }
+          }
+        }
       }
+
+      scroll_tops[id] = time_wheel.scrollTop;
     }
     function toggleTime(start_or_end_str) {
       document.getElementById("start_datepicker").style.display = "none";
@@ -540,14 +580,27 @@ print %(
       else {
         timepicker.style.display = "none";
       }
+
+      // update wheel scrollTops
+      document.getElementById("start_hour_wheel").scrollTop   = scroll_tops["start_hour_wheel"];
+      document.getElementById("start_minute_wheel").scrollTop = scroll_tops["start_minute_wheel"];
+      document.getElementById("start_period_wheel").scrollTop = scroll_tops["start_period_wheel"];
+      document.getElementById("end_hour_wheel").scrollTop     = scroll_tops["end_hour_wheel"];
+      document.getElementById("end_minute_wheel").scrollTop   = scroll_tops["end_minute_wheel"];
+      document.getElementById("end_period_wheel").scrollTop   = scroll_tops["end_period_wheel"];
+
+      // sync start and end date until user edits end date
+      if (start_or_end_str === "end") {
+        sync_end_time = (document.getElementById("end_timepicker_txt").value === "");
+      }
     }
     function updateCreateFormTime(current_wheel_id) {
       var date = RegExp('start').test(current_wheel_id) ? "start": "end";
 
       var timepicker_txt = document.getElementById(`${date}_timepicker_txt`);
-      var hour = document.getElementById(`${date}_hour_wheel`).getAttribute('data-selected-value');
-      var minute = document.getElementById(`${date}_minute_wheel`).getAttribute('data-selected-value');
-      var period = document.getElementById(`${date}_period_wheel`).getAttribute('data-selected-value');
+      var hour = data_selected_value[`${date}_hour_wheel`];
+      var minute = data_selected_value[`${date}_minute_wheel`];
+      var period = data_selected_value[`${date}_period_wheel`];
 
       var time_str = "";
       var offset_time_str = "";
