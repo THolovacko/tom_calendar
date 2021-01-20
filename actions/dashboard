@@ -168,7 +168,20 @@ print %(
     }
     var sync_end_date = true;
     var sync_end_time = true;
-
+    var timers = {
+      'start_month_wheel'  : -1,
+      'start_year_wheel'   : -1,
+      'start_day_wheel'    : -1,
+      'start_hour_wheel'   : -1,
+      'start_minute_wheel' : -1,
+      'start_period_wheel' : -1,
+      'end_month_wheel'    : -1,
+      'end_year_wheel'     : -1,
+      'end_day_wheel'      : -1,
+      'end_hour_wheel'     : -1,
+      'end_minute_wheel'   : -1,
+      'end_period_wheel'   : -1
+    }
     function init() {
       var http = new XMLHttpRequest();
       http.open('POST', 'validate_tokens_and_load_initial_content', true);
@@ -451,23 +464,28 @@ print %(
       });
     }
     function onDateWheelScroll(id) {
-      var date_wheel = document.getElementById(id);
-      var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
-      var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
-      if (index < all_date_wheel_elements.length) {
-        data_selected_value[id] = all_date_wheel_elements[index].innerText;
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
       }
-      hideExtraDaysOnDayWheelPickers();
-      var end_date_str = updateCreateFormDate(id);
+      timers[id] = window.setTimeout(function(){
+        var date_wheel = document.getElementById(id);
+        var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
+        if (index < all_date_wheel_elements.length) {
+          data_selected_value[id] = all_date_wheel_elements[index].innerText;
+        }
+        hideExtraDaysOnDayWheelPickers();
+        var end_date_str = updateCreateFormDate(id);
 
-      if ( sync_end_date && (RegExp('start').test(id)) ) {
-        document.getElementById("end_datepicker_txt").value = end_date_str;
-        scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
-        scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
-        scroll_tops["end_year_wheel"]  = document.getElementById("start_year_wheel").scrollTop;
-      }
+        if ( sync_end_date && (RegExp('start').test(id)) ) {
+          document.getElementById("end_datepicker_txt").value = end_date_str;
+          scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
+          scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
+          scroll_tops["end_year_wheel"]  = document.getElementById("start_year_wheel").scrollTop;
+        }
 
-      scroll_tops[id] = date_wheel.scrollTop;
+        scroll_tops[id] = date_wheel.scrollTop;
+      }, 300);
     }
     function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
@@ -534,33 +552,38 @@ print %(
       return date_str;
     }
     function onTimeWheelScroll(id) {
-      var time_wheel = document.getElementById(id);
-      var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
-      var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
-      data_selected_value[id] = all_time_wheel_elements[index].innerText;
-      var offset_time_str = updateCreateFormTime(id);
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
 
-      if ( sync_end_time && (RegExp('start').test(id)) ) {
-        document.getElementById("end_timepicker_txt").value = offset_time_str;
-        var start_hour_wheel = document.getElementById("start_hour_wheel");
-        if (data_selected_value["start_hour_wheel"]) {
-          if (data_selected_value["start_hour_wheel"] != "TBD") {
-            scroll_tops["end_hour_wheel"] = start_hour_wheel.scrollTop + start_hour_wheel.childNodes[0].offsetHeight;
-          }
-          scroll_tops["end_minute_wheel"] = document.getElementById("start_minute_wheel").scrollTop;
-          if (data_selected_value["start_hour_wheel"] != 11) {
-            scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop;
-          } else {
-            if (data_selected_value["start_period_wheel"] == "AM") {
-              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop + document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
-            } else if (data_selected_value["start_period_wheel"] == "PM") {
-              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop - document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+      timers[id] = window.setTimeout(function(){
+        var time_wheel = document.getElementById(id);
+        var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
+        var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
+        data_selected_value[id] = all_time_wheel_elements[index].innerText;
+        var offset_time_str = updateCreateFormTime(id);
+
+        if ( sync_end_time && (RegExp('start').test(id)) ) {
+          document.getElementById("end_timepicker_txt").value = offset_time_str;
+          var start_hour_wheel = document.getElementById("start_hour_wheel");
+          if (data_selected_value["start_hour_wheel"]) {
+            if (data_selected_value["start_hour_wheel"] != "TBD") {
+              scroll_tops["end_hour_wheel"] = start_hour_wheel.scrollTop + start_hour_wheel.childNodes[0].offsetHeight;
+            }
+            scroll_tops["end_minute_wheel"] = document.getElementById("start_minute_wheel").scrollTop;
+            if (data_selected_value["start_hour_wheel"] != 11) {
+              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop;
+            } else {
+              if (data_selected_value["start_period_wheel"] == "AM") {
+                scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop + document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+              } else if (data_selected_value["start_period_wheel"] == "PM") {
+                scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop - document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+              }
             }
           }
         }
-      }
-
-      scroll_tops[id] = time_wheel.scrollTop;
+        scroll_tops[id] = time_wheel.scrollTop;
+      }, 300);
     }
     function toggleTime(start_or_end_str) {
       document.getElementById("start_datepicker").style.display = "none";
