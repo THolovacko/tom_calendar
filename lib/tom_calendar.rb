@@ -2,6 +2,7 @@ require 'aws-sdk-dynamodb'
 require 'googleauth/client_id'
 require 'googleauth/web_user_authorizer'
 require 'googleauth/token_store'
+require "google/apis/calendar_v3"
 require 'json'
 require 'digest'
 
@@ -132,6 +133,28 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   rescue Exception => e
     return false
   end
+end
+
+def get_primary_google_calendar(google_id)
+  dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_authorizer     = get_google_authorizer(dynamodb)
+  service               = Google::Apis::CalendarV3::CalendarService.new
+  service.authorization = google_authorizer.get_credentials(google_id)
+  service.client_options.application_name = 'TomCalendar'.freeze
+
+  page_token = nil
+  begin
+    calendar_list = service.list_calendar_lists(page_token: page_token)
+    calendar_list.items.each do |item|
+      return item if item.primary?
+    end
+    if calendar_list.next_page_token != page_token
+      page_token = calendar_list.next_page_token
+    else
+      page_token = nil
+    end
+  end while !page_token.nil?
+  return nil
 end
 
 def calculate_time_passed_in_words(previous_time)

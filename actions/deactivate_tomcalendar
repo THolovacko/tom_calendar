@@ -1,7 +1,6 @@
 #! /usr/bin/ruby
 
 require_relative '../lib/tom_calendar.rb'
-require "google/apis/calendar_v3"
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''

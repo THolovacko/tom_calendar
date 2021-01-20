@@ -184,7 +184,12 @@ print %(
       'end_minute_wheel'   : -1,
       'end_period_wheel'   : -1
     }
+
     function init() {
+      if ( localStorage.getItem("user_time_zone") ) {
+        document.getElementById("time_zone_txt").value = localStorage.getItem("user_time_zone");
+      }
+
       var http = new XMLHttpRequest();
       http.open('POST', 'validate_tokens_and_load_initial_content', true);
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
@@ -194,6 +199,8 @@ print %(
 
           if (result["is_valid"]) {
             // handle initial data load
+            document.getElementById("time_zone_txt").value = result["time_zone"];
+            localStorage.setItem("user_time_zone", result["time_zone"]);
             
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'create_tomcalendar_if_needed', true);

@@ -6,12 +6,15 @@ result = { is_valid: false }
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
+session_id        = JSON.parse(cookie_session_id)
 
-if ( next_session_id = refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id) )
+if refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   result[:is_valid] = true
-  result[:next_session_id] = next_session_id
 
   # load initial data
+  google_id          = session_id['google_id']
+  google_calendar    = get_primary_google_calendar(session_id['google_id'])
+  result[:time_zone] = google_calendar.time_zone
 end
 
 print "Content-type: application/json\n\n#{result.to_json}"
