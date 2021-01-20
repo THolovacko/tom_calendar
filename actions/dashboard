@@ -1171,15 +1171,15 @@ print %(
     #time_zone {
       height: #{4 * VH_FACTOR}vh;
       width: 100%;
+      margin-top: #{1.25 * VH_FACTOR}vh
     }
     #time_zone_icon {
       display: inline-block;
       float: left;
       height: #{4 * VH_FACTOR}vh;
-      width: #{5 * VW_FACTOR}vw;
-      margin-top: #{1.5 * VH_FACTOR}vh;
-      margin-left: #{4.75 * VW_FACTOR}vw;
-      margin-right: #{4 * VW_FACTOR}vw;
+      width: #{4 * VW_FACTOR}vw;
+      margin-left: #{5 * VW_FACTOR}vw;
+      margin-right: #{5 * VW_FACTOR}vw;
       line-height: #{4 * VH_FACTOR}vh;
     }
     #time_zone input[type=text] {
@@ -1191,7 +1191,6 @@ print %(
       font-size: #{4 * FONT_FACTOR}rem;
       float: left;
       outline: none;
-      margin-top: #{1.5 * VH_FACTOR}vh;
       line-height: #{4 * VH_FACTOR}vh;
     }
   </style>
