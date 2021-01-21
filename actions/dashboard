@@ -679,6 +679,9 @@ print %(
     function onTimeZone() {
     }
     function parseTimeZone(target_time_zone) {
+      if (!target_time_zone) {
+        return '';
+      }
       var time_zone_parts = target_time_zone.split('/');
       if (time_zone_parts.length > 1) {
         var time_zone_str = time_zone_parts[time_zone_parts.length - 1].replace(/_/g, ' ');
