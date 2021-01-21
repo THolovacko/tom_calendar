@@ -12,9 +12,6 @@ if refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
   result[:is_valid] = true
 
   # load initial data
-  google_id          = session_id['google_id']
-  google_calendar    = get_primary_google_calendar(session_id['google_id'])
-  result[:time_zone] = google_calendar.time_zone
 end
 
 print "Content-type: application/json\n\n#{result.to_json}"
