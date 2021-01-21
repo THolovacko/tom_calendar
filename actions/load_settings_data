@@ -47,7 +47,8 @@ begin
     result[:sessions].push({
       device_type: session['user_agent'].match(/\((?<device>\w+)/)[:device],
       last_active: calculate_time_passed_in_words(Time.parse(session['last_updated'])),
-      device_id:   session['device_id']
+      device_id:   session['device_id'],
+      time_zone:   session['time_zone']
     })
     session_index = session_index + 1
   end

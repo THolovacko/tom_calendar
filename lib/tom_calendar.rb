@@ -99,7 +99,7 @@ def get_session_id_from_cookies()
   return JSON.parse(session_id)
 end
 
-def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
+def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone=nil)
   return false unless cookie_session_id
   session_id = JSON.parse(cookie_session_id)
 
@@ -121,6 +121,7 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
 
     # update the item
     item['last_updated'] = Time.now.to_s
+    item['time_zone']    = time_zone
 
     session_params = {
       table_name: 'Sessions',

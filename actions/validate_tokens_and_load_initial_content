@@ -7,8 +7,9 @@ result = { is_valid: false }
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 session_id        = JSON.parse(cookie_session_id)
+time_zone         = ARGF.first
 
-if refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id)
+if refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone)
   result[:is_valid] = true
 
   # load initial data

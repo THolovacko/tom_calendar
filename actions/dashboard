@@ -75,6 +75,7 @@ print %(
           <div class="settings_page_title">Sessions</div>
         </div>
         <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
+        <div id="sessions_page_session_list"></div>
       </div>
       <div class="page", id="deactivate_page">
         <div class="sessions_page_header">
@@ -212,7 +213,7 @@ print %(
           }
         }
       }
-      http.send('');
+      http.send(user_time_zone);
 
       var request = new XMLHttpRequest();
       request.open('POST', 'load_settings_data', true);
@@ -221,10 +222,10 @@ print %(
         if(request.status == 200) {
           result = JSON.parse(request.responseText);
 
-          var deactivate_page       = document.getElementById("deactivate_page");
-          var sessions_page         = document.getElementById("sessions_page");
-          var sessions              = result['sessions'];
-          var current_session_index = result['current_session_index'];
+          var deactivate_page            = document.getElementById("deactivate_page");
+          var sessions_page_session_list = document.getElementById("sessions_page_session_list");
+          var sessions                   = result['sessions'];
+          var current_session_index      = result['current_session_index'];
 
           // swap first sesions with active session
           var first_session = sessions[0];
@@ -237,11 +238,12 @@ print %(
             session_icon_type = "computer";
           }
 
-          sessions_page.insertAdjacentHTML("beforeend", `
+          sessions_page_session_list.insertAdjacentHTML("beforeend", `
             <div class="session_widget" id="active_session_widget">
               <i class="material-icons md-36 session_icon">${session_icon_type}</i>
               <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
+              <!-- <span class="session_device_type">${sessions[0]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
               <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
               <span class="session_last_updated" style="color: green;">Active now</span>
             </div>
@@ -253,11 +255,12 @@ print %(
             if (sessions[i]['device_type'].toLowerCase().match(phone_regex) == null) {
               session_icon_type = "computer";
             }
-            sessions_page.insertAdjacentHTML("beforeend", `
+            sessions_page_session_list.insertAdjacentHTML("beforeend", `
               <div class="session_widget" id=${sessions[i]['device_id']}>
                 <i class="material-icons md-36 session_icon">${session_icon_type}</i>
                 <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
                 <span class="session_device_type">${sessions[i]['device_type']}</span>
+                <!-- <span class="session_device_type">${sessions[i]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
                 <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
                 <span class="session_last_updated">${sessions[i]['last_active']}</span>
                 <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutSession('${sessions[i]['device_id']}');">Log out</div>
@@ -265,7 +268,7 @@ print %(
             `);
           }
 
-          sessions_page.insertAdjacentHTML("beforeend", `
+          sessions_page_session_list.insertAdjacentHTML("beforeend", `
             <div style="margin-top:#{4 * VH_FACTOR}vh;"></div>
             <div id="all_sessions_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutAllOtherSessions();">Log out all other sessions</div>
           `);
@@ -1039,7 +1042,7 @@ print %(
       vertical-align: middle;
     }
     .session_device_type {
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
     }
     .session_last_updated {
       font-size: #{3 * FONT_FACTOR}rem;
@@ -1047,7 +1050,7 @@ print %(
     }
     .session_log_out {
       display: inline-block;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
       color: red;
       float: right;
       padding-right: #{8 * VW_FACTOR}vw;
@@ -1058,7 +1061,7 @@ print %(
       display: inline-block;
       width: 100%;
       height: #{5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
       font-weight: bold;
       outline: none;
       border-top-style: solid;
