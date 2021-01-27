@@ -1122,8 +1122,7 @@ print %(
     #deactivate_btn {
       display: inline-block;
       height: #{5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
-      font-weight: bold;
+      font-size: #{4.25 * FONT_FACTOR}rem;
       outline: none;
       cursor: pointer;
       text-align: center;
