@@ -719,7 +719,6 @@ print %(
       -moz-appearance: none;
       -webkit-appearance: none;
       text-indent: 1px;
-      cursor: pointer;
     }
     option {
       background-color: white;
@@ -1086,7 +1085,7 @@ print %(
     }
     .session_log_out {
       display: inline-block;
-      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-size: #{3.75 * FONT_FACTOR}rem;
       color: red;
       float: right;
       padding-right: #{8 * VW_FACTOR}vw;
@@ -1097,8 +1096,7 @@ print %(
       display: inline-block;
       width: 100%;
       height: #{5 * VH_FACTOR}vh;
-      font-size: #{3.5 * FONT_FACTOR}rem;
-      font-weight: bold;
+      font-size: #{4 * FONT_FACTOR}rem;
       outline: none;
       border-top-style: solid;
       border-right-style: hidden;
