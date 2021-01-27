@@ -244,7 +244,7 @@ print %(
               <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
               <!-- <span class="session_device_type">${sessions[0]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
-              <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
+              <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
               <span class="session_last_updated" style="color: green;">Active now</span>
             </div>
           `);
@@ -261,7 +261,7 @@ print %(
                 <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
                 <span class="session_device_type">${sessions[i]['device_type']}</span>
                 <!-- <span class="session_device_type">${sessions[i]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
-                <div style="display:inline-block;width:#{1 * VW_FACTOR}vw"></div>
+                <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
                 <span class="session_last_updated">${sessions[i]['last_active']}</span>
                 <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutSession('${sessions[i]['device_id']}');">Log out</div>
               </div>
