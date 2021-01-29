@@ -7,6 +7,11 @@
   * jwt (2.2.1) gem
 * Apache/2.4.41
 * AWS DynamoDB
+* npm (6.14.4)
+  * babel-cli@6.26.0 
+  * babel-preset-react-app@3.1.2
+  * @material-ui/core@4.11.3
+  * @material-ui/icons@4.11.2
 
 # Setup
 

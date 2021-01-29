@@ -3,6 +3,7 @@
 # @remember: should download the header link libs locally (maybe concatenate?)
 # @remember: figure out how to scale radius?
 # @test:     user agent detection on several platforms
+# @current: figuring out react with material io might need to re install npm
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -38,8 +39,15 @@ print %(
   <head>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- <script src="https://unpkg.com/@material-ui/core@latest/umd/material-ui.production.min.js" crossorigin="anonymous"></script> -->
+
+    <!-- <script src="https://unpkg.com/react@16/umd/react.development.js"></script> -->
+    <!-- <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script> -->
+    <!-- <script src="https://unpkg.com/@material-ui/core@latest/umd/material-ui.development.js"></script> -->
+
     <script src="public/dashboard_react_components.js"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
