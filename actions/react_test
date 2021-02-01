@@ -13,35 +13,35 @@ print %(
 
 
   <script type="text/babel">
-    const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon } = MaterialUI; // Components are available in MaterialUI object
+    const { Button, Drawer, List, ListItem, ListItemAvatar, Avatar, ListItemText, ListItemIcon, Icon } = MaterialUI; // Components are available in MaterialUI object
+
+
+
 
     ReactDOM.render(
-    <List>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar>
-            <Icon>search</Icon>
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary="Example Timezone" secondary="current time" />
-      </ListItem>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar>
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary="Example Timezone" secondary="Jan 7, 2014" />
-      </ListItem>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar>
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary="Example Timezone" secondary="July 20, 2014" />
-      </ListItem>
-    </List>, 
-      document.getElementById("root") 
+
+
+
+
+
+				<List>
+					{['All mail', 'Trash', 'Spam'].map((text, index) => (
+						<ListItem button key={text}>
+							<ListItemIcon>{index % 2 === 0 ? <Icon>Inbox</Icon> : <Icon>Mail</Icon>}</ListItemIcon>
+							<ListItemText primary={text} />
+						</ListItem>
+					))}
+				</List>
+
+
+
+    , document.querySelector('#root')
     );
+
+
+
+
+
   </script>
 
 

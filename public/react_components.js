@@ -7,6 +7,7 @@
 
 'use strict';
 
+const e = React.createElement;
 const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
