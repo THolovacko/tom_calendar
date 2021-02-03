@@ -718,6 +718,15 @@ print %(
     function onTimeZones() {
       document.getElementById("time_zones_react_container").style.display = "block";
     }
+    function handleTimeZonesClick(time_zone) {
+      document.getElementById("time_zones_react_container").value = time_zone;
+      document.getElementById("time_zone_txt").value = `${parseTimeZone(time_zone)} Time`;
+      document.getElementById("time_zones_react_container").display = "none";
+
+      console.log(time_zone);
+      console.log(document.getElementById("time_zone_txt").value);
+      console.log(document.getElementById("time_zones_react_container").display);
+    }
   </script>
   <style>
     html {
@@ -1282,6 +1291,13 @@ print %(
       outline: none;
       line-height: #{4 * VH_FACTOR}vh;
       cursor: pointer;
+    }
+    #time_zones_react_container {
+      overflow:hidden;
+      overflow-y:scroll;
+    }
+    #time_zones_react_container::-webkit-scrollbar {
+      display: none;
     }
     #time_zones_react_container .MuiList-root {
       margin-top: #{1.5 * VH_FACTOR}vh;
