@@ -35,15 +35,19 @@ class TimeZones extends React.Component {
   }
 
   render() {
-    return React.createElement(List, null, /*#__PURE__*/React.createElement(ListItem, null, /*#__PURE__*/React.createElement(ListItemAvatar, null, /*#__PURE__*/React.createElement(Avatar, null, /*#__PURE__*/React.createElement(Icon, null, "public"))), /*#__PURE__*/React.createElement(ListItemText, {
+    return /*#__PURE__*/React.createElement(List, {
+      disablePadding: true
+    }, /*#__PURE__*/React.createElement(ListItem, null, /*#__PURE__*/React.createElement(ListItemAvatar, null, /*#__PURE__*/React.createElement(Avatar, null, /*#__PURE__*/React.createElement(Icon, {
+      fontSize: "inherit"
+    }, "public"))), /*#__PURE__*/React.createElement(ListItemText, {
       primary: "Example Timezone",
       secondary: "current time"
     })), /*#__PURE__*/React.createElement(ListItem, null, /*#__PURE__*/React.createElement(ListItemAvatar, null, /*#__PURE__*/React.createElement(Avatar, null, /*#__PURE__*/React.createElement(Icon, null, "public"))), /*#__PURE__*/React.createElement(ListItemText, {
       primary: "Example Timezone",
-      secondary: "Jan 7, 2014"
+      secondary: "time"
     })), /*#__PURE__*/React.createElement(ListItem, null, /*#__PURE__*/React.createElement(ListItemAvatar, null, /*#__PURE__*/React.createElement(Avatar, null, /*#__PURE__*/React.createElement(Icon, null, "public"))), /*#__PURE__*/React.createElement(ListItemText, {
       primary: "Example Timezone",
-      secondary: "July 20, 2014"
+      secondary: "time"
     })));
   }
 }
