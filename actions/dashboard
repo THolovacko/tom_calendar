@@ -431,7 +431,9 @@ print %(
       }
 
       document.getElementById("time_zone_txt").value = `${parseTimeZone(user_time_zone)} Time`;
+      document.getElementById("time_zones_react_container").scrollTop = 0;
       document.getElementById("time_zones_react_container").style.display = "none";
+      document.getElementById("time_zones_react_container").value = null;
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -721,11 +723,8 @@ print %(
     function handleTimeZonesClick(time_zone) {
       document.getElementById("time_zones_react_container").value = time_zone;
       document.getElementById("time_zone_txt").value = `${parseTimeZone(time_zone)} Time`;
-      document.getElementById("time_zones_react_container").display = "none";
-
-      console.log(time_zone);
-      console.log(document.getElementById("time_zone_txt").value);
-      console.log(document.getElementById("time_zones_react_container").display);
+      document.getElementById("time_zones_react_container").scrollTop = 0;
+      document.getElementById("time_zones_react_container").style.display = "none";
     }
   </script>
   <style>
@@ -1293,6 +1292,7 @@ print %(
       cursor: pointer;
     }
     #time_zones_react_container {
+      /* also defined with create_form */
       overflow:hidden;
       overflow-y:scroll;
     }
