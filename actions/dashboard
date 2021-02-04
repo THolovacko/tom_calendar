@@ -199,7 +199,8 @@ print %(
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
         <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:white;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
-          <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_arrow_left</i>
+          <!-- <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_arrow_left</i> -->
+          <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
           <p id="time_zones_title">Time zone</p>
         </div>
       `);
@@ -1305,10 +1306,6 @@ print %(
     #time_zones_react_container .material-icons {
       font-size: #{7 * FONT_FACTOR}rem;
     }
-    #time_zones_react_container .material-icons.time_zones_close {
-      font-size: #{8 * FONT_FACTOR}rem;
-      padding: 0;
-    }
     #time_zones_react_container .MuiAvatar-colorDefault {
       background-color: white;
       color: black;
@@ -1320,7 +1317,7 @@ print %(
       float: left;
       font-size: #{5 * FONT_FACTOR}rem;
       margin-top: #{2.75 * VH_FACTOR}vh;
-      margin-left: #{4.25 * VW_FACTOR}vw;
+      margin-left: #{3 * VW_FACTOR}vw;
     }
   </style>
 </html>
