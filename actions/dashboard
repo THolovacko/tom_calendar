@@ -2,6 +2,7 @@
 
 # @remember: should download the header link libs locally (maybe concatenate?)
 # @remember: figure out how to scale radius?
+# @remember: should allow start date be a season and or Q1, Q2 etc....
 # @test:     user agent detection on several platforms
 
 
@@ -143,7 +144,7 @@ print %(
         <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZones()">
       </div>
     </div>
-    <div id="time_zones_react_container"></div>
+    <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
   </body>
   <script>
     var current_settings_page = "settings";
@@ -196,6 +197,12 @@ print %(
 
     function init() {
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
+      document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
+        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:white;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
+          <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_arrow_left</i>
+          <p id="time_zones_title">Time zone</p>
+        </div>
+      `);
 
       var http = new XMLHttpRequest();
       http.open('POST', 'validate_tokens_and_load_initial_content', true);
@@ -250,7 +257,6 @@ print %(
               <i class="material-icons md-36 session_icon">${session_icon_type}</i>
               <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
-              <!-- <span class="session_device_type">${sessions[0]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
               <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
               <span class="session_last_updated" style="color: green;">Active now</span>
             </div>
@@ -267,7 +273,6 @@ print %(
                 <i class="material-icons md-36 session_icon">${session_icon_type}</i>
                 <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
                 <span class="session_device_type">${sessions[i]['device_type']}</span>
-                <!-- <span class="session_device_type">${sessions[i]['device_type']} &middot ${parseTimeZone(sessions[0]['time_zone'])}</span> -->
                 <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
                 <span class="session_last_updated">${sessions[i]['last_active']}</span>
                 <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutSession('${sessions[i]['device_id']}');">Log out</div>
@@ -716,6 +721,10 @@ print %(
       document.getElementById("time_zones_react_container").scrollTop = 0;
       document.getElementById("time_zones_react_container").style.display = "none";
     }
+    function onTimeZonesClose() {
+      document.getElementById("time_zones_react_container").scrollTop = 0;
+      document.getElementById("time_zones_react_container").style.display = "none";
+    }
   </script>
   <style>
     html {
@@ -764,6 +773,7 @@ print %(
       position: fixed;
       top: 0;
       left: 0;
+      right: 0;
     }
     #background {
       border: none;
@@ -841,7 +851,7 @@ print %(
     .material-icons.nav.create:hover {
       background-color: #EEEEEE;
     }
-    .material-icons.create_close {
+    .material-icons.create_close, .material-icons.time_zones_close {
       float: left;
       margin-left: #{4 * VW_FACTOR}vw;
       margin-top: #{2 * VH_FACTOR}vh;
@@ -851,7 +861,7 @@ print %(
       color: #616161;
       padding: 6px;
     }
-    .material-icons.create_close:hover {
+    .material-icons.create_close:hover, .material-icons.time_zones_close:hover {
       background-color: #EEEEEE;
     }
     .material-icons.search {
@@ -1290,10 +1300,14 @@ print %(
       display: none;
     }
     #time_zones_react_container .MuiList-root {
-      margin-top: #{1.5 * VH_FACTOR}vh;
+      margin-top: #{8 * VH_FACTOR}vh;
     }
     #time_zones_react_container .material-icons {
       font-size: #{7 * FONT_FACTOR}rem;
+    }
+    #time_zones_react_container .material-icons.time_zones_close {
+      font-size: #{8 * FONT_FACTOR}rem;
+      padding: 0;
     }
     #time_zones_react_container .MuiAvatar-colorDefault {
       background-color: white;
@@ -1301,6 +1315,12 @@ print %(
     }
     #time_zones_react_container .MuiTypography-root {
       font-size: #{3.5 * FONT_FACTOR}rem;
+    }
+    #time_zones_title {
+      float: left;
+      font-size: #{5 * FONT_FACTOR}rem;
+      margin-top: #{2.75 * VH_FACTOR}vh;
+      margin-left: #{4.25 * VW_FACTOR}vw;
     }
   </style>
 </html>
