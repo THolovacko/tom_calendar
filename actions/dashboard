@@ -143,6 +143,17 @@ print %(
         <i class="material-icons md-36" id="time_zone_icon">public</i>
         <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZones()">
       </div>
+      <div id="event_repeat_select">
+        <i class="material-icons md-36" id="event_repeat_select_icon">refresh</i>
+        <input type="text" id="event_repeat_select_txt" value="Does not repeat" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatSelect()">
+      </div>
+      <div class="repeat_wheel_picker" id="repeat_wheel_picker">
+        <div class="repeat_wheel_select_box_cover_top"></div>
+        <div class="repeat_wheel_select_box"></div>
+        <div class="repeat_wheel_select_box_cover_bottom"></div>
+        <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
+        <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
+      </div>
     </div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
   </body>
@@ -191,7 +202,9 @@ print %(
       'end_day_wheel'      : -1,
       'end_hour_wheel'     : -1,
       'end_minute_wheel'   : -1,
-      'end_period_wheel'   : -1
+      'end_period_wheel'   : -1,
+      'repeat_n_wheel'     : -1,
+      'time_span_wheel'    : -1
     }
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -310,6 +323,14 @@ print %(
       hideExtraDaysOnDayWheelPickers();
 
       document.getElementById("time_zone_txt").value = `${parseTimeZone(user_time_zone)} Time`;
+
+      var repeat_n_wheel = document.getElementById("repeat_n_wheel");
+      for(var i=1; i <= 99; i++) {
+        repeat_n_wheel.insertAdjacentHTML("beforeend", `<li id="repeat_wheel_li_${i}">${i}</li>`);
+      }
+      repeat_n_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -425,6 +446,11 @@ print %(
         end_timepicker.style = 'none';
         document.getElementById("end_timepicker_txt").value = "";
       }
+      var repeat_wheel_picker = document.getElementById("repeat_wheel_picker");
+      if (repeat_wheel_picker.style != 'none') {
+        repeat_wheel_picker.style = 'none';
+        document.getElementById("event_repeat_select_txt").value = "Does not repeat";
+      }
 
       document.getElementById("time_zone_txt").value = `${parseTimeZone(user_time_zone)} Time`;
       document.getElementById("time_zones_react_container").scrollTop = 0;
@@ -519,6 +545,7 @@ print %(
     function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
       document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
       if (start_or_end_str == "start") {
         document.getElementById("end_datepicker").style.display = "none";
       }
@@ -617,6 +644,7 @@ print %(
     function toggleTime(start_or_end_str) {
       document.getElementById("start_datepicker").style.display = "none";
       document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
 
       if (start_or_end_str == "start") {
         document.getElementById("end_timepicker").style.display = "none";
@@ -725,6 +753,85 @@ print %(
     function onTimeZonesClose() {
       document.getElementById("time_zones_react_container").scrollTop = 0;
       document.getElementById("time_zones_react_container").style.display = "none";
+    }
+    function onEventRepeatSelect() {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      var repeat_wheel_picker = document.getElementById("repeat_wheel_picker");
+      if (repeat_wheel_picker.style.display != "inline-block") {
+        repeat_wheel_picker.style.display = "inline-block";
+      } else {
+        repeat_wheel_picker.style.display = "none";
+      }
+    }
+    function onRepeatNWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function(){
+        var repeat_n_wheel = document.getElementById(id);
+        var index = Math.round(repeat_n_wheel.scrollTop / repeat_n_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        var all_repeat_n_wheel_elements = repeat_n_wheel.getElementsByTagName("li");
+        if (index < all_repeat_n_wheel_elements.length) {
+          data_selected_value[id] = all_repeat_n_wheel_elements[index].innerText;
+        }
+
+        if ( parseInt(data_selected_value[id]) == 1 ) {
+          document.getElementById("time_span_days").innerText = "day";
+          document.getElementById("time_span_weeks").innerText = "week";
+          document.getElementById("time_span_months").innerText = "month";
+          document.getElementById("time_span_years").innerText = "year";
+        } else {
+          document.getElementById("time_span_days").innerText = "days";
+          document.getElementById("time_span_weeks").innerText = "weeks";
+          document.getElementById("time_span_months").innerText = "months";
+          document.getElementById("time_span_years").innerText = "years";
+        }
+      }, 300);
+    }
+    function onTimeSpanWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function(){
+        var time_span_wheel = document.getElementById(id);
+        var index = Math.round(time_span_wheel.scrollTop / time_span_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        var all_time_span_wheel_elements = time_span_wheel.getElementsByTagName("li");
+        if (index < all_time_span_wheel_elements.length) {
+          data_selected_value[id] = all_time_span_wheel_elements[index].innerText;
+        }
+
+        for(var i=31; i <= 99 ; i++) {
+          document.getElementById(`repeat_wheel_li_${i}`).style.display = "none";
+        }
+
+        switch (data_selected_value[id].slice(0, -1)) { // slice last char to remove plural case
+          case 'day':
+            for(var i=31; i <= 99; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'week':
+            for(var i=31; i <= 52; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'month':
+            for(var i=31; i <= 36; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'year':
+            for(var i=31; i <= 30; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+        }
+      }, 300);
     }
   </script>
   <style>
@@ -1180,12 +1287,12 @@ print %(
     #save_event_btn:hover {
       background-color: #3986eb;
     }
-    .date_wheel_picker, .time_wheel_picker {
+    .date_wheel_picker, .time_wheel_picker, .repeat_wheel_picker {
       display: none;
       height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
-    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel {
+    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel, .repeat_n_wheel, .time_span_wheel {
       display: inline-block;
       height: 100%;
       overflow:hidden;
@@ -1194,7 +1301,7 @@ print %(
       scroll-snap-type: proximity;
       text-align: center;
     }
-    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar {
+    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar, .repeat_n_wheel::-webkit-scrollbar, .time_span_wheel::-webkit-scrollbar {
       display: none;
     }
     .month_wheel {
@@ -1223,7 +1330,14 @@ print %(
     .period_wheel {
       text-align: left;
     }
-    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li {
+    .repeat_n_wheel {
+      width: #{24 * VW_FACTOR}vw;
+    }
+    .time_span_wheel {
+      width: #{20 * VW_FACTOR}vw;
+      text-align: left;
+    }
+    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li, .time_span_wheel li, .repeat_n_wheel li {
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
@@ -1233,7 +1347,7 @@ print %(
       line-height: #{3 * VH_FACTOR}vh;
       vertical-align: middle;
     }
-    .date_wheel_select_box, .time_wheel_select_box {
+    .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box {
       width: 95%;
       height: #{6 * VH_FACTOR}vh;
       background-color: rgba(238, 238, 239, 1);
@@ -1245,7 +1359,7 @@ print %(
       margin: auto;
       margin-top: #{6 * VH_FACTOR}vh;
     }
-    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top {
+    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top, .repeat_wheel_select_box_cover_top {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
@@ -1255,7 +1369,7 @@ print %(
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
-    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom {
+    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom{
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
@@ -1266,12 +1380,12 @@ print %(
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
-    #time_zone {
+    #time_zone, #event_repeat_select {
       height: #{4 * VH_FACTOR}vh;
       width: 100%;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
-    #time_zone_icon {
+    #time_zone_icon, #event_repeat_select_icon {
       display: inline-block;
       float: left;
       height: #{4 * VH_FACTOR}vh;
@@ -1280,7 +1394,7 @@ print %(
       margin-right: #{5 * VW_FACTOR}vw;
       line-height: #{4 * VH_FACTOR}vh;
     }
-    #time_zone input[type=text] {
+    #time_zone input[type=text], #event_repeat_select input[type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
