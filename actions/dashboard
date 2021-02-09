@@ -187,7 +187,9 @@ print %(
       'end_day_wheel'      : 0,
       'end_hour_wheel'     : 0,
       'end_minute_wheel'   : 0,
-      'end_period_wheel'   : 0
+      'end_period_wheel'   : 0,
+      'repeat_n_wheel'     : 0,
+      'time_span_wheel'    : 0
     }
     var sync_end_date = true;
     var sync_end_time = true;
@@ -204,7 +206,8 @@ print %(
       'end_hour_wheel'     : -1,
       'end_minute_wheel'   : -1,
       'end_period_wheel'   : -1,
-      'repeat_wheel'       : -1
+      'repeat_n_wheel'     : -1,
+      'time_span_wheel'    : -1
     }
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -766,16 +769,18 @@ print %(
       var repeat_wheel_picker = document.getElementById("repeat_wheel_picker");
       if (repeat_wheel_picker.style.display != "inline-block") {
         repeat_wheel_picker.style.display = "inline-block";
+        document.getElementById("repeat_n_wheel").scrollTop = scroll_tops['repeat_n_wheel'];
+        document.getElementById("time_span_wheel").scrollTop = scroll_tops['time_span_wheel'];
       } else {
         repeat_wheel_picker.style.display = "none";
       }
     }
     function onRepeatNWheelScroll(id) {
-      if (timers['repeat_wheel'] != -1) {
-        clearTimeout(timers['repeat_test_wheel']);
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
       }
 
-      timers['repeat_wheel'] = window.setTimeout(function() {
+      timers[id] = window.setTimeout(function() {
         var repeat_n_wheel = document.getElementById(id);
 
         var index = Math.round(repeat_n_wheel.scrollTop / repeat_n_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
@@ -821,14 +826,15 @@ print %(
           }
         }
         updateCreateFormRepeat();
+        scroll_tops[id] = repeat_n_wheel.scrollTop;
       }, 300);
     }
     function onTimeSpanWheelScroll(id) {
-      if (timers['repeat_wheel'] != -1) {
-        clearTimeout(timers['repeat_test_wheel']);
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
       }
 
-      timers['repeat_wheel'] = window.setTimeout(function(){
+      timers[id] = window.setTimeout(function(){
         var time_span_wheel = document.getElementById(id);
         var index = Math.round(time_span_wheel.scrollTop / time_span_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
         var all_time_span_wheel_elements = time_span_wheel.getElementsByTagName("li");
@@ -863,6 +869,7 @@ print %(
             break;
         }
         updateCreateFormRepeat();
+        scroll_tops[id] = time_span_wheel.scrollTop;
       }, 300);
     }
     function updateCreateFormRepeat() {
