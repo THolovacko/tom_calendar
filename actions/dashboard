@@ -549,11 +549,6 @@ print %(
       }, 300);
     }
     function onDateWheelDiscreteScroll(event, id) {
-
-      var normalized_wheel = normalizeWheel(event);
-      console.log(normalized_wheel);
-      return;
-
       var is_scrolling_down = (event.deltaY > 0);
       var date_wheel = document.getElementById(id);
       var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
