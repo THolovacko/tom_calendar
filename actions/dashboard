@@ -159,6 +159,7 @@ print %(
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
   </body>
   <script>
+    const is_desktop = ('#{IS_DESKTOP}' == 'true');
     var current_settings_page = "settings";
     var months = {
       'January'   : '00',
@@ -526,12 +527,17 @@ print %(
       });
     }
     function onDateWheelScroll(id) {
-      if (timers[id] != -1) {
-        clearTimeout(timers[id]);
-      }
-      timers[id] = window.setTimeout(function(){
-        var date_wheel = document.getElementById(id);
+      var date_wheel = document.getElementById(id);
+      if (is_desktop) {
+        var is_scroll_down = date_wheel.scrollTop > scroll_tops[id];
+        date_wheel.scrollTop = scroll_tops[id];
         var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        if (is_scroll_down) {
+          date_wheel.scrollTop = (index + 1) * date_wheel.childNodes[0].offsetHeight;
+        } else if(date_wheel.scrollTop < scroll_tops[id]) {
+          date_wheel.scrollTop = (index - 1) * date_wheel.childNodes[0].offsetHeight;
+        }
+
         var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
         if (index < all_date_wheel_elements.length) {
           data_selected_value[id] = all_date_wheel_elements[index].innerText;
@@ -539,7 +545,7 @@ print %(
         hideExtraDaysOnDayWheelPickers();
         var end_date_str = updateCreateFormDate(id);
 
-        if ( sync_end_date && (RegExp('start').test(id)) ) {
+        if ( sync_end_date && (RegExp("start").test(id)) ) {
           document.getElementById("end_datepicker_txt").value = end_date_str;
           scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
           scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
@@ -547,7 +553,28 @@ print %(
         }
 
         scroll_tops[id] = date_wheel.scrollTop;
-      }, 300);
+      } else {
+        if (timers[id] != -1) {
+          clearTimeout(timers[id]);
+        }
+        timers[id] = window.setTimeout(function(){
+          var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
+          if (index < all_date_wheel_elements.length) {
+            data_selected_value[id] = all_date_wheel_elements[index].innerText;
+          }
+          hideExtraDaysOnDayWheelPickers();
+          var end_date_str = updateCreateFormDate(id);
+
+          if ( sync_end_date && (RegExp("start").test(id)) ) {
+            document.getElementById("end_datepicker_txt").value = end_date_str;
+            scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
+            scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
+            scroll_tops["end_year_wheel"]  = document.getElementById("start_year_wheel").scrollTop;
+          }
+
+          scroll_tops[id] = date_wheel.scrollTop;
+        }, 300);
+      }
     }
     function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
