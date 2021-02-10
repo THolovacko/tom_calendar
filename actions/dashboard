@@ -5,7 +5,7 @@
 # @remember: should allow start date be a season and or Q1, Q2 etc....
 # @test:     user agent detection on several platforms
 
-# @current: chrome wheel scrolling is skipping elements so maybe replace on scroll with on mouse change (only for desktops)
+# @current: replace desktop scroll wheel with 3 react virtualized lists
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -108,7 +108,7 @@ print %(
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
-        <ul class="month_wheel" id="start_month_wheel"  #{( IS_DESKTOP ? 'onwheel="onDateWheelDiscreteScroll(event,this.id)"' : 'onscroll="onDateWheelScroll(this.id)"' )}><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+        <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
         <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
         <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
@@ -547,23 +547,6 @@ print %(
         }
         scroll_tops[id] = date_wheel.scrollTop;
       }, 300);
-    }
-    function onDateWheelDiscreteScroll(event, id) {
-      var is_scrolling_down = (event.deltaY > 0);
-      var date_wheel = document.getElementById(id);
-      var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
-      var current_index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
-      date_wheel.scrollTop = 0;
-      var previous_index = current_index - 1;
-      var next_index = current_index + 1;
-
-      if (current_index < all_date_wheel_elements.length) {
-        if (is_scrolling_down && (next_index < all_date_wheel_elements.length)) {
-          date_wheel.scrollTop = date_wheel.childNodes[0].offsetHeight * next_index;
-        } else if(previous_index > 1) {
-          date_wheel.scrollTop = date_wheel.childNodes[0].offsetHeight * previous_index;
-        }
-      }
     }
     function toggleDate(start_or_end_str) {
       document.getElementById("start_timepicker").style.display = "none";
@@ -1439,7 +1422,7 @@ print %(
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
-    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom{
+    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
