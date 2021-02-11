@@ -5,7 +5,6 @@
 # @remember: should allow start date be a season and or Q1, Q2 etc....
 # @test:     user agent detection on several platforms
 
-# @current: replace desktop scroll wheel with 3 react virtualized lists
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -108,16 +107,22 @@ print %(
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="month_wheel_desktop_cover" id="start_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+        #{ %(<div class="day_wheel_desktop_cover" id="start_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+        #{ %(<div class="year_wheel_desktop_cover" id="start_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="time_wheel_picker" id="start_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="hour_wheel_desktop_cover" id="start_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+        #{ %(<div class="minute_wheel_desktop_cover" id="start_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+        #{ %(<div class="period_wheel_desktop_cover" id="start_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
       </div>
       <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
@@ -127,16 +132,22 @@ print %(
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="month_wheel_desktop_cover" id="end_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+        #{ %(<div class="day_wheel_desktop_cover" id="end_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
+        #{ %(<div class="year_wheel_desktop_cover" id="end_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="time_wheel_picker" id="end_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="hour_wheel_desktop_cover" id="end_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+        #{ %(<div class="minute_wheel_desktop_cover" id="end_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+        #{ %(<div class="period_wheel_desktop_cover" id="end_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
       </div>
       <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
@@ -152,7 +163,9 @@ print %(
         <div class="repeat_wheel_select_box_cover_top"></div>
         <div class="repeat_wheel_select_box"></div>
         <div class="repeat_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="repeat_n_wheel_desktop_cover" id="repeat_n_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
+        #{ %(<div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
       </div>
     </div>
@@ -213,10 +226,26 @@ print %(
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     function init() {
+      if(is_desktop) {
+        document.getElementById("start_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_month_wheel') },{passive: true});
+        document.getElementById("start_day_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_day_wheel') },{passive: true});
+        document.getElementById("start_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_year_wheel') },{passive: true});
+        document.getElementById("end_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_month_wheel') },{passive: true});
+        document.getElementById("end_day_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_day_wheel') },{passive: true});
+        document.getElementById("end_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_year_wheel') },{passive: true});
+        document.getElementById("start_hour_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_hour_wheel') },{passive: true});
+        document.getElementById("start_minute_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_minute_wheel') },{passive: true});
+        document.getElementById("start_period_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_period_wheel') },{passive: true});
+        document.getElementById("end_hour_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_hour_wheel') },{passive: true});
+        document.getElementById("end_minute_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_minute_wheel') },{passive: true});
+        document.getElementById("end_period_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_period_wheel') },{passive: true});
+        document.getElementById("repeat_n_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_n_wheel') },{passive: true});
+        document.getElementById("time_span_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'time_span_wheel') },{passive: true});
+      }
+
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
         <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:white;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
-          <!-- <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_arrow_left</i> -->
           <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
           <p id="time_zones_title">Time zone</p>
         </div>
@@ -880,9 +909,16 @@ print %(
         document.getElementById("event_repeat_select_txt").value = `Repeats every ${data_selected_value['repeat_n_wheel']} ${data_selected_value['time_span_wheel']}`;
       }
     }
-    function lerp(start, stop, amount) {
-      return start + amount * (stop - start);
-    } 
+    function onDiscreteWheelScroll(event, id) {
+      var is_scrolling_down = (event.deltaY > 0);
+      var date_wheel = document.getElementById(id);
+      
+      if (is_scrolling_down) {
+        date_wheel.scrollTop += 50;
+      } else {
+        date_wheel.scrollTop -= 50;
+      }
+    }
   </script>
   <style>
     html {
@@ -1360,7 +1396,34 @@ print %(
       width: #{20 * VW_FACTOR}vw;
       text-align: right;
     }
-    .day_wheel {
+    .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{20 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 1;
+      opacity: 0;
+    }
+    .hour_wheel_desktop_cover, .minute_wheel_desktop_cover, .period_wheel_desktop_cover, .day_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{10 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 1;
+      opacity: 0;
+    }
+    .repeat_n_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{24 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 1;
+      opacity: 0;
+    }
+    .day_wheel, .day_wheel_desktop_cover {
       width: #{10 * VW_FACTOR}vw;
       margin-left: #{4 * VW_FACTOR}vw;
       margin-right: #{4 * VW_FACTOR}vw;
@@ -1375,7 +1438,7 @@ print %(
     .hour_wheel {
       text-align: right;
     }
-    .minute_wheel {
+    .minute_wheel, .minute_wheel_desktop_cover {
       margin-left: #{4 * VW_FACTOR}vw;
       margin-right: #{4 * VW_FACTOR}vw;
     }
