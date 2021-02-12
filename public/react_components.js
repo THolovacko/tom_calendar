@@ -38,6 +38,9 @@ class TimeZones extends React.Component {
 
     function parseTimeZoneParts(target_time_zone) {
       var parts = target_time_zone.split("/");
+      if (parts.length >= 3) {
+        parts[0] = `${parts[1]}, ${parts[0]}`;
+      }
       return [parts[0].replace(/_/g, " "), parts[parts.length - 1].replace(/_/g, " ") + " Time"];
     }
 

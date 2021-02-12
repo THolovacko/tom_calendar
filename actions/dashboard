@@ -658,6 +658,7 @@ print %(
       }
 
       datepicker_txt.value = date_str;
+      updateCreateFormRepeat();
       return date_str;
     }
     function onTimeWheelScroll(id) {
@@ -692,7 +693,6 @@ print %(
           }
         }
         scroll_tops[id] = time_wheel.scrollTop;
-        updateCreateFormRepeat();
       }, 300);
     }
     function toggleTime(start_or_end_str) {
@@ -797,6 +797,11 @@ print %(
     }
     function onTimeZones() {
       document.getElementById("time_zones_react_container").style.display = "block";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
     }
     function handleTimeZonesClick(time_zone) {
       document.getElementById("time_zones_react_container").value = time_zone;
@@ -943,7 +948,12 @@ print %(
           document.getElementById("event_repeats_on_select").style.display = "none";
         }
       } else if (data_selected_value['time_span_wheel'].includes("month")) {
-        //document.getElementById("event_repeats_on_select").style.display = "inline-block";
+        if (data_selected_value['repeat_n_wheel'] != 0) {
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+          document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
+        } else {
+           document.getElementById("event_repeats_on_select").style.display = "none";
+        }
       } else {
         document.getElementById("event_repeats_on_select").style.display = "none";
       }
@@ -959,6 +969,16 @@ print %(
       }
     }
     function onEventRepeatsOnSelect() {
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+
+      if (data_selected_value['time_span_wheel'].includes("week")) {
+        // @current: implement select repeat days
+      } else if (data_selected_value['time_span_wheel'].includes("month")) {
+      }
     }
   </script>
   <style>
@@ -1090,8 +1110,8 @@ print %(
     }
     .material-icons.create_close, .material-icons.time_zones_close {
       float: left;
-      margin-left: #{4 * VW_FACTOR}vw;
-      margin-top: #{2 * VH_FACTOR}vh;
+      margin-left: #{IS_DESKTOP ? (2 * VW_FACTOR) : (4 * VW_FACTOR)}vw;
+      margin-top: #{IS_DESKTOP ? (2 * VH_FACTOR) : (1.8 * VH_FACTOR)}vh;
       cursor: pointer;
       border-radius: 50px;
       font-size: #{7 * FONT_FACTOR}rem;
