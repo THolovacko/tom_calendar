@@ -69,8 +69,8 @@ print %(
       <div class="page", id="settings_page">
         <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
-        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
-        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_navigate_next">navigate_next</i></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
@@ -167,6 +167,10 @@ print %(
         <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
         #{ %(<div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
+        <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
+      </div>
+      <div id="event_repeats_on_select">
+        <input type="text" id="event_repeats_on_select_txt" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatsOnSelect()">
       </div>
     </div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
@@ -187,6 +191,15 @@ print %(
       'October'   : '09',
       'November'  : '10',
       'December'  : '11'
+    }
+    var weekdays = {
+      0   : 'Sunday',
+      1   : 'Monday',
+      2   : 'Tuesday',
+      3   : 'Wednesday',
+      4   : 'Thursday',
+      5   : 'Friday',
+      6   : 'Saturday'
     }
     var data_selected_value = { 'repeat_n_wheel': '0', 'time_span_wheel': 'days' }; // maps an element id to its current_value (made to replace data attributes)
     var scroll_tops = {
@@ -493,6 +506,11 @@ print %(
       document.getElementById("time_zones_react_container").scrollTop = 0;
       document.getElementById("time_zones_react_container").style.display = "none";
       document.getElementById("time_zones_react_container").value = null;
+
+      document.getElementById("event_repeats_on_select_txt").value = "";
+      document.getElementById("event_repeats_on_select").style.display = "none";
+
+      data_selected_value = { 'repeat_n_wheel': '0', 'time_span_wheel': 'days' }; // reset selected values
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -674,6 +692,7 @@ print %(
           }
         }
         scroll_tops[id] = time_wheel.scrollTop;
+        updateCreateFormRepeat();
       }, 300);
     }
     function toggleTime(start_or_end_str) {
@@ -908,6 +927,26 @@ print %(
       } else {
         document.getElementById("event_repeat_select_txt").value = `Repeats every ${data_selected_value['repeat_n_wheel']} ${data_selected_value['time_span_wheel']}`;
       }
+
+      if (data_selected_value['time_span_wheel'].includes("week")) {
+        var start_year  = data_selected_value["start_year_wheel"];
+        var start_month = data_selected_value["start_month_wheel"];
+        var start_day   = data_selected_value["start_day_wheel"];
+
+        if (start_year && start_month && start_day && (start_year != 'TBD') && (start_month != 'TBD') && (start_day != 'TBD') && (data_selected_value['repeat_n_wheel'] != 0)) {
+          var start_date = new Date(parseInt(start_year), parseInt(months[start_month]), parseInt(start_day));
+          var day = weekdays[start_date.getDay()];
+
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+          document.getElementById("event_repeats_on_select_txt").value = `On ${day}`;
+        } else {
+          document.getElementById("event_repeats_on_select").style.display = "none";
+        }
+      } else if (data_selected_value['time_span_wheel'].includes("month")) {
+        //document.getElementById("event_repeats_on_select").style.display = "inline-block";
+      } else {
+        document.getElementById("event_repeats_on_select").style.display = "none";
+      }
     }
     function onDiscreteWheelScroll(event, id) {
       var is_scrolling_down = (event.deltaY > 0);
@@ -918,6 +957,8 @@ print %(
       } else {
         date_wheel.scrollTop -= 50;
       }
+    }
+    function onEventRepeatsOnSelect() {
     }
   </script>
   <style>
@@ -1251,10 +1292,11 @@ print %(
     .settings_btn:active {
       background-color: #e5ffe5;
     }
-    .settings_navigate_next {
-      font-size: #{8 * FONT_FACTOR}rem;
+    .settings_next {
+      font-size: #{4 * FONT_FACTOR}rem;
       float: right;
-      line-height: #{5.25 * VH_FACTOR}vh;
+      line-height: #{5.75 * VH_FACTOR}vh;
+      vertical-align: middle;
       margin-right: #{4 * VW_FACTOR}vw;
       color: #616161;
       cursor: pointer;
@@ -1510,7 +1552,7 @@ print %(
       margin-right: #{5 * VW_FACTOR}vw;
       line-height: #{4 * VH_FACTOR}vh;
     }
-    #time_zone input[type=text], #event_repeat_select input[type=text] {
+    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -1548,6 +1590,13 @@ print %(
       font-size: #{5 * FONT_FACTOR}rem;
       margin-top: #{2.75 * VH_FACTOR}vh;
       margin-left: #{3 * VW_FACTOR}vw;
+    }
+    #event_repeats_on_select {
+      display: none;
+      float: left;
+      margin-top: #{1 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 1;
     }
   </style>
 </html>

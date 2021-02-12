@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
