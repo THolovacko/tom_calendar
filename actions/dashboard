@@ -6,9 +6,6 @@
 # @test:     user agent detection on several platforms
 
 
-# @current: on repeat weekday text resetting when changing n days wheel (it should keep behavior when n is 0 though)
-# @remember: mobile repeat on txt resets on each open
-
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -966,12 +963,35 @@ print %(
           var day = weekdays[start_date.getDay()];
 
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
-          document.getElementById("event_repeats_on_select_txt").value = `On ${day}`;
-          var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
-          for (var i=0; i < weekday_checkboxes.length; i++) {
-            data_selected_value[weekday_checkboxes[i].id] = false;
+
+          if (!data_selected_value['user_has_selected_repeat_weekday']) {
+            document.getElementById("event_repeats_on_select_txt").value = `On ${day}`;
+            var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+            for (var i=0; i < weekday_checkboxes.length; i++) {
+              data_selected_value[weekday_checkboxes[i].id] = false;
+            }
+            data_selected_value[`repeat_on_select_checkbox_day_${day.toLowerCase()}`] = true;
+          } else {
+            var repeat_days = [];
+            var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+            for (var i=0; i < weekday_checkboxes.length; i++) {
+              if (data_selected_value[weekday_checkboxes[i].id]) {
+                var weekday = weekday_checkboxes[i].id.split("_").pop();
+                weekday = weekday[0].toUpperCase() + weekday.slice(1);
+                repeat_days.push(weekday);
+              }
+            }
+
+            if (repeat_days.length == 1) {
+              document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_days[0]}`;
+            } else {
+              var repeat_str = `${repeat_days[0].substring(0,3)}`;
+              for (var i=1; i < repeat_days.length; i++) {
+                repeat_str += `, ${repeat_days[i].substring(0,3)}`;
+              }
+              document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_str}`;
+            }
           }
-          data_selected_value[`repeat_on_select_checkbox_day_${day.toLowerCase()}`] = true;
         } else {
           document.getElementById("event_repeats_on_select").style.display = "none";
         }
@@ -1061,6 +1081,7 @@ print %(
         }
         document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_str}`;
       }
+      data_selected_value['user_has_selected_repeat_weekday'] = true;
     }
   </script>
   <style>
