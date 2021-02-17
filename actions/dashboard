@@ -6,6 +6,8 @@
 # @test:     user agent detection on several platforms
 
 
+# @current: test all create event form so far
+
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -219,6 +221,14 @@ print %(
       5   : 'Friday',
       6   : 'Saturday'
     }
+    var ordinal_indicators = {
+      1   : 'st',
+      2   : 'nd',
+      3   : 'rd',
+      4   : 'th',
+      5   : 'th',
+      6   : 'th'
+    }
     var data_selected_value = { 
       'repeat_n_wheel': '0',
       'time_span_wheel': 'days',
@@ -237,7 +247,8 @@ print %(
       'end_minute_wheel'   : 0,
       'end_period_wheel'   : 0,
       'repeat_n_wheel'     : 0,
-      'time_span_wheel'    : 0
+      'time_span_wheel'    : 0,
+      'repeat_month_wheel' : 0
     }
     var sync_end_date = true;
     var sync_end_time = true;
@@ -1011,17 +1022,30 @@ print %(
       } else if (data_selected_value['time_span_wheel'].includes("month")) {
         if (data_selected_value['repeat_n_wheel'] != 0) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
-          document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
-
           var start_year  = data_selected_value["start_year_wheel"];
           var start_month = data_selected_value["start_month_wheel"];
           var start_day   = data_selected_value["start_day_wheel"];
 
           if (start_year && start_month && start_day && (start_year != 'TBD') && (start_month != 'TBD') && (start_day != 'TBD') && (data_selected_value['repeat_n_wheel'] != 0)) {
             document.getElementById("repeat_month_wheel_on_n_day").style.display = "block";
-            // @current set on n weekday
+            var start_date = new Date(parseInt(start_year), parseInt(months[start_month]), parseInt(start_day));
+            var day = weekdays[start_date.getDay()];
+
+            var nth_day = parseInt(start_date.getDate() / 7);
+            if ( (start_date.getDate() % 7) != 0 ) {
+              nth_day += 1;
+            }
+
+            document.getElementById("repeat_month_wheel_on_n_day").innerText = `On every ${nth_day}${ordinal_indicators[nth_day]} ${day}`;
+
+            if (data_selected_value['repeat_month_wheel'] && (data_selected_value['repeat_month_wheel'] != 'On the same day each month')) {
+              document.getElementById("event_repeats_on_select_txt").value = `On every ${nth_day}${ordinal_indicators[nth_day]} ${day}`;
+            } else {
+              document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
+            }
           } else {
             document.getElementById("repeat_month_wheel_on_n_day").style.display = "none";
+            document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
           }
         } else {
            document.getElementById("event_repeats_on_select").style.display = "none";
@@ -1073,6 +1097,7 @@ print %(
 
         if (repeat_month_wheel_picker.style.display != "inline-block") {
           repeat_month_wheel_picker.style.display = "inline-block";
+          document.getElementById("repeat_month_wheel").scrollTop = scroll_tops['repeat_month_wheel'];
         } else {
           repeat_month_wheel_picker.style.display = "none";
         }
@@ -1120,7 +1145,6 @@ print %(
         clearTimeout(timers[id]);
       }
 
-
       timers[id] = window.setTimeout(function() {
         var repeat_month_wheel = document.getElementById(id);
 
@@ -1130,6 +1154,7 @@ print %(
           data_selected_value[id] = all_repeat_month_wheel_elements[index].innerText;
           document.getElementById("event_repeats_on_select_txt").value = data_selected_value[id];
         }
+        scroll_tops[id] = repeat_month_wheel.scrollTop;
       }, 300);
     }
   </script>
@@ -1614,6 +1639,7 @@ print %(
     .repeat_month_wheel {
       width: #{60 * VW_FACTOR}vw;
       text-align: left;
+      margin-left: #{13.5 * VW_FACTOR}vw;
     }
     .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover {
       display: inline-block;
@@ -1647,6 +1673,7 @@ print %(
       position: absolute;
       height: #{18 * VH_FACTOR}vh;
       width: #{60 * VW_FACTOR}vw;
+      margin-left: #{13.5 * VW_FACTOR}vw;
       background-color: yellow;
       z-index: 1;
       opacity: 0;
