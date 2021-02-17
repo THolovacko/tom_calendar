@@ -6,7 +6,8 @@
 # @test:     user agent detection on several platforms
 
 
-# @current: on repeat weekday text resetting when changing n days wheel
+# @current: on repeat weekday text resetting when changing n days wheel (it should keep behavior when n is 0 though)
+# @remember: mobile repeat on txt resets on each open
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -1050,8 +1051,7 @@ print %(
       }
 
       if (repeat_days.length == 0) {
-        data_selected_value[id] = true;
-        onRepeatOnSelectCheckbox(id);
+        onRepeatOnSelectCheckbox(id); // this will undo user unselecting the only checkbox
       } else if (repeat_days.length == 1) {
         document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_days[0]}`;
       } else {
