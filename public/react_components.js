@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -60,4 +60,18 @@ class TimeZones extends React.Component {
       disablePadding: true
     }, list_items);
  }
+}
+
+class ToggleSwitch extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render () {
+    return /*#__PURE__*/React.createElement(Switch, {
+      disableRipple: true,
+      onChange: handleToggleSwitchChange,
+      color: "primary"
+    });
+  }
 }
