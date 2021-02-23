@@ -1309,7 +1309,7 @@ print %(
       margin-top: #{IS_DESKTOP ? (2 * VH_FACTOR) : (1.8 * VH_FACTOR)}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{7 * FONT_FACTOR}rem;
+      font-size: #{6 * FONT_FACTOR}rem;
       color: #616161;
       padding: 6px;
     }
@@ -1620,7 +1620,7 @@ print %(
       border-radius: 4px;
       height: #{4 * VH_FACTOR}vh;
       line-height: #{3.5 * VH_FACTOR}vh;
-      width: #{16 * VW_FACTOR}vw;
+      width: #{15 * VW_FACTOR}vw;
       font-size: #{3.75 * FONT_FACTOR}rem;
       text-align: center;
       margin-right: #{5.25 * VW_FACTOR}vw;
@@ -1868,11 +1868,11 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       border-radius: #{2 * VH_FACTOR}vh;
       transition: background-color .175s;
-      transform: scale(0.8, 0.8);
+      #{ IS_DESKTOP ? 'transform: scale(0.9, 0.9)' : 'transform: scale(0.8, 0.8)'};
     }
     #create_event_switch_react_container .MuiSwitch-root {
-      height: #{4.5 * VH_FACTOR}vh;
-      border-radius: #{2.25 * VH_FACTOR}vh;
+      height: #{ IS_DESKTOP ? 4 * VH_FACTOR : 4.5 * VH_FACTOR}vh;
+      border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
       background-color: #E9E9EA;
     }
     #create_event_switch_react_container .MuiSwitch-track {
