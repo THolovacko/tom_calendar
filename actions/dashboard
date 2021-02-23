@@ -1865,10 +1865,27 @@ print %(
       right: 0;
       z-index: 1;
       margin-right: 4vw;
-      height: #{4 * VH_FACTOR}vh;
+      height: #{3.75 * VH_FACTOR}vh;
+      background-color: #E9E9EA;
+      transition: background-color .175s;
+      border-radius: #{1.875 * VH_FACTOR}vh;
     }
     #create_event_switch_react_container .MuiSwitch-root {
-      transform: scale(1.3, 1.3);
+      //transform: scale(1.25, 1.25);
+    }
+    #create_event_switch_react_container .MuiSwitch-track {
+      background-color: #E9E9EA;
+      transition: background-color .175s;
+    }
+    #create_event_switch_react_container .MuiSwitch-thumb {
+      height: #{3 * VH_FACTOR}vh;
+      width: #{3 * VH_FACTOR}vh;
+      padding: 0;
+    }
+    #create_event_switch_react_container .MuiSwitch-switchBase {
+      color: yellow;
+      background-color: transparent;
+      height: #{1.25 * VH_FACTOR}vh;
     }
   </style>
 </html>
