@@ -1866,8 +1866,9 @@ print %(
       z-index: 1;
       margin-right: 4vw;
       height: #{4 * VH_FACTOR}vh;
-      transition: background-color .175s;
       border-radius: #{2 * VH_FACTOR}vh;
+      transition: background-color .175s;
+      transform: scale(0.8, 0.8);
     }
     #create_event_switch_react_container .MuiSwitch-root {
       height: #{4.5 * VH_FACTOR}vh;
