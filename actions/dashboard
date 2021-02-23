@@ -1866,26 +1866,36 @@ print %(
       z-index: 1;
       margin-right: 4vw;
       height: #{3.75 * VH_FACTOR}vh;
-      background-color: #E9E9EA;
       transition: background-color .175s;
       border-radius: #{1.875 * VH_FACTOR}vh;
     }
     #create_event_switch_react_container .MuiSwitch-root {
-      //transform: scale(1.25, 1.25);
+      height: #{4 * VH_FACTOR}vh;
+      border-radius: #{2 * VH_FACTOR}vh;
+      background-color: #E9E9EA;
     }
     #create_event_switch_react_container .MuiSwitch-track {
       background-color: #E9E9EA;
       transition: background-color .175s;
     }
     #create_event_switch_react_container .MuiSwitch-thumb {
-      height: #{3 * VH_FACTOR}vh;
-      width: #{3 * VH_FACTOR}vh;
-      padding: 0;
+      transform: scale(1.25, 1.25);
+      box-shadow: none;
+      color: white;
     }
     #create_event_switch_react_container .MuiSwitch-switchBase {
-      color: yellow;
-      background-color: transparent;
-      height: #{1.25 * VH_FACTOR}vh;
+      background-color: white;
+      //background-color: transparent;
+      bottom: 2.5;
+      left: 2.5;
+      top: 2.5;
+      width: #{1.25 * VH_FACTOR}vh;
+    }
+    #create_event_switch_react_container .Mui-checked {
+      bottom: 2.5;
+      left: 2.5;
+      top: 2.5;
+      width: #{1.25 * VH_FACTOR}vh;
     }
   </style>
 </html>
