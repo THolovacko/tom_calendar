@@ -1404,7 +1404,7 @@ print %(
       border-style: solid;
       border-color: #4285F4;
       border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
-      border-radius: 8%; 
+      border-radius: #{0.5 * VH_FACTOR}vh; 
       padding-right:  #{3 * VW_FACTOR}vw;
       margin-right:   #{9 * VW_FACTOR}vw;
       padding-left:   #{3 * VW_FACTOR}vw;
@@ -1422,7 +1422,7 @@ print %(
       margin-top: #{IS_DESKTOP ? (2 * VH_FACTOR) : (1.8 * VH_FACTOR)}vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{6 * FONT_FACTOR}rem;
+      font-size: #{6.25 * FONT_FACTOR}rem;
       color: #616161;
       padding: 6px;
     }
@@ -1520,13 +1520,13 @@ print %(
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       font-size: #{6 * FONT_FACTOR}rem;
-      margin-top: #{1.5 * VH_FACTOR}vh;
+      margin-top: #{1 * VH_FACTOR}vh;
       color: #424242;
       background-color: white;
       text-align: center;
     }
     #create_form_title input[type=text]:focus {
-      border-color: #2962FF;
+      border-color: #1A73E8;
       outline: none;
     }
     #create_form_title input::placeholder {
@@ -1737,7 +1737,7 @@ print %(
       background-color: #1A73E8;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: #{0.5 * VH_FACTOR}vh;
       height: #{4 * VH_FACTOR}vh;
       line-height: #{3.5 * VH_FACTOR}vh;
       width: #{15 * VW_FACTOR}vw;
@@ -1747,7 +1747,7 @@ print %(
       margin-top: #{2 * VH_FACTOR}vh;
       cursor: pointer;
       outline: none;
-      font-weight: normal;
+      font-weight: 425;
     }
     #save_event_btn:hover {
       background-color: #3986eb;
@@ -1900,7 +1900,7 @@ print %(
     #date_type_toggle {
       height: #{4 * VH_FACTOR}vh;
       width: 100%;
-      margin-top: #{16 * VH_FACTOR}vh;
+      margin-top: #{15 * VH_FACTOR}vh;
       cursor: default;
     }
     #time_zone_icon, #event_repeat_select_icon, #date_type_icon {
@@ -2015,9 +2015,6 @@ print %(
       left: 0;
       top: 0;
       transition: background-color .15s;
-    }
-    #seasonal_quarterly_picker {
-      display: none;
     }
   </style>
 </html>
