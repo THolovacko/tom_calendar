@@ -108,7 +108,7 @@ print %(
         <div id="create_event_switch_react_container"></div>
       </div>
       <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
-      <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType(this.id)"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
+      <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType()"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
       <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
       <div class="seasonal_quarterly_picker" id="seasonal_quarterly_picker">
         <div class="sq_wheel_select_box_cover_top"></div>
@@ -116,7 +116,7 @@ print %(
         <div class="sq_wheel_select_box_cover_bottom"></div>
         #{ %(<div class="sq_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="sq_wheel" id="sq_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li><li>Q1</li><li>Q2</li><li>Q3</li><li>Q4</li><li>Spring</li><li>Summer</li><li>Fall</li><li>Winter</li><li></li></ul>
-        #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="sq_year_wheel" id="sq_year_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="date_wheel_picker" id="start_datepicker">
@@ -261,7 +261,9 @@ print %(
       'end_period_wheel'   : 0,
       'repeat_n_wheel'     : 0,
       'time_span_wheel'    : 0,
-      'repeat_month_wheel' : 0
+      'repeat_month_wheel' : 0,
+      'sq_wheel'           : 0,
+      'sq_year_wheel'      : 0
     }
     var sync_end_date = true;
     var sync_end_time = true;
@@ -279,7 +281,9 @@ print %(
       'end_minute_wheel'   : -1,
       'end_period_wheel'   : -1,
       'repeat_n_wheel'     : -1,
-      'time_span_wheel'    : -1
+      'time_span_wheel'    : -1,
+      'sq_wheel'           : -1,
+      'sq_year_wheel'      : -1
     }
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -300,6 +304,8 @@ print %(
         document.getElementById("repeat_n_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_n_wheel') },{passive: true});
         document.getElementById("time_span_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'time_span_wheel') },{passive: true});
         document.getElementById("repeat_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_month_wheel') },{passive: true});
+        document.getElementById("sq_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_year_wheel') },{passive: true});
+        document.getElementById("sq_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_wheel') },{passive: true});
       }
 
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
@@ -402,15 +408,20 @@ print %(
       // initialize wheel pickers
       var start_year_wheel = document.getElementById("start_year_wheel");
       var end_year_wheel = document.getElementById("end_year_wheel");
+      var sq_year_wheel = document.getElementById("sq_year_wheel");
       var current_year = new Date().getFullYear();
       for(var i=current_year; i < (current_year + 101); i++) { 
         start_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
         end_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
+        sq_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
       }
       start_year_wheel.insertAdjacentHTML("beforeend", `
         <li></li>
       `);
       end_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+      sq_year_wheel.insertAdjacentHTML("beforeend", `
         <li></li>
       `);
       hideExtraDaysOnDayWheelPickers();
@@ -543,6 +554,11 @@ print %(
       if (repeat_wheel_picker.style != 'none') {
         repeat_wheel_picker.style = 'none';
         document.getElementById("event_repeat_select_txt").value = "Does not repeat";
+      }
+      var seasonal_quarterly_picker = document.getElementById("seasonal_quarterly_picker");
+      if (seasonal_quarterly_picker.style != 'none') {
+        seasonal_quarterly_picker.style = 'none';
+        document.getElementById("date_type_txt").value = "";
       }
       document.getElementById("time_span_days").innerText = "days";
       document.getElementById("time_span_weeks").innerText = "weeks";
@@ -724,6 +740,11 @@ print %(
         date_str += year;
       }
 
+      // @remember: this is a temporary hack until I decide if there should be a comma without a day selected
+      if ( !day || (day == "TBD")) {
+        date_str = date_str.replace(',' , '');
+      }
+
       datepicker_txt.value = date_str;
       updateCreateFormRepeat();
       return date_str;
@@ -873,6 +894,7 @@ print %(
       document.getElementById("end_datepicker").style.display = "none";
       document.getElementById("repeat_on_select_checkbox").style.display = "none";
       document.getElementById("repeat_month_wheel_picker").style.display = "none";
+      document.getElementById("seasonal_quarterly_picker").style.display = "none";
     }
     function handleTimeZonesClick(time_zone) {
       document.getElementById("time_zones_react_container").value = time_zone;
@@ -1219,6 +1241,7 @@ print %(
         document.getElementById("repeat_wheel_picker").style.display = "none";
         document.getElementById("seasonal_quarterly_picker").style.display = "none";
         document.getElementById("date_type").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
 
         document.getElementById("start_date").style.display = "inline-block";
         document.getElementById("end_date").style.display = "inline-block";
@@ -1234,8 +1257,36 @@ print %(
       }
     }
     function onSQWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function() {
+        var sq_wheel = document.getElementById(id);
+
+        var index = Math.round(sq_wheel.scrollTop / sq_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        var all_sq_wheel_wheel_elements = sq_wheel.getElementsByTagName("li");
+        if (index < all_sq_wheel_wheel_elements.length) {
+          data_selected_value[id] = all_sq_wheel_wheel_elements[index].innerText;
+        }
+
+        var date_type_txt = document.getElementById('date_type_txt');
+        date_type_txt.value = `${data_selected_value['sq_wheel']} ${data_selected_value['sq_year_wheel']}`.replace('TBD','').replace('TBD','').replace('undefined','').trim();
+
+        scroll_tops[id] = sq_wheel.scrollTop;
+      }, 300);
     }
-    function toggleDateType(id) {
+    function toggleDateType() {
+      var sq_picker = document.getElementById('seasonal_quarterly_picker');
+
+      if (sq_picker.style.display != "inline-block") {
+        sq_picker.style.display = "inline-block";
+        document.getElementById('sq_wheel').scrollTop = scroll_tops['sq_wheel'];
+        document.getElementById('sq_year_wheel').scrollTop = scroll_tops['sq_year_wheel'];
+      }
+      else {
+       sq_picker.style.display = "none";
+      }
     }
   </script>
   <style>
@@ -1719,9 +1770,14 @@ print %(
     .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar, .repeat_n_wheel::-webkit-scrollbar, .time_span_wheel::-webkit-scrollbar, .repeat_month_wheel::-webkit-scrollbar, .sq_wheel::-webkit-scrollbar, .sq_year_wheel::-webkit-scrollbar {
       display: none;
     }
-    .month_wheel, .sq_wheel {
+    .month_wheel {
       width: #{20 * VW_FACTOR}vw;
       text-align: right;
+    }
+    .sq_wheel {
+      width: #{20 * VW_FACTOR}vw;
+      text-align: right;
+      margin-right: #{8 * VW_FACTOR}vw;
     }
     .repeat_month_wheel {
       width: #{60 * VW_FACTOR}vw;
