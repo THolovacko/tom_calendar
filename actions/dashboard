@@ -104,11 +104,21 @@ print %(
       <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
       <div id="date_type_toggle">
         <i class="material-icons md-36" id="date_type_icon">date_range</i>
-        <input type="text" id="date_type_txt" value="Seasonal/Quarterly" readonly>
+        <input type="text" id="date_type_description_txt" value="Seasonal/Quarterly" readonly>
         <div id="create_event_switch_react_container"></div>
       </div>
       <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
+      <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType(this.id)"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
       <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
+      <div class="seasonal_quarterly_picker" id="seasonal_quarterly_picker">
+        <div class="sq_wheel_select_box_cover_top"></div>
+        <div class="sq_wheel_select_box"></div>
+        <div class="sq_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="sq_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="sq_wheel" id="sq_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li><li>Q1</li><li>Q2</li><li>Q3</li><li>Q4</li><li>Spring</li><li>Summer</li><li>Fall</li><li>Winter</li><li></li></ul>
+        #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="sq_year_wheel" id="sq_year_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li></ul>
+      </div>
       <div class="date_wheel_picker" id="start_datepicker">
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
@@ -551,6 +561,21 @@ print %(
 
       document.getElementById("repeat_on_select_checkbox").style.display = "none";
       document.getElementById("repeat_month_wheel_picker").style.display = "none";
+
+      document.getElementById("date_type").style.display = "none";
+      document.getElementById("start_date").style.display = "inline-block";
+      document.getElementById("end_date").style.display = "inline-block";
+      document.getElementById("start_time").style.display = "inline-block";
+      document.getElementById("end_time").style.display = "inline-block";
+      document.getElementById("event_repeat_select").style.display = "inline-block";
+      document.getElementById("event_repeats_on_select").style.display = "inline-block";
+      var sq_toggle = document.getElementById("create_event_switch_react_container");
+      sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E9E9EA";
+      sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E9E9EA";
+      sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E9E9EA";
+
+      ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
+      ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1161,18 +1186,56 @@ print %(
         scroll_tops[id] = repeat_month_wheel.scrollTop;
       }, 300);
     }
-    function toggleDateType() {
-      document.getElementById("start_datepicker").style.display = "none";
-      document.getElementById("end_datepicker").style.display = "none";
-      document.getElementById("start_timepicker").style.display = "none";
-      document.getElementById("end_timepicker").style.display = "none";
-      document.getElementById("repeat_on_select_checkbox").style.display = "none";
-      document.getElementById("repeat_month_wheel_picker").style.display = "none";
-      document.getElementById("repeat_wheel_picker").style.display = "none";
-
-      var date_type_toggle = document.getElementById("date_type_toggle");
-    }
     function handleToggleSwitchChange() {
+      if ( document.getElementById("date_type").style.display !== "inline-block") {
+        document.getElementById("start_datepicker").style.display = "none";
+        document.getElementById("end_datepicker").style.display = "none";
+        document.getElementById("start_timepicker").style.display = "none";
+        document.getElementById("end_timepicker").style.display = "none";
+        document.getElementById("repeat_on_select_checkbox").style.display = "none";
+        document.getElementById("repeat_month_wheel_picker").style.display = "none";
+        document.getElementById("repeat_wheel_picker").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
+        document.getElementById("start_date").style.display = "none";
+        document.getElementById("end_date").style.display = "none";
+        document.getElementById("start_time").style.display = "none";
+        document.getElementById("end_time").style.display = "none";
+        document.getElementById("event_repeat_select").style.display = "none";
+        document.getElementById("event_repeats_on_select").style.display = "none";
+
+        document.getElementById("date_type").style.display = "inline-block";
+
+        var sq_toggle = document.getElementById("create_event_switch_react_container");
+        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#1A73E8";
+        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#1A73E8";
+        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#1A73E8";
+      } else {
+        document.getElementById("start_datepicker").style.display = "none";
+        document.getElementById("end_datepicker").style.display = "none";
+        document.getElementById("start_timepicker").style.display = "none";
+        document.getElementById("end_timepicker").style.display = "none";
+        document.getElementById("repeat_on_select_checkbox").style.display = "none";
+        document.getElementById("repeat_month_wheel_picker").style.display = "none";
+        document.getElementById("repeat_wheel_picker").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
+        document.getElementById("date_type").style.display = "none";
+
+        document.getElementById("start_date").style.display = "inline-block";
+        document.getElementById("end_date").style.display = "inline-block";
+        document.getElementById("start_time").style.display = "inline-block";
+        document.getElementById("end_time").style.display = "inline-block";
+        document.getElementById("event_repeat_select").style.display = "inline-block";
+        document.getElementById("event_repeats_on_select").style.display = "inline-block";
+
+        var sq_toggle = document.getElementById("create_event_switch_react_container");
+        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E9E9EA";
+        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E9E9EA";
+        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E9E9EA";
+      }
+    }
+    function onSQWheelScroll(id) {
+    }
+    function toggleDateType(id) {
     }
   </script>
   <style>
@@ -1426,6 +1489,13 @@ print %(
       margin-left: #{14 * VW_FACTOR}vw;
       z-index: 1;
     }
+    #date_type {
+      display: none;
+      float: left;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 1;
+    }
     #end_date {
       display: inline-block;
       float: left;
@@ -1433,7 +1503,7 @@ print %(
       z-index: 1;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
-    #start_date input[type=text], #end_date input[type=text] {
+    #start_date input[type=text], #end_date input[type=text], #date_type input[type=text] {
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -1443,10 +1513,10 @@ print %(
       float: left;
       cursor: pointer;
     }
-    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder {
       color: #757575;
     }
-    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus {
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus {
       outline: none;
     }
     #start_time {
@@ -1632,12 +1702,12 @@ print %(
     #save_event_btn:hover {
       background-color: #3986eb;
     }
-    .date_wheel_picker, .time_wheel_picker, .repeat_wheel_picker, .repeat_month_wheel_picker {
+    .date_wheel_picker, .time_wheel_picker, .repeat_wheel_picker, .repeat_month_wheel_picker, .seasonal_quarterly_picker {
       display: none;
       height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
-    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel, .repeat_n_wheel, .time_span_wheel, .repeat_month_wheel {
+    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel, .repeat_n_wheel, .time_span_wheel, .repeat_month_wheel, .sq_wheel, .sq_year_wheel {
       display: inline-block;
       height: 100%;
       overflow:hidden;
@@ -1646,10 +1716,10 @@ print %(
       scroll-snap-type: y mandatory;
       text-align: center;
     }
-    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar, .repeat_n_wheel::-webkit-scrollbar, .time_span_wheel::-webkit-scrollbar, .repeat_month_wheel::-webkit-scrollbar {
+    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar, .repeat_n_wheel::-webkit-scrollbar, .time_span_wheel::-webkit-scrollbar, .repeat_month_wheel::-webkit-scrollbar, .sq_wheel::-webkit-scrollbar, .sq_year_wheel::-webkit-scrollbar {
       display: none;
     }
-    .month_wheel {
+    .month_wheel, .sq_wheel {
       width: #{20 * VW_FACTOR}vw;
       text-align: right;
     }
@@ -1658,7 +1728,7 @@ print %(
       text-align: left;
       margin-left: #{13.5 * VW_FACTOR}vw;
     }
-    .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover {
+    .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover, .sq_year_wheel_desktop_cover, .sq_wheel_desktop_cover {
       display: inline-block;
       position: absolute;
       height: #{18 * VH_FACTOR}vh;
@@ -1700,7 +1770,7 @@ print %(
       margin-left: #{4 * VW_FACTOR}vw;
       margin-right: #{4 * VW_FACTOR}vw;
     }
-    .year_wheel {
+    .year_wheel, .sq_year_wheel {
       width: #{20 * VW_FACTOR}vw;
       text-align: left;
     }
@@ -1724,7 +1794,7 @@ print %(
       width: #{20 * VW_FACTOR}vw;
       text-align: left;
     }
-    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li, .time_span_wheel li, .repeat_n_wheel li, .repeat_month_wheel li {
+    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li, .time_span_wheel li, .repeat_n_wheel li, .repeat_month_wheel li, .sq_wheel li, .sq_year_wheel li {
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
@@ -1734,7 +1804,7 @@ print %(
       line-height: #{3 * VH_FACTOR}vh;
       vertical-align: middle;
     }
-    .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box, .repeat_month_wheel_select_box {
+    .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box, .repeat_month_wheel_select_box, .sq_wheel_select_box {
       width: 95%;
       height: #{6 * VH_FACTOR}vh;
       background-color: rgba(238, 238, 239, 1);
@@ -1746,7 +1816,7 @@ print %(
       margin: auto;
       margin-top: #{6 * VH_FACTOR}vh;
     }
-    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top, .repeat_wheel_select_box_cover_top, .repeat_month_wheel_select_box_cover_top {
+    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top, .repeat_wheel_select_box_cover_top, .repeat_month_wheel_select_box_cover_top, sq_wheel_select_box_cover_top {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
@@ -1756,7 +1826,7 @@ print %(
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
-    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom, .repeat_month_wheel_select_box_cover_bottom {
+    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom, .repeat_month_wheel_select_box_cover_bottom, sq_wheel_select_box_cover_bottom {
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
       position: absolute;
@@ -1799,7 +1869,7 @@ print %(
       line-height: #{4 * VH_FACTOR}vh;
       cursor: pointer;
     }
-    #date_type_toggle input[type=text], date_type_txt {
+    #date_type_toggle input[type=text], #date_type_txt input[type=text] {
       cursor: default;
       width: #{64 * VW_FACTOR}vw;
     }
@@ -1867,17 +1937,17 @@ print %(
       margin-right: 4vw;
       height: #{4 * VH_FACTOR}vh;
       border-radius: #{2 * VH_FACTOR}vh;
-      transition: background-color .175s;
       #{ IS_DESKTOP ? 'transform: scale(0.9, 0.9)' : 'transform: scale(0.8, 0.8)'};
     }
     #create_event_switch_react_container .MuiSwitch-root {
       height: #{ IS_DESKTOP ? 4 * VH_FACTOR : 4.5 * VH_FACTOR}vh;
       border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
       background-color: #E9E9EA;
+      transition: background-color .15s;
     }
     #create_event_switch_react_container .MuiSwitch-track {
       background-color: #E9E9EA;
-      transition: background-color .175s;
+      transition: background-color .15s;
     }
     #create_event_switch_react_container .MuiSwitch-thumb {
       transform: scale(1.6, 1.6);
@@ -1889,6 +1959,10 @@ print %(
       bottom: 0;
       left: 0;
       top: 0;
+      transition: background-color .15s;
+    }
+    #seasonal_quarterly_picker {
+      display: none;
     }
   </style>
 </html>
