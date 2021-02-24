@@ -310,7 +310,7 @@ print %(
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
-        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:white;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
+        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
           <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
           <p id="time_zones_title">Time zone</p>
         </div>
@@ -1129,13 +1129,13 @@ print %(
           var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
           for (var i=0; i < weekday_checkboxes.length; i++) {
             if (data_selected_value[weekday_checkboxes[i].id]) {
-              weekday_checkboxes[i].style.color = "white";
+              weekday_checkboxes[i].style.color = "#FEFFFE";
               weekday_checkboxes[i].style.borderColor = "#1A73E8";
               weekday_checkboxes[i].style.backgroundColor = "#1A73E8";
             } else {
               weekday_checkboxes[i].style.color = "#1A73E8";
               weekday_checkboxes[i].style.borderColor = "#616161";
-              weekday_checkboxes[i].style.backgroundColor = "white";
+              weekday_checkboxes[i].style.backgroundColor = "#FEFFFE";
             }
           }
         } else {
@@ -1158,10 +1158,10 @@ print %(
       if (data_selected_value[id]) {
         repeat_on_checkbox_day.style.color = "#1A73E8";
         repeat_on_checkbox_day.style.borderColor = "#616161";
-        repeat_on_checkbox_day.style.backgroundColor = "white";
+        repeat_on_checkbox_day.style.backgroundColor = "#FEFFFE";
         data_selected_value[id] = false;
       } else {
-        repeat_on_checkbox_day.style.color = "white";
+        repeat_on_checkbox_day.style.color = "#FEFFFE";
         repeat_on_checkbox_day.style.borderColor = "#1A73E8";
         repeat_on_checkbox_day.style.backgroundColor = "#1A73E8";
         data_selected_value[id] = true;
@@ -1310,14 +1310,14 @@ print %(
       text-indent: 1px;
     }
     option {
-      background-color: white;
-      color: #424242;
+      background-color: #FEFFFE;
+      color: #292A2D;
     }
     ::-webkit-scrollbar {
       width: 10px;
     }
     ::-webkit-scrollbar-track {
-      background: white;
+      background: #FEFFFE;
       border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb {
@@ -1357,8 +1357,8 @@ print %(
       margin-left: #{( IS_DESKTOP ? '10' : '0' )}%;
       text-align: center;
       border-radius: #{( IS_DESKTOP ? '25' : '0' )}px;
-      border-color: white;
-      background-color: white;
+      border-color: #FEFFFE;
+      background-color: #FEFFFE;
       top: 0;
       left: 0;
       bottom: 0;
@@ -1423,7 +1423,7 @@ print %(
       cursor: pointer;
       border-radius: 50px;
       font-size: #{6.25 * FONT_FACTOR}rem;
-      color: #616161;
+      color: #585C61;
       padding: 6px;
     }
     .material-icons.create_close:hover, .material-icons.time_zones_close:hover {
@@ -1521,8 +1521,8 @@ print %(
       height: #{6 * VH_FACTOR}vh;
       font-size: #{6 * FONT_FACTOR}rem;
       margin-top: #{1 * VH_FACTOR}vh;
-      color: #424242;
-      background-color: white;
+      color: #26272A;
+      background-color: #FEFFFE;
       text-align: center;
     }
     #create_form_title input[type=text]:focus {
@@ -1530,7 +1530,7 @@ print %(
       outline: none;
     }
     #create_form_title input::placeholder {
-      color: #757575;
+      color: #575B61;
     }
     #start_date {
       display: inline-block;
@@ -1557,14 +1557,14 @@ print %(
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
-      background-color: white;
-      color: #424242;
+      background-color: #FEFFFE;
+      color: #292A2D;
       font-size: #{4 * FONT_FACTOR}rem;
       float: left;
       cursor: pointer;
     }
     #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder {
-      color: #757575;
+      color: #72757A;
     }
     #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus {
       outline: none;
@@ -1587,8 +1587,8 @@ print %(
       border: none;
       width: #{38 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
-      background-color: white;
-      color: #424242;
+      background-color: #FEFFFE;
+      color: #292A2D;
       font-size: #{4 * FONT_FACTOR}rem;
       text-align: right;
       margin-right: 4vw;
@@ -1853,11 +1853,12 @@ print %(
       list-style-type: none;
       padding-top: #{1.5 * VH_FACTOR}vh;
       padding-bottom: #{1.5 * VH_FACTOR}vh;
-      font-size: #{3.65 * FONT_FACTOR}rem;
+      font-size: #{3.75 * FONT_FACTOR}rem;
       scroll-snap-align: start;
       height: #{3 * VH_FACTOR}vh;
       line-height: #{3 * VH_FACTOR}vh;
       vertical-align: middle;
+      color: #505154;
     }
     .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box, .repeat_month_wheel_select_box, .sq_wheel_select_box {
       width: 95%;
@@ -1911,13 +1912,14 @@ print %(
       margin-left: #{5 * VW_FACTOR}vw;
       margin-right: #{5 * VW_FACTOR}vw;
       line-height: #{4 * VH_FACTOR}vh;
+      color: #595D62;
     }
     #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
-      background-color: white;
-      color: #424242;
+      background-color: #FEFFFE;
+      color: #292A2D;
       font-size: #{4 * FONT_FACTOR}rem;
       float: left;
       outline: none;
@@ -1941,10 +1943,11 @@ print %(
     }
     #time_zones_react_container .material-icons {
       font-size: #{7 * FONT_FACTOR}rem;
+      color: #595D62;
     }
     #time_zones_react_container .MuiAvatar-colorDefault {
-      background-color: white;
-      color: black;
+      background-color: #FEFFFE;
+      color: #595D62;
     }
     #time_zones_react_container .MuiTypography-root {
       font-size: #{3.5 * FONT_FACTOR}rem;
@@ -1972,7 +1975,7 @@ print %(
       border-radius: 4px;
       color: #1A73E8;
       border-color: #616161;
-      background-color: white;
+      background-color: #FEFFFE;
       width: #{6 * VW_FACTOR}vw;
       height: #{3 * VH_FACTOR}vh;
       font-size: #{3 * FONT_FACTOR}rem;
@@ -1990,12 +1993,12 @@ print %(
       right: 0;
       z-index: 1;
       margin-right: 4vw;
-      height: #{4 * VH_FACTOR}vh;
+      height: #{ IS_DESKTOP ? '30px' : "#{4 * VH_FACTOR}vh"};
       border-radius: #{2 * VH_FACTOR}vh;
       #{ IS_DESKTOP ? 'transform: scale(0.9, 0.9)' : 'transform: scale(0.8, 0.8)'};
     }
     #create_event_switch_react_container .MuiSwitch-root {
-      height: #{ IS_DESKTOP ? 4 * VH_FACTOR : 4.5 * VH_FACTOR}vh;
+      height: #{ IS_DESKTOP ? '38px' : "#{4.5 * VH_FACTOR}vh"};
       border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
       background-color: #E9E9EA;
       transition: background-color .15s;
@@ -2007,7 +2010,7 @@ print %(
     #create_event_switch_react_container .MuiSwitch-thumb {
       transform: scale(1.6, 1.6);
       box-shadow: none;
-      color: white;
+      color: #FEFFFE;
     }
     #create_event_switch_react_container .MuiSwitch-switchBase {
       background-color: #E9E9EA;
