@@ -585,9 +585,9 @@ print %(
       document.getElementById("event_repeat_select").style.display = "inline-block";
       document.getElementById("event_repeats_on_select").style.display = "inline-block";
       var sq_toggle = document.getElementById("create_event_switch_react_container");
-      sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E9E9EA";
-      sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E9E9EA";
-      sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E9E9EA";
+      sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
+      sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
+      sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
 
       ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
@@ -1133,9 +1133,9 @@ print %(
               weekday_checkboxes[i].style.borderColor = "#1A73E8";
               weekday_checkboxes[i].style.backgroundColor = "#1A73E8";
             } else {
-              weekday_checkboxes[i].style.color = "#1A73E8";
-              weekday_checkboxes[i].style.borderColor = "#616161";
-              weekday_checkboxes[i].style.backgroundColor = "#FEFFFE";
+              weekday_checkboxes[i].style.color = "#585C61";
+              weekday_checkboxes[i].style.borderColor = "#EEEEEE";
+              weekday_checkboxes[i].style.backgroundColor = "#EEEEEE";
             }
           }
         } else {
@@ -1156,9 +1156,9 @@ print %(
     function onRepeatOnSelectCheckbox(id) {
       var repeat_on_checkbox_day = document.getElementById(id);
       if (data_selected_value[id]) {
-        repeat_on_checkbox_day.style.color = "#1A73E8";
-        repeat_on_checkbox_day.style.borderColor = "#616161";
-        repeat_on_checkbox_day.style.backgroundColor = "#FEFFFE";
+        repeat_on_checkbox_day.style.color = "#585C61";
+        repeat_on_checkbox_day.style.borderColor = "#EEEEEE";
+        repeat_on_checkbox_day.style.backgroundColor = "#EEEEEE";
         data_selected_value[id] = false;
       } else {
         repeat_on_checkbox_day.style.color = "#FEFFFE";
@@ -1250,9 +1250,9 @@ print %(
         document.getElementById("event_repeats_on_select").style.display = "inline-block";
 
         var sq_toggle = document.getElementById("create_event_switch_react_container");
-        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E9E9EA";
-        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E9E9EA";
-        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E9E9EA";
+        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
+        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
+        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
       }
     }
     function onSQWheelScroll(id) {
@@ -1973,9 +1973,9 @@ print %(
     .repeat_on_select_checkbox_day {
       border: solid;
       border-radius: 4px;
-      color: #1A73E8;
-      border-color: #616161;
-      background-color: #FEFFFE;
+      color: #585C61;
+      border-color: #EEEEEE;
+      background-color: #EEEEEE;
       width: #{6 * VW_FACTOR}vw;
       height: #{3 * VH_FACTOR}vh;
       font-size: #{3 * FONT_FACTOR}rem;
@@ -2000,11 +2000,11 @@ print %(
     #create_event_switch_react_container .MuiSwitch-root {
       height: #{ IS_DESKTOP ? '38px' : "#{4.5 * VH_FACTOR}vh"};
       border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
-      background-color: #E9E9EA;
+      background-color: #E1E1E2;
       transition: background-color .15s;
     }
     #create_event_switch_react_container .MuiSwitch-track {
-      background-color: #E9E9EA;
+      background-color: #E1E1E2;
       transition: background-color .15s;
     }
     #create_event_switch_react_container .MuiSwitch-thumb {
@@ -2013,7 +2013,7 @@ print %(
       color: #FEFFFE;
     }
     #create_event_switch_react_container .MuiSwitch-switchBase {
-      background-color: #E9E9EA;
+      background-color: #E1E1E2;
       bottom: 0;
       left: 0;
       top: 0;
