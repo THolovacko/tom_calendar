@@ -3,6 +3,7 @@
 # @remember: figure out how to scale radius?
 # @remember: need to speed up body onload
 # @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
+# @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 
 
@@ -44,6 +45,7 @@ print %(
     <script src="public/react-dom.production.min.js"></script>
     <script src="public/material-ui.production.min.js"></script>
     <script src="public/react_components.js?force_reload=#{rand(1000)}"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['MAPS_API_KEY']}&libraries=places"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body onload="onNavIconSelect('explore'); init();">
@@ -203,6 +205,10 @@ print %(
         <div class="repeat_month_wheel_select_box_cover_bottom"></div>
         #{ %(<div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li></li></ul>
+      </div>
+      <div id="event_location">
+        <i class="material-icons md-36" id="event_location_icon">location_on</i>
+        <input type="text" id="event_location_input" placeholder="Add location" autocomplete="on" runat="server">
       </div>
     </div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
@@ -434,6 +440,8 @@ print %(
       repeat_n_wheel.insertAdjacentHTML("beforeend", `
         <li></li>
       `);
+
+      new google.maps.places.Autocomplete( document.getElementById('event_location_input'), {fields: ['name','adr_address']} );
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -1515,7 +1523,7 @@ print %(
       border-left-style: hidden;
       border-bottom-style: solid;
       border-bottom-width: 1px;
-      border-bottom-color: #E8E8EB;
+      border-bottom-color: #ECEEF0;
       border-radius: 0;
       width: 100%;
       height: #{6 * VH_FACTOR}vh;
@@ -1563,10 +1571,10 @@ print %(
       float: left;
       cursor: pointer;
     }
-    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder {
       color: #72757A;
     }
-    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus {
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus, #event_location input[type=text]:focus {
       outline: none;
     }
     #start_time {
@@ -1904,7 +1912,7 @@ print %(
       margin-top: #{15 * VH_FACTOR}vh;
       cursor: default;
     }
-    #time_zone_icon, #event_repeat_select_icon, #date_type_icon {
+    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon {
       display: inline-block;
       float: left;
       height: #{4 * VH_FACTOR}vh;
@@ -1914,7 +1922,12 @@ print %(
       line-height: #{4 * VH_FACTOR}vh;
       color: #595D62;
     }
-    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text] {
+    #event_location {
+      height: #{4 * VH_FACTOR}vh;
+      width: 100%;
+      margin-top: #{1.25 * VH_FACTOR}vh
+    }
+    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -1925,6 +1938,9 @@ print %(
       outline: none;
       line-height: #{4 * VH_FACTOR}vh;
       cursor: pointer;
+    }
+    #event_location input[type=text] {
+      width: 80%;  /* override */
     }
     #date_type_toggle input[type=text], #date_type_txt input[type=text] {
       cursor: default;

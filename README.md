@@ -16,6 +16,8 @@
 * add `ErrorDocument 404 https://DecidedWebsiteName.com/not_found` to apache virtual host config
 * enable apache cgi mods then add `ScriptAlias "/" "/decided/path/tom_calendar/actions/"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
+* enable google calendar API in google developer console
+* enable google places API in google developer console
 * set apache user environment variables
 	* AWS_ACCESS_KEY_ID
 	* AWS_SECRET_ACCESS_KEY
@@ -25,4 +27,5 @@
   * GOOGLE_OAUTH_CLIENT_SECRET
   * SESSION_HASH_LEFT_PADDING (arbitrary sized random string)
   * SESSION_HASH_RIGHT_PADDING (arbitrary sized random string)
+  * MAPS_API_KEY
 * create tables in DynamoDB (will list tables later)
