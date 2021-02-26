@@ -167,7 +167,7 @@ print %(
         #{ %(<div class="period_wheel_desktop_cover" id="end_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
       </div>
-      <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
+      <div style="width:100%;height:0vh;display:inline-block;"></div>
       <div id="time_zone">
         <i class="material-icons md-36" id="time_zone_icon">public</i>
         <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZones()">
@@ -184,12 +184,12 @@ print %(
         <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
         #{ %(<div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
-        <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
+        <div style="width:100%;height:0vh;display:inline-block;"></div>
       </div>
       <div id="event_repeats_on_select">
         <input type="text" id="event_repeats_on_select_txt" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatsOnSelect()"> 
       </div>
-      <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
+      <div style="width:100%;height:0vh;display:inline-block;"></div>
       <div id="repeat_on_select_checkbox" style="text-align:center;width:100%;" value="null">
         <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_sunday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
         <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_monday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">M</div>
@@ -206,10 +206,12 @@ print %(
         #{ %(<div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li></li></ul>
       </div>
+      <div id="event_divider"></div>
       <div id="event_location">
         <i class="material-icons md-36" id="event_location_icon">location_on</i>
         <input type="text" id="event_location_input" placeholder="Add location" autocomplete="on" runat="server">
       </div>
+      <div id="event_divider"></div>
     </div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
   </body>
@@ -598,6 +600,8 @@ print %(
 
       ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
+
+      document.getElementById("event_location_input").value = "";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1561,6 +1565,24 @@ print %(
       z-index: 1;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
+    #event_location {
+      height: #{4 * VH_FACTOR}vh;
+      width: 100%;
+      margin-top: #{2 * VH_FACTOR}vh;
+    }
+    #event_divider {
+      border-top-style: hidden;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-bottom-color: #ECEEF0;
+      border-radius: 0;
+      width: 100%;
+      display: inline-block;
+      height: 1px;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+    }
     #start_date input[type=text], #end_date input[type=text], #date_type input[type=text] {
       border: none;
       width: #{38 * VW_FACTOR}vw;
@@ -1922,11 +1944,6 @@ print %(
       line-height: #{4 * VH_FACTOR}vh;
       color: #595D62;
     }
-    #event_location {
-      height: #{4 * VH_FACTOR}vh;
-      width: 100%;
-      margin-top: #{1.25 * VH_FACTOR}vh
-    }
     #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
@@ -1940,7 +1957,7 @@ print %(
       cursor: pointer;
     }
     #event_location input[type=text] {
-      width: 80%;  /* override */
+      width: 85%;  /* override */
     }
     #date_type_toggle input[type=text], #date_type_txt input[type=text] {
       cursor: default;
@@ -2034,6 +2051,35 @@ print %(
       left: 0;
       top: 0;
       transition: background-color .15s;
+    }
+    .pac-container {
+      box-shadow: none;
+      border: none;
+      border-radius: 8px;
+      color: #505154;
+      font-family: 'Roboto', sans-serif;
+      background-color: #EEEEEE;
+    }
+    .pac-icon {
+      display: none;
+    }
+    .pac-item {
+      color: #292A2D;
+      border: none;
+      background-color: #EEEEEE;
+    }
+    .pac-item:hover, .pac-item-selected {
+      color: #FEFFFE;
+      background-color: #1A73E8;
+    }
+    .pac-matched {
+      color: #26272A;
+    }
+    .pac-container:after {
+      background-image: none !important;
+      height: 0px;
+      padding: 0;
+      margin: 0;
     }
   </style>
 </html>
