@@ -591,7 +591,6 @@ print %(
       document.getElementById("start_time").style.display = "inline-block";
       document.getElementById("end_time").style.display = "inline-block";
       document.getElementById("event_repeat_select").style.display = "inline-block";
-      document.getElementById("event_repeats_on_select").style.display = "inline-block";
       var sq_toggle = document.getElementById("create_event_switch_react_container");
       sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
       sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
@@ -1255,12 +1254,13 @@ print %(
         document.getElementById("start_time").style.display = "inline-block";
         document.getElementById("end_time").style.display = "inline-block";
         document.getElementById("event_repeat_select").style.display = "inline-block";
-        document.getElementById("event_repeats_on_select").style.display = "inline-block";
 
         var sq_toggle = document.getElementById("create_event_switch_react_container");
         sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
         sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
         sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
+
+        updateCreateFormRepeat();
       }
     }
     function onSQWheelScroll(id) {
