@@ -99,7 +99,7 @@ print %(
       </div>
     </div>
     <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
-    <div id="create_form">
+    <div id="create_form" style="overflow:scroll;">
       <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
       <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
       <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
@@ -209,7 +209,12 @@ print %(
       <div id="event_divider"></div>
       <div id="event_location">
         <i class="material-icons md-36" id="event_location_icon">location_on</i>
-        <input type="text" id="event_location_input" placeholder="Add location" autocomplete="on" runat="server">
+        <input type="text" id="event_location_txt" placeholder="Add location" autocomplete="on" runat="server">
+      </div>
+      <div id="event_divider"></div>
+      <div id="event_description">
+        <i class="material-icons md-36" id="description_icon">notes</i>
+        <textarea name="text" id="event_description_txt" placeholder="Add description" oninput="eventDescriptionTxtResize(this.id)" maxlength="1000"></textarea>
       </div>
       <div id="event_divider"></div>
     </div>
@@ -443,7 +448,7 @@ print %(
         <li></li>
       `);
 
-      new google.maps.places.Autocomplete( document.getElementById('event_location_input'), {fields: ['name','adr_address']} );
+      new google.maps.places.Autocomplete( document.getElementById('event_location_txt'), {fields: ['name','adr_address']} );
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -525,6 +530,7 @@ print %(
       var popup_close_layer = document.getElementById("popup_close_layer");
       popup_close_layer.style.display = "block";
       create_form.style.display = "block";
+      eventDescriptionTxtResize('event_description_txt');
     }
     function onCreateClose() {
       var create_form = document.getElementById("create_form");
@@ -601,7 +607,8 @@ print %(
       ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
 
-      document.getElementById("event_location_input").value = "";
+      document.getElementById("event_location_txt").value = "";
+      document.getElementById("event_description_txt").value = "";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1299,6 +1306,11 @@ print %(
        sq_picker.style.display = "none";
       }
     }
+    function eventDescriptionTxtResize(id) {
+      var description_txt = document.getElementById(id);
+      description_txt.style.height = "";
+      description_txt.style.height = description_txt.scrollHeight;
+    }
   </script>
   <style>
     html {
@@ -1338,6 +1350,9 @@ print %(
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #555;
+    }
+    #create_form::-webkit-scrollbar {
+      display: none;
     }
     #navbar {
       margin: 0;
@@ -1565,8 +1580,8 @@ print %(
       z-index: 1;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
-    #event_location {
-      height: #{4 * VH_FACTOR}vh;
+    #event_location, #event_description {
+      min-height: #{4 * VH_FACTOR}vh;
       width: 100%;
       margin-top: #{2 * VH_FACTOR}vh;
     }
@@ -1593,7 +1608,7 @@ print %(
       float: left;
       cursor: pointer;
     }
-    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder, textarea::placeholder {
       color: #72757A;
     }
     #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus, #event_location input[type=text]:focus {
@@ -1934,7 +1949,7 @@ print %(
       margin-top: #{15 * VH_FACTOR}vh;
       cursor: default;
     }
-    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon {
+    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon, #description_icon {
       display: inline-block;
       float: left;
       height: #{4 * VH_FACTOR}vh;
@@ -1944,7 +1959,7 @@ print %(
       line-height: #{4 * VH_FACTOR}vh;
       color: #595D62;
     }
-    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text] {
+    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text], #event_description_txt {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
@@ -1958,6 +1973,14 @@ print %(
     }
     #event_location input[type=text] {
       width: 85%;  /* override */
+    }
+    #event_description_txt {
+      height: #{3.75 * VH_FACTOR}vh;
+      line-height: #{2.5 * VH_FACTOR}vh;  /* override */
+      resize: none;
+      overflow:hidden;
+      width: 85%;  /* override */
+      margin-top: #{0.5 * VH_FACTOR}vh;
     }
     #date_type_toggle input[type=text], #date_type_txt input[type=text] {
       cursor: default;
