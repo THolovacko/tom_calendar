@@ -4,7 +4,10 @@
 # @remember: need to speed up body onload
 # @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
+# @remember: check if user already created an event with same title
 # @test:     user agent detection on several platforms
+
+# @current: save event: just add to database, upload image, validate event title doesn't already exist by that user
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
