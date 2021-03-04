@@ -99,7 +99,7 @@ print %(
       </div>
     </div>
     <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
-    <div id="create_form" style="overflow:scroll;">
+    <div id="create_form">
       <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
       <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
       <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title"></div>
@@ -111,7 +111,7 @@ print %(
       <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
       <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType()"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
       <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
-      <div class="seasonal_quarterly_picker" id="seasonal_quarterly_picker">
+      <div class="seasonal_quarterly_picker create_form_wheel" id="seasonal_quarterly_picker">
         <div class="sq_wheel_select_box_cover_top"></div>
         <div class="sq_wheel_select_box"></div>
         <div class="sq_wheel_select_box_cover_bottom"></div>
@@ -120,7 +120,7 @@ print %(
         #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="sq_year_wheel" id="sq_year_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
-      <div class="date_wheel_picker" id="start_datepicker">
+      <div class="date_wheel_picker create_form_wheel" id="start_datepicker">
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
@@ -131,7 +131,7 @@ print %(
         #{ %(<div class="year_wheel_desktop_cover" id="start_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
-      <div class="time_wheel_picker" id="start_timepicker">
+      <div class="time_wheel_picker create_form_wheel" id="start_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
@@ -145,7 +145,7 @@ print %(
       <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
       <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
       <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('end')"><input type="text" id="end_timepicker_txt" placeholder="Add end time  " readonly></div><!-- extra space character in placeholder is for txt alignment -->
-      <div class="date_wheel_picker" id="end_datepicker">
+      <div class="date_wheel_picker create_form_wheel" id="end_datepicker">
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
@@ -156,7 +156,7 @@ print %(
         #{ %(<div class="year_wheel_desktop_cover" id="end_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
         <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
-      <div class="time_wheel_picker" id="end_timepicker">
+      <div class="time_wheel_picker create_form_wheel" id="end_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
@@ -176,7 +176,7 @@ print %(
         <i class="material-icons md-36" id="event_repeat_select_icon">refresh</i>
         <input type="text" id="event_repeat_select_txt" value="Does not repeat" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatSelect()">
       </div>
-      <div class="repeat_wheel_picker" id="repeat_wheel_picker">
+      <div class="repeat_wheel_picker create_form_wheel" id="repeat_wheel_picker">
         <div class="repeat_wheel_select_box_cover_top"></div>
         <div class="repeat_wheel_select_box"></div>
         <div class="repeat_wheel_select_box_cover_bottom"></div>
@@ -199,7 +199,7 @@ print %(
         <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_friday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">F</div>
         <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_saturday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
       </div>
-      <div class="repeat_month_wheel_picker" id="repeat_month_wheel_picker">
+      <div class="repeat_month_wheel_picker create_form_wheel" id="repeat_month_wheel_picker">
         <div class="repeat_month_wheel_select_box_cover_top"></div>
         <div class="repeat_month_wheel_select_box"></div>
         <div class="repeat_month_wheel_select_box_cover_bottom"></div>
@@ -215,6 +215,12 @@ print %(
       <div id="event_description">
         <i class="material-icons md-36" id="description_icon">notes</i>
         <textarea name="text" id="event_description_txt" placeholder="Add description" oninput="eventDescriptionTxtResize(this.id)" maxlength="1000"></textarea>
+      </div>
+      <div id="event_divider"></div>
+      <div id="event_image">
+        <i class="material-icons md-36" id="event_image_icon">image</i>
+        <input type="text" id="event_image_txt" placeholder="Add image" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventAddImage()">
+        <input type="file" id="event_image_file" accept=".jpg,.jpeg,.jfif,.pjpeg,.pjp,.png,.gif" hidden/>
       </div>
       <div id="event_divider"></div>
     </div>
@@ -318,6 +324,8 @@ print %(
         document.getElementById("repeat_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_month_wheel') },{passive: true});
         document.getElementById("sq_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_year_wheel') },{passive: true});
         document.getElementById("sq_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_wheel') },{passive: true});
+
+        document.getElementById("create_form").addEventListener("wheel",function() { onCreateFormScroll(event,'create_form') },{passive: true});
       }
 
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
@@ -449,6 +457,10 @@ print %(
       `);
 
       new google.maps.places.Autocomplete( document.getElementById('event_location_txt'), {fields: ['name','adr_address']} );
+
+      document.getElementById('event_image_file').addEventListener('change', function(){
+        document.getElementById('event_image_txt').value = this.files[0].name;
+      })
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -609,6 +621,7 @@ print %(
 
       document.getElementById("event_location_txt").value = "";
       document.getElementById("event_description_txt").value = "";
+      document.getElementById("event_image_txt").value = "";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1311,6 +1324,19 @@ print %(
       description_txt.style.height = "";
       description_txt.style.height = description_txt.scrollHeight;
     }
+    function onEventAddImage() {
+      document.getElementById('event_image_file').click();
+    }
+    function onCreateFormScroll(event, id) {
+      var create_form = document.getElementById(id);
+      var are_wheels_hovered = document.querySelector(".create_form_wheel:hover");
+      if ( are_wheels_hovered ) {
+        create_form.style.overflowY = "hidden";
+        window.setTimeout(function() {
+          create_form.style.overflowY = "scroll";
+        }, 12);
+      }
+    }
   </script>
   <style>
     html {
@@ -1378,6 +1404,7 @@ print %(
     #create_form, #time_zones_react_container {
       display: none;
       position: fixed;
+      overflow-y: scroll;
       width: #{( IS_DESKTOP ? '80' : '100' )}%;
       height: #{( IS_DESKTOP ? '80' : '100' )}%;
       margin-top: #{( IS_DESKTOP ? '5' : '0' )}%;
@@ -1580,7 +1607,7 @@ print %(
       z-index: 1;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
-    #event_location, #event_description {
+    #event_location, #event_description, #event_image {
       min-height: #{4 * VH_FACTOR}vh;
       width: 100%;
       margin-top: #{2 * VH_FACTOR}vh;
@@ -1608,10 +1635,10 @@ print %(
       float: left;
       cursor: pointer;
     }
-    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder, textarea::placeholder {
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder, textarea::placeholder, #event_image input::placeholder {
       color: #72757A;
     }
-    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus, #event_location input[type=text]:focus {
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus, #event_location input[type=text]:focus, #event_image input[type=text]:focus {
       outline: none;
     }
     #start_time {
@@ -1949,7 +1976,7 @@ print %(
       margin-top: #{15 * VH_FACTOR}vh;
       cursor: default;
     }
-    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon, #description_icon {
+    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon, #description_icon, #event_image_icon {
       display: inline-block;
       float: left;
       height: #{4 * VH_FACTOR}vh;
@@ -1959,7 +1986,7 @@ print %(
       line-height: #{4 * VH_FACTOR}vh;
       color: #595D62;
     }
-    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text], #event_description_txt {
+    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text], #event_description_txt, #event_image input[type=text] {
       border: none;
       width: #{80 * VW_FACTOR}vw;
       height: #{4 * VH_FACTOR}vh;
