@@ -59,8 +59,8 @@ print %(
     </div>
   </body>
   <script>
-    authorization_url  = "https://tomcalendar.com";  // default value
-    authorization_code = #{code ? "\"#{code}\"" : 'null'};
+    var authorization_url  = "https://tomcalendar.com";  // default value
+    var authorization_code = #{code ? "\"#{code}\"" : 'null'};
 
     function init() {
       if ( localStorage.getItem("session_id") ) {
@@ -91,14 +91,14 @@ print %(
         http.open('POST', 'generate_authorization_url', true);
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.onload = function() {
-          if(http.status == 200) {
+          if (http.status == 200) {
             authorization_url = http.responseText;
             gapi.auth2.getAuthInstance().signOut()
           }
           else {
             // @remember: handle error
           }
-        }
+        };
         http.send('');
       }
     }
@@ -121,7 +121,7 @@ print %(
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if(http.status == 200) {
-          result = http.responseText;
+          var result = http.responseText;
           var today_time = new Date().getTime();
           var expiration_date = new Date();
           expiration_date.setTime(today_time + (31 * 86400000));
@@ -132,7 +132,7 @@ print %(
         else {
           // @remember: handle error
         }
-      }
+      };
       http.send(auth_code);
       document.getElementById("background").style.webkitFilter = "blur(100px)";
     }

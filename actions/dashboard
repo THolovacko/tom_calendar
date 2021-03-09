@@ -6,6 +6,7 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @remember: check if user already created an event with same title
 # @test:     user agent detection on several platforms
+# @remember: only allow valid values for create event input
 
 # @current: save event: just add to database, upload image, validate event title doesn't already exist by that user
 
@@ -307,6 +308,7 @@ print %(
       'sq_year_wheel'      : -1
     }
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var user_selected_time_zone = user_time_zone;
 
     function init() {
       if(is_desktop) {
@@ -345,7 +347,7 @@ print %(
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if(http.status == 200) {
-          result = JSON.parse(http.responseText);
+          var result = JSON.parse(http.responseText);
 
           if (result["is_valid"]) {
             // handle initial data load
@@ -362,7 +364,7 @@ print %(
             window.location = "https://tomcalendar.com/";
           }
         }
-      }
+      };
       http.send(user_time_zone);
 
       var request = new XMLHttpRequest();
@@ -476,7 +478,7 @@ print %(
           document.cookie = "session_id=;secure";
           window.location = "https://tomcalendar.com/";
         }
-      }
+      };
       http.send('');
     }
     function confirmRevoke(code) {
@@ -491,7 +493,7 @@ print %(
             document.cookie = "session_id=;secure";
             window.location = "https://tomcalendar.com/";
           }
-        }
+        };
         http.send(code);
       }
     }
@@ -625,6 +627,8 @@ print %(
       document.getElementById("event_location_txt").value = "";
       document.getElementById("event_description_txt").value = "";
       document.getElementById("event_image_txt").value = "";
+
+      user_selected_time_zone = user_time_zone;
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -651,8 +655,37 @@ print %(
       deactivate_page.style.display = "block";
     }
     function saveEvent() {
-      // save stuff
-      // clear form
+      var event_title       = document.getElementById("create_form_title_input").value.trim();
+      var event_start_date  = document.getElementById("start_datepicker_txt").value;
+      var event_start_time  = document.getElementById("start_timepicker_txt").value;
+      var event_end_date    = document.getElementById("end_datepicker_txt").value;
+      var event_end_time    = document.getElementById("end_timepicker_txt").value;
+      var event_date_type   = document.getElementById("date_type_txt").value;
+      var event_time_zone   = user_selected_time_zone;
+      var_event_repeats     = document.getElementById("event_repeat_select_txt").value;
+      var event_repeats_on  = document.getElementById("event_repeats_on_select_txt").value;
+      var event_location    = document.getElementById("event_location_txt").value;
+      var event_description = document.getElementById("event_description_txt").value;
+
+
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'create_event', true);
+      http.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      http.onload = function() {
+        if (http.status == 200) {
+          var result = JSON.parse(http.responseText);
+          console.log(result);
+        } else {
+          // @remember: handle failed create_event
+        }
+      };
+      http.send(JSON.stringify({
+        "summary": event_title,
+        "tom": "test"
+      }));
+
+
 
       onCreateClose();
     }
@@ -931,6 +964,7 @@ print %(
     }
     function handleTimeZonesClick(time_zone) {
       document.getElementById("time_zones_react_container").value = time_zone;
+      user_selected_time_zone = time_zone;
       document.getElementById("time_zone_txt").value = `${parseTimeZone(time_zone)} Time`;
       document.getElementById("time_zones_react_container").scrollTop = 0;
       document.getElementById("time_zones_react_container").style.display = "none";
