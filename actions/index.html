@@ -93,7 +93,7 @@ print %(
         http.onload = function() {
           if (http.status == 200) {
             authorization_url = http.responseText;
-            gapi.auth2.getAuthInstance().signOut()
+            gapi.auth2.getAuthInstance().signOut();
           }
           else {
             // @remember: handle error
