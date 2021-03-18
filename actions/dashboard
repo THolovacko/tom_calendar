@@ -655,10 +655,6 @@ print %(
       deactivate_page.style.display = "block";
     }
     function saveEvent() {
-      // @remember: validate title (make sure exists and user isn't repeating)
-      // https://developers.google.com/calendar/create-events
-      // https://developers.google.com/calendar/v3/reference/events
-
       if (!document.getElementById("create_form_title_input").value.trim()) {
         document.getElementById("create_form_title_input").style.borderColor = "red";
         return;
