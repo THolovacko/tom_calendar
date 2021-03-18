@@ -1,7 +1,6 @@
 #! /usr/bin/ruby
 
 require_relative '../lib/tom_calendar.rb'
-require "google/apis/calendar_v3"
 
 # @test: make sure calendar and event timezones are correct when creating and synching events
 

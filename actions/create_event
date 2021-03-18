@@ -12,9 +12,39 @@ unless cookie_session_id
 end
 
 session_id    = JSON.parse(cookie_session_id)
-dynamodb      = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 request_input = JSON.parse(ARGF.first)
 
-result = request_input
+event = request_input
+event['title'] = event['title']&.strip
+event['google_id'] = session_id['google_id']
 
-print "Content-type: application/json\n\n#{result.to_json}"
+unless ( event['title'] && (event['title'] != '') )
+  print StatusCodeStr::BAD_REQUEST
+  return;
+end
+
+begin
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+  check_event_params = {
+    table_name: 'Events',
+    key: { google_id: event['google_id'], title: event['title'] }
+  }
+
+  result_item = dynamodb.get_item(check_event_params)&.item
+  if (result_item)
+    print StatusCodeStr::BAD_REQUEST
+    return;
+  end
+
+  event_params = {
+    table_name: 'Events',
+    item: event
+  }
+
+  dynamodb.put_item(event_params)
+rescue Exception => e
+  raise e
+end
+
+print "Content-type: application/json\n\n#{event.to_json}"

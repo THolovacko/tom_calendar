@@ -28,7 +28,7 @@ unless cookie_session_id
   return
 end
 
-user_agent_str = ENV['HTTP_USER_AGENT'].downcase
+user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
@@ -628,6 +628,7 @@ print %(
       document.getElementById("event_image_txt").value = "";
 
       user_selected_time_zone = user_time_zone;
+      document.getElementById("create_form_title_input").style.borderColor = "#ECEEF0";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -654,22 +655,14 @@ print %(
       deactivate_page.style.display = "block";
     }
     function saveEvent() {
-      var event_title       = document.getElementById("create_form_title_input").value.trim();
-      var event_start_date  = document.getElementById("start_datepicker_txt").value;
-      var event_start_time  = document.getElementById("start_timepicker_txt").value;
-      var event_end_date    = document.getElementById("end_datepicker_txt").value;
-      var event_end_time    = document.getElementById("end_timepicker_txt").value;
-      var event_date_type   = document.getElementById("date_type_txt").value;
-      var event_time_zone   = user_selected_time_zone;
-      var_event_repeats     = document.getElementById("event_repeat_select_txt").value;
-      var event_repeats_on  = document.getElementById("event_repeats_on_select_txt").value;
-      var event_location    = document.getElementById("event_location_txt").value;
-      var event_description = document.getElementById("event_description_txt").value;
-
-
       // @remember: validate title (make sure exists and user isn't repeating)
       // https://developers.google.com/calendar/create-events
       // https://developers.google.com/calendar/v3/reference/events
+
+      if (!document.getElementById("create_form_title_input").value.trim()) {
+        document.getElementById("create_form_title_input").style.borderColor = "red";
+        return;
+      }
 
       var http = new XMLHttpRequest();
       http.open('POST', 'create_event', true);
@@ -678,18 +671,24 @@ print %(
         if (http.status == 200) {
           var result = JSON.parse(http.responseText);
           console.log(result);
+          onCreateClose();
         } else {
-          // @remember: handle failed create_event
+          document.getElementById("create_form_title_input").style.borderColor = "red";
         }
       };
       http.send(JSON.stringify({
-        "summary":    event_title,
-        "start_date": ""
+        "title"       : document.getElementById("create_form_title_input").value.trim(),
+        "start_date"  : document.getElementById("start_datepicker_txt").value,
+        "start_time"  : document.getElementById("start_timepicker_txt").value,
+        "end_date"    : document.getElementById("end_datepicker_txt").value,
+        "end_time"    : document.getElementById("end_timepicker_txt").value,
+        "date_type"   : document.getElementById("date_type_txt").value,
+        "time_zone"   : user_selected_time_zone,
+        "repeats"     : document.getElementById("event_repeat_select_txt").value,
+        "repeats_on"  : document.getElementById("event_repeats_on_select_txt").value,
+        "location"    : document.getElementById("event_location_txt").value,
+        "description" : document.getElementById("event_description_txt").value
       }));
-
-
-
-      onCreateClose();
     }
     function hideExtraDaysOnDayWheelPickers() {
       ["start","end"].forEach(function(date) {

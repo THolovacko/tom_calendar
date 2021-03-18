@@ -24,7 +24,7 @@ query_str = ENV['QUERY_STRING']
 code      = query_str.match(/code=([^&]*)/)&.to_s&.sub('code=','')
 code      = nil if (code == '') || (code == ' ')
 
-user_agent_str = ENV['HTTP_USER_AGENT'].downcase
+user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 VH_FACTOR   = IS_DESKTOP ? 1.5 : 1
 FONT_FACTOR = IS_DESKTOP ? 2 : 1
