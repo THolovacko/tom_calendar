@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 
 require_relative '../lib/tom_calendar.rb'
+require 'aws-sdk-s3'
 
 #https://developers.google.com/calendar/create-events
 #https://developers.google.com/calendar/v3/reference/events
@@ -19,6 +20,9 @@ request_input = JSON.parse(ARGF.first)
 event = request_input
 event['title'] = event['title']&.strip
 event['google_id'] = session_id['google_id']
+if event['image_extension'] && (event['image_extension'] != '')
+  event['image_id'] = Digest::SHA256.hexdigest("#{event['google_id']}#{event['title']}")
+end
 
 unless ( event['title'] && (event['title'] != '') )
   print StatusCodeStr::BAD_REQUEST
@@ -39,6 +43,19 @@ begin
     return;
   end
 
+  upload_url = nil
+  if event['image_id']
+    aws_client = Aws::S3::Client.new(
+      region:               ENV['AWS_REGION'],
+      access_key_id:        ENV['AWS_ACCESS_KEY_ID'],
+      secret_access_key:    ENV['AWS_SECRET_ACCESS_KEY']
+    )
+    s3 = Aws::S3::Resource.new(client: aws_client)
+    bucket = s3.bucket('tomcalendareventimages')
+    obj = bucket.object("#{event['image_id']}.#{event['image_extension']}")
+    upload_url = obj.presigned_url(:put)
+  end
+
   event_params = {
     table_name: 'Events',
     item: event
@@ -49,4 +66,4 @@ rescue Exception => e
   raise e
 end
 
-print "Content-type: application/json\n\n#{event.to_json}"
+print StatusCodeStr::plain_text(upload_url)
