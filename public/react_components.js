@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -67,11 +67,21 @@ class ToggleSwitch extends React.Component {
     super(props);
   }
 
-  render () {
+  render() {
     return /*#__PURE__*/React.createElement(Switch, {
       disableRipple: true,
       onChange: handleToggleSwitchChange,
       color: "primary"
     });
+  }
+}
+
+class Spinner extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(CircularProgress, null);
   }
 }
