@@ -3,9 +3,6 @@
 require_relative '../lib/tom_calendar.rb'
 require 'aws-sdk-s3'
 
-#https://developers.google.com/calendar/create-events
-#https://developers.google.com/calendar/v3/reference/events
-
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
@@ -65,5 +62,7 @@ begin
 rescue Exception => e
   raise e
 end
+
+`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_event '#{event.to_json}' >/dev/null &`
 
 print StatusCodeStr::plain_text(upload_url)

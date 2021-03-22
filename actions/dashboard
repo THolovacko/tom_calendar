@@ -7,8 +7,6 @@
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
 
-# @current: save event: just add to database, upload image, validate event title doesn't already exist by that user
-
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -309,6 +307,7 @@ print %(
     }
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     var user_selected_time_zone = user_time_zone;
+    var is_general_event = false;
 
     function init() {
       if(is_desktop) {
@@ -549,9 +548,6 @@ print %(
       popup_close_layer.style.display = "block";
       create_form.style.display = "block";
       eventDescriptionTxtResize('event_description_txt');
-
-
-      document.getElementById("spinner_react_container").style.display = "block"; // just for testing
     }
     function onCreateClose() {
       var create_form = document.getElementById("create_form");
@@ -636,6 +632,8 @@ print %(
       document.getElementById("create_form_title_input").style.borderColor = "#ECEEF0";
 
       document.getElementById("spinner_react_container").style.display = "none";
+
+      is_general_event = false;
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -688,21 +686,23 @@ print %(
         } else {
           // @remember: should validate it's a title error else notify network error
           document.getElementById("create_form_title_input").style.borderColor = "red";
+          document.getElementById("spinner_react_container").style.display = "none";
         }
       };
       http.send(JSON.stringify({
-        "title"           : document.getElementById("create_form_title_input").value.trim(),
-        "start_date"      : document.getElementById("start_datepicker_txt").value,
-        "start_time"      : document.getElementById("start_timepicker_txt").value,
-        "end_date"        : document.getElementById("end_datepicker_txt").value,
-        "end_time"        : document.getElementById("end_timepicker_txt").value,
-        "date_type"       : document.getElementById("date_type_txt").value,
-        "time_zone"       : user_selected_time_zone,
-        "repeats"         : document.getElementById("event_repeat_select_txt").value,
-        "repeats_on"      : document.getElementById("event_repeats_on_select_txt").value,
-        "location"        : document.getElementById("event_location_txt").value,
-        "description"     : document.getElementById("event_description_txt").value,
-        "image_extension" : document.getElementById("event_image_txt").value.split('.').pop()
+        "title"            : document.getElementById("create_form_title_input").value.trim(),
+        "start_date"       : document.getElementById("start_datepicker_txt").value,
+        "start_time"       : document.getElementById("start_timepicker_txt").value,
+        "end_date"         : document.getElementById("end_datepicker_txt").value,
+        "end_time"         : document.getElementById("end_timepicker_txt").value,
+        "date_type"        : document.getElementById("date_type_txt").value,
+        "time_zone"        : user_selected_time_zone,
+        "repeats"          : document.getElementById("event_repeat_select_txt").value,
+        "repeats_on"       : document.getElementById("event_repeats_on_select_txt").value,
+        "location"         : document.getElementById("event_location_txt").value,
+        "description"      : document.getElementById("event_description_txt").value,
+        "image_extension"  : document.getElementById("event_image_txt").value.split('.').pop(),
+        "is_general_event" : is_general_event
       }));
     }
     function hideExtraDaysOnDayWheelPickers() {
@@ -1293,6 +1293,7 @@ print %(
     }
     function handleToggleSwitchChange() {
       if ( document.getElementById("date_type").style.display !== "inline-block") {
+        is_general_event = true;
         document.getElementById("start_datepicker").style.display = "none";
         document.getElementById("end_datepicker").style.display = "none";
         document.getElementById("start_timepicker").style.display = "none";
@@ -1315,6 +1316,7 @@ print %(
         sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#1A73E8";
         sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#1A73E8";
       } else {
+        is_general_event = false;
         document.getElementById("start_datepicker").style.display = "none";
         document.getElementById("end_datepicker").style.display = "none";
         document.getElementById("start_timepicker").style.display = "none";
@@ -1454,7 +1456,7 @@ print %(
       width: #{12 * VW_FACTOR}vw;
       display: inline-block;
     }
-    #create_form, #time_zones_react_container, #spinner_react_container {
+    #create_form, #time_zones_react_container {
       display: none;
       position: fixed;
       overflow-y: scroll;
@@ -1471,7 +1473,7 @@ print %(
       bottom: 0;
       right: 0;
     }
-    #popup_close_layer {
+    #popup_close_layer, #spinner_react_container {
       display: none;
       width: 100%;
       height: 100%;
@@ -1481,6 +1483,13 @@ print %(
       left: 0;
       bottom: 0;
       right: 0;
+    }
+    #spinner_react_container { /* also defined with popup_close_layer */
+      transform: scale(1.2, 1.2);
+    }
+    .spinner_circle { /* from react component */
+      margin-top: #{40 * VH_FACTOR}vh;
+      /*color: yellow;*/
     }
     .page {
       display: none;

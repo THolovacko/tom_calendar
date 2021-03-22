@@ -82,6 +82,6 @@ class Spinner extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(CircularProgress, null);
+    return /*#__PURE__*/React.createElement(CircularProgress, { className: "spinner_circle" });
   }
 }

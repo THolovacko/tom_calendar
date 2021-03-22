@@ -1,0 +1,57 @@
+#! /usr/bin/ruby
+
+require_relative '../lib/tom_calendar.rb'
+
+# https://developers.google.com/calendar/create-events
+# https://developers.google.com/calendar/v3/reference/events
+# https://tools.ietf.org/html/rfc5545#section-3.8.5
+
+
+event = JSON.parse(ARGV[0])
+
+return if event['is_general_event']
+return unless event['start_date'] && event['end_date']
+return if (event['start_date'] == '') || (event['start_date'] == 'TBD')
+return if (event['end_date'] == '')   || (event['end_date'] == 'TBD')
+return if (event['start_date'].split.length != 3) || (event['end_date'].split.length != 3)  # needs month, date, and year
+
+dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+google_authorizer     = get_google_authorizer(dynamodb)
+service               = Google::Apis::CalendarV3::CalendarService.new
+service.authorization = google_authorizer.get_credentials(google_id)
+service.client_options.application_name = 'TomCalendar'.freeze
+
+
+
+
+# @current: reformat start date, start time, end date, and end_time
+
+
+
+
+# calculate recurrence rule
+
+
+=begin
+google_event = Google::Apis::CalendarV3::Event.new(
+  summary: event['title'],
+  location: event['location'],
+  description: event['description'],
+  start: Google::Apis::CalendarV3::EventDateTime.new(
+    #date: 'yyyy-mm-dd',
+    #date_time: '2015-05-28T09:00:00-07:00',
+    time_zone: event['time_zone']
+  ),
+  end: Google::Apis::CalendarV3::EventDateTime.new(
+    #date: 'yyyy-mm-dd',
+    #date_time: '2015-05-28T17:00:00-07:00',
+    time_zone: event['time_zone']
+  ),
+  recurrence: [
+    #'RRULE:FREQ=DAILY;COUNT=2'
+  ],
+)
+
+# @remember: if api fail then retry
+service.insert_event('TomCalendar', google_event)
+=end

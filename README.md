@@ -19,6 +19,7 @@
 * enable google calendar API in google developer console
 * enable google places API in google developer console
 * set apache user environment variables
+  * ROOT_DIR_PATH
 	* AWS_ACCESS_KEY_ID
 	* AWS_SECRET_ACCESS_KEY
   * AWS_REGION
