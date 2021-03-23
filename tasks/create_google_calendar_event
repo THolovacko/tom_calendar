@@ -93,6 +93,7 @@ unless repeat_txt == 'Does not repeat'
   end_date      = end_date
 end
 
+# @remember: should probably add unique identifier in extended properties
 google_event = Google::Apis::CalendarV3::Event.new(
   summary: event['title'],
   location: event['location'],
