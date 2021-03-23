@@ -1,19 +1,24 @@
 #! /usr/bin/ruby
 
 require_relative '../lib/tom_calendar.rb'
+require 'time'
 
 # https://developers.google.com/calendar/create-events
 # https://developers.google.com/calendar/v3/reference/events
 # https://tools.ietf.org/html/rfc5545#section-3.8.5
+# https://icalendar.org/rrule-tool.html
 
 
 event = JSON.parse(ARGV[0])
+event_has_no_end = event['end_date'].nil? || (event['end_date'] == '') || (event['end_date'] == 'TBD')
 
 return if event['is_general_event']
-return unless event['start_date'] && event['end_date']
+return unless event['start_date']
 return if (event['start_date'] == '') || (event['start_date'] == 'TBD')
-return if (event['end_date'] == '')   || (event['end_date'] == 'TBD')
-return if (event['start_date'].split.length != 3) || (event['end_date'].split.length != 3)  # needs month, date, and year
+return if event['start_date'].split.length != 3  # requires month, date, and year
+unless event_has_no_end
+  return if event['end_date'].split.length != 3
+end
 
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_authorizer     = get_google_authorizer(dynamodb)
@@ -21,37 +26,90 @@ service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(google_id)
 service.client_options.application_name = 'TomCalendar'.freeze
 
+start_date = nil
+start_date_time = nil
+end_date = nil
+end_date_time = nil
 
+if event['start_time'] && (event['start_time'] != 'TBD') && (event['start_time'] != '')
+  start_date_time = Time.parse("#{event['start_date']} #{event['start_time']}").xmlschema[0..18]
+  end_date_time   = Time.parse("#{event['end_date']} #{event['end_time']}").xmlschema[0..18] unless event_has_no_end
+else
+  start_date = Time.parse(event['start_date']).strftime("%Y-%m-%d")
+  end_date   = Time.parse(event['end_date']).strftime("%Y-%m-%d") unless event_has_no_end
+end
 
+rrule          = nil
+repeat_txt     = event['repeats']
+repeats_on_txt = event['repeats_on']
 
-# @current: reformat start date, start time, end date, and end_time
+unless repeat_txt == 'Does not repeat'
+  frequency = 'DAILY'   if repeat_txt.include? 'day'
+  frequency = 'WEEKLY'  if repeat_txt.include? 'week'
+  frequency = 'MONTHLY' if repeat_txt.include? 'month'
+  frequency = 'YEARLY'  if repeat_txt.include? 'year'
 
+  interval = /\d\d\d|\d\d|\d/.match(repeat_txt).to_s
+  interval = 1 if interval == ''
 
+  rrule = "FREQ=#{frequecy};INTERVAL=#{interval}"
 
+  case frequency
+  when 'WEEKLY'
+    rrule_on_days = []
+    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
+      if repeats_on_txt.include?(weekday) || repeats_on_txt.include?(weekday[0..2])
+        rrule_on_days.push(weekday[0..1].upcase)
+      end
+    end
+    rrule << ";BYDAY=#{rrule_on_days.join(',')}"
+  when 'MONTHLY'
+    if repeats_on_txt == 'On the same day each month'
+      rrule_by_month_day = Time.parse(event['start_date']).strftime("%-d")
+      rrule << ";BYMONTHDAY=#{rrule_by_month_day}"
+    else if (/\d/.match(repeats_on_txt))
+      rrule_by_month_day = /\d/.match(repeats_on_txt).to_s
+      ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
+        if repeats_on_txt.include?(weekday)
+          rrule_by_month_day << weekday[0..1].upcase
+          break
+        end
+      end
+      rrule << ";BYDAY=#{rrule_by_month_day}"
+    else
+      # @current: need to support every last decided weekday of month
+      # @current: need to supoort every last day of the month
+    end
+  when 'YEARLY'
+    rrule << ";BYMONTH=#{Time.parse(event['start_date']).strftime("%-m")};BYMONTHDAY=#{Time.parse(event['start_date']).strftime("%-d")}"
+  end
 
-# calculate recurrence rule
+  unless event_has_no_end
+    until_date = Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..18].gsub('-','').gsub(':','')
+    rrule << ";UNTIL=#{until_date}"
+  end
 
+  end_date_time = start_date_time
+  end_date      = end_date
+end
 
-=begin
 google_event = Google::Apis::CalendarV3::Event.new(
   summary: event['title'],
   location: event['location'],
   description: event['description'],
   start: Google::Apis::CalendarV3::EventDateTime.new(
-    #date: 'yyyy-mm-dd',
-    #date_time: '2015-05-28T09:00:00-07:00',
+    date: start_date,
+    date_time: start_date_time,
     time_zone: event['time_zone']
   ),
   end: Google::Apis::CalendarV3::EventDateTime.new(
-    #date: 'yyyy-mm-dd',
-    #date_time: '2015-05-28T17:00:00-07:00',
+    date: end_date,
+    date_time: end_date_time,
     time_zone: event['time_zone']
   ),
   recurrence: [
-    #'RRULE:FREQ=DAILY;COUNT=2'
+    rrule
   ],
 )
 
-# @remember: if api fail then retry
-service.insert_event('TomCalendar', google_event)
-=end
+service.insert_event('TomCalendar', google_event) # @remember: if api fail then retry
