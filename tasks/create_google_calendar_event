@@ -8,6 +8,8 @@ require 'time'
 # https://tools.ietf.org/html/rfc5545#section-3.8.5
 # https://icalendar.org/rrule-tool.html
 
+# @current: test
+
 
 event = JSON.parse(ARGV[0])
 event_has_no_end = event['end_date'].nil? || (event['end_date'] == '') || (event['end_date'] == 'TBD')
@@ -23,7 +25,7 @@ end
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_authorizer     = get_google_authorizer(dynamodb)
 service               = Google::Apis::CalendarV3::CalendarService.new
-service.authorization = google_authorizer.get_credentials(google_id)
+service.authorization = google_authorizer.get_credentials(event['google_id'])
 service.client_options.application_name = 'TomCalendar'.freeze
 
 start_date = nil
@@ -52,7 +54,7 @@ unless repeat_txt == 'Does not repeat'
   interval = /\d\d\d|\d\d|\d/.match(repeat_txt).to_s
   interval = 1 if interval == ''
 
-  rrule = "FREQ=#{frequecy};INTERVAL=#{interval}"
+  rrule = "FREQ=#{frequency};INTERVAL=#{interval}"
 
   case frequency
   when 'WEEKLY'
@@ -67,7 +69,7 @@ unless repeat_txt == 'Does not repeat'
     if repeats_on_txt == 'On the same day each month'
       rrule_by_month_day = Time.parse(event['start_date']).strftime("%-d")
       rrule << ";BYMONTHDAY=#{rrule_by_month_day}"
-    else if (/\d/.match(repeats_on_txt))
+    elsif (/\d/.match(repeats_on_txt))
       rrule_by_month_day = /\d/.match(repeats_on_txt).to_s
       ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
         if repeats_on_txt.include?(weekday)
@@ -76,7 +78,7 @@ unless repeat_txt == 'Does not repeat'
         end
       end
       rrule << ";BYDAY=#{rrule_by_month_day}"
-    else if repeats_on_txt == 'On the last day'
+    elsif repeats_on_txt == 'On the last day'
       rrule << ";BYMONTHDAY=28,29,30,31;BYSETPOS=-1"
     else # on last selected weekday
       ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
@@ -99,7 +101,6 @@ unless repeat_txt == 'Does not repeat'
   end_date      = end_date
 end
 
-# @remember: should probably add unique identifier in extended properties
 google_event = Google::Apis::CalendarV3::Event.new(
   summary: event['title'],
   location: event['location'],
@@ -117,6 +118,20 @@ google_event = Google::Apis::CalendarV3::Event.new(
   recurrence: [
     rrule
   ],
+  extended_properties: { 'private': { 'tomcalendar_id': "#{event['google_id']}-#{event['title']}" } }
 )
 
-service.insert_event('TomCalendar', google_event) # @remember: if api fail then retry
+begin
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    key: { google_id: event['google_id'] }
+  }
+
+  result_item = dynamodb.get_item(params)&.item || {}
+  google_calendar_id = result_item['google_calendar_id']
+rescue Exception => e
+  print StatusCodeStr::error_message(e.message)
+  return
+end
+
+service.insert_event(google_calendar_id, google_event) # @remember: if api fail then retry
