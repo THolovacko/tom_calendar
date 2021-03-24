@@ -205,7 +205,7 @@ print %(
         <div class="repeat_month_wheel_select_box"></div>
         <div class="repeat_month_wheel_select_box_cover_bottom"></div>
         #{ %(<div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
-        <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li></li></ul>
+        <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li id="repeat_month_wheel_on_last_weekday" style="display:none;">On the last current weekday</li><li id="repeat_month_wheel_on_last_day" style="display:none;">On the last day</li><li></li></ul>
       </div>
       <div id="event_divider"></div>
       <div id="event_location">
@@ -634,6 +634,8 @@ print %(
       document.getElementById("spinner_react_container").style.display = "none";
 
       is_general_event = false;
+      document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+      document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1156,9 +1158,9 @@ print %(
       } else if (data_selected_value['time_span_wheel'].includes("month")) {
         if (data_selected_value['repeat_n_wheel'] != 0) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
-          var start_year  = data_selected_value["start_year_wheel"];
-          var start_month = data_selected_value["start_month_wheel"];
-          var start_day   = data_selected_value["start_day_wheel"];
+          var start_year   = data_selected_value["start_year_wheel"];
+          var start_month  = data_selected_value["start_month_wheel"];
+          var start_day    = data_selected_value["start_day_wheel"];
 
           if (start_year && start_month && start_day && (start_year != 'TBD') && (start_month != 'TBD') && (start_day != 'TBD') && (data_selected_value['repeat_n_wheel'] != 0)) {
             document.getElementById("repeat_month_wheel_on_n_day").style.display = "block";
@@ -1172,13 +1174,42 @@ print %(
 
             document.getElementById("repeat_month_wheel_on_n_day").innerText = `On every ${nth_day}${ordinal_indicators[nth_day]} ${day}`;
 
+            var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
+            if (start_date.getDate() == last_day_in_month) {
+              document.getElementById("repeat_month_wheel_on_last_day").style.display = "block";
+            } else {
+              document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
+            }
+
+            var last_week_index = last_day_in_month - 6;
+            if (start_date.getDate() >= last_week_index) {
+              document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "block";
+              document.getElementById("repeat_month_wheel_on_last_weekday").innerText = `On every last ${day}`;
+            } else {
+              document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+            }
+
+            // update event_repeats_on_select_txt
             if (data_selected_value['repeat_month_wheel'] && (data_selected_value['repeat_month_wheel'] != 'On the same day each month')) {
-              document.getElementById("event_repeats_on_select_txt").value = `On every ${nth_day}${ordinal_indicators[nth_day]} ${day}`;
+              var selected_element = document.getElementById(data_selected_value['repeat_month_selected_id']);
+              if ( (selected_element.id == "repeat_month_wheel_on_last_day") && (selected_element.style.display == "none" ) ) {
+                if (document.getElementById("repeat_month_wheel_on_last_weekday").style.display != "none") {
+                  document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_last_weekday").innerText;
+                } else {
+                  document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_n_day").innerText;
+                }
+              } else if ( (selected_element.id == "repeat_month_wheel_on_last_weekday") && (selected_element.style.display == "none" ) ) {
+                document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_n_day").innerText;
+              } else {
+                document.getElementById("event_repeats_on_select_txt").value = selected_element.innerText;
+              }
             } else {
               document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
             }
           } else {
             document.getElementById("repeat_month_wheel_on_n_day").style.display = "none";
+            document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+            document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
             document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
           }
         } else {
@@ -1287,6 +1318,7 @@ print %(
         if (index < all_repeat_month_wheel_elements.length) {
           data_selected_value[id] = all_repeat_month_wheel_elements[index].innerText;
           document.getElementById("event_repeats_on_select_txt").value = data_selected_value[id];
+          data_selected_value['repeat_month_selected_id'] = all_repeat_month_wheel_elements[index].id;
         }
         scroll_tops[id] = repeat_month_wheel.scrollTop;
       }, 300);
