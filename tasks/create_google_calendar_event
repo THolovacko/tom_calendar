@@ -76,9 +76,15 @@ unless repeat_txt == 'Does not repeat'
         end
       end
       rrule << ";BYDAY=#{rrule_by_month_day}"
-    else
-      # @current: need to support every last decided weekday of month
-      # @current: need to supoort every last day of the month
+    else if repeats_on_txt == 'On the last day'
+      rrule << ";BYMONTHDAY=28,29,30,31;BYSETPOS=-1"
+    else # on last selected weekday
+      ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
+        if repeats_on_txt.include?(weekday)
+          rrule << ";BYDAY=-#{weekday[0..1].upcase}"
+          break
+        end
+      end
     end
   when 'YEARLY'
     rrule << ";BYMONTH=#{Time.parse(event['start_date']).strftime("%-m")};BYMONTHDAY=#{Time.parse(event['start_date']).strftime("%-d")}"
