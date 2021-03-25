@@ -8,6 +8,8 @@
 # @remember: only allow valid values for create event input
 
 
+# @current: bug editing end date after start date (missing year)
+
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
@@ -558,6 +560,7 @@ print %(
       sync_end_date = true;
       sync_end_time = true;
       Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
+      Object.keys(timers).forEach(value => timers[value] = 0);
 
       var create_form_title_input = document.getElementById("create_form_title_input");
       create_form_title_input.blur();

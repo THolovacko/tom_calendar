@@ -9,10 +9,13 @@ require 'time'
 # https://icalendar.org/rrule-tool.html
 
 # @current: test
+# @remember: should limit image file size
 
 
 event = JSON.parse(ARGV[0])
 event_has_no_end = event['end_date'].nil? || (event['end_date'] == '') || (event['end_date'] == 'TBD')
+repeat_txt       = event['repeats']
+repeats_on_txt   = event['repeats_on']
 
 return if event['is_general_event']
 return unless event['start_date']
@@ -21,6 +24,7 @@ return if event['start_date'].split.length != 3  # requires month, date, and yea
 unless event_has_no_end
   return if event['end_date'].split.length != 3
 end
+return if event_has_no_end && (repeat_txt == 'Does not repeat')
 
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_authorizer     = get_google_authorizer(dynamodb)
@@ -28,10 +32,11 @@ service               = Google::Apis::CalendarV3::CalendarService.new
 service.authorization = google_authorizer.get_credentials(event['google_id'])
 service.client_options.application_name = 'TomCalendar'.freeze
 
-start_date = nil
+start_date      = nil
 start_date_time = nil
-end_date = nil
-end_date_time = nil
+end_date        = nil
+end_date_time   = nil
+is_all_day      = false
 
 if event['start_time'] && (event['start_time'] != 'TBD') && (event['start_time'] != '')
   start_date_time = Time.parse("#{event['start_date']} #{event['start_time']}").xmlschema[0..18]
@@ -39,12 +44,16 @@ if event['start_time'] && (event['start_time'] != 'TBD') && (event['start_time']
 else
   start_date = Time.parse(event['start_date']).strftime("%Y-%m-%d")
   end_date   = Time.parse(event['end_date']).strftime("%Y-%m-%d") unless event_has_no_end
+  is_all_day = true
 end
 
-rrule          = nil
-repeat_txt     = event['repeats']
-repeats_on_txt = event['repeats_on']
+return if !is_all_day && ( event['end_time'].nil? || (event['end_time'] == '') || (event['end_time'] == 'TBD') )
 
+if is_all_day || (repeat_txt != 'Does not repeat')
+  end_date = ( Time.parse(event['end_date']) + 86400 ).strftime("%Y-%m-%d") unless event_has_no_end # 86400 seconds -> 1day
+end
+
+rrule = nil
 unless repeat_txt == 'Does not repeat'
   frequency = 'DAILY'   if repeat_txt.include? 'day'
   frequency = 'WEEKLY'  if repeat_txt.include? 'week'
@@ -54,7 +63,7 @@ unless repeat_txt == 'Does not repeat'
   interval = /\d\d\d|\d\d|\d/.match(repeat_txt).to_s
   interval = 1 if interval == ''
 
-  rrule = "FREQ=#{frequency};INTERVAL=#{interval}"
+  rrule = "RRULE:FREQ=#{frequency};INTERVAL=#{interval}"
 
   case frequency
   when 'WEEKLY'
@@ -93,12 +102,16 @@ unless repeat_txt == 'Does not repeat'
   end
 
   unless event_has_no_end
-    until_date = Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..18].gsub('-','').gsub(':','')
+    if is_all_day
+      until_date = Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..9].gsub('-','')
+    else
+      until_date = "#{Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..18].gsub('-','').gsub(':','')}Z"
+    end
     rrule << ";UNTIL=#{until_date}"
   end
 
-  end_date_time = start_date_time
-  end_date      = end_date
+  end_date_time = Time.parse("#{event['start_date']} #{event['end_time']}").xmlschema[0..18] unless is_all_day
+  end_date      = start_date
 end
 
 google_event = Google::Apis::CalendarV3::Event.new(
@@ -134,4 +147,8 @@ rescue Exception => e
   return
 end
 
-service.insert_event(google_calendar_id, google_event) # @remember: if api fail then retry
+begin
+  service.insert_event(google_calendar_id, google_event) # @remember: if api fail then retry
+rescue Exception => e
+  raise "#{rrule}\n#{e}"
+end
