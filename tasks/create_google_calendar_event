@@ -9,7 +9,6 @@ require 'tzinfo'
 # https://tools.ietf.org/html/rfc5545#section-3.8.5
 # https://icalendar.org/rrule-tool.html
 
-# @current: test
 # @remember: should limit image file size
 
 
