@@ -5,6 +5,7 @@
 	* aws-sdk (3.0.1) gem
 	* google-api-client (0.41.1) gem
   * jwt (2.2.1) gem
+  * tzinfo (2.0.4) gem
 * Apache/2.4.41
 * AWS DynamoDB
 

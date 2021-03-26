@@ -2,6 +2,7 @@
 
 require_relative '../lib/tom_calendar.rb'
 require 'time'
+require 'tzinfo'
 
 # https://developers.google.com/calendar/create-events
 # https://developers.google.com/calendar/v3/reference/events
@@ -49,8 +50,9 @@ end
 
 return if !is_all_day && ( event['end_time'].nil? || (event['end_time'] == '') || (event['end_time'] == 'TBD') )
 
-if is_all_day || (repeat_txt != 'Does not repeat')
-  end_date = ( Time.parse(event['end_date']) + 86400 ).strftime("%Y-%m-%d") unless event_has_no_end # 86400 seconds -> 1day
+if is_all_day && (repeat_txt == 'Does not repeat') && (event['start_date'] != event['end_date'])
+  # 86400 seconds -> 1day
+  end_date = ( Time.parse(event['end_date']) + 86400 ).strftime("%Y-%m-%d") unless event_has_no_end
 end
 
 rrule = nil
@@ -92,7 +94,7 @@ unless repeat_txt == 'Does not repeat'
     else # on last selected weekday
       ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].each do |weekday|
         if repeats_on_txt.include?(weekday)
-          rrule << ";BYDAY=-#{weekday[0..1].upcase}"
+          rrule << ";BYDAY=-1#{weekday[0..1].upcase}"
           break
         end
       end
@@ -105,7 +107,8 @@ unless repeat_txt == 'Does not repeat'
     if is_all_day
       until_date = Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..9].gsub('-','')
     else
-      until_date = "#{Time.parse("#{event['end_date']} #{event['end_time'] || ''}").xmlschema[0..18].gsub('-','').gsub(':','')}Z"
+      parsed_time = Time.parse("#{event['end_date']} #{event['end_time']}")
+      until_date  = "#{TZInfo::Timezone.get(event['time_zone']).local_to_utc(parsed_time).xmlschema[0..18].gsub('-','').gsub(':','')}Z"
     end
     rrule << ";UNTIL=#{until_date}"
   end
