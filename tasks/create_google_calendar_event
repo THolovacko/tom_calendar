@@ -10,6 +10,7 @@ require 'tzinfo'
 # https://icalendar.org/rrule-tool.html
 
 # @remember: should limit image file size
+# @remember: should allow event to be from 11pm - 12am (maybe auto set to 11:59)
 
 
 event = JSON.parse(ARGV[0])

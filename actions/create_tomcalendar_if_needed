@@ -79,4 +79,6 @@ unless google_calendar
   end
 end
 
+# @current: sync missing google calendar events
+
 print StatusCodeStr::OK

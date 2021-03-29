@@ -3,8 +3,8 @@
 require_relative '../lib/tom_calendar.rb'
 require 'aws-sdk-s3'
 
-# @remember: need user alert if repeating event starts and ends on same day
-# @remember: need user alert if end time is before start time
+# @remember: should alert user if repeating event starts and ends on same day
+# @current:  need to alert error if end time is before start time
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
