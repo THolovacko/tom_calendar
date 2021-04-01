@@ -66,6 +66,19 @@ rescue Exception => e
   raise e
 end
 
-`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_event '#{event.to_json}' >/dev/null &`
+begin
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    key: { google_id: event['google_id'] }
+  }
+
+  result_item = dynamodb.get_item(params)&.item || {}
+  google_calendar_id = result_item['google_calendar_id']
+rescue Exception => e
+  print StatusCodeStr::error_message(e.message)
+  return
+end
+
+`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
 
 print StatusCodeStr::plain_text(upload_url)

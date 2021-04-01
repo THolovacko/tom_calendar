@@ -2,7 +2,6 @@
 
 require_relative '../lib/tom_calendar.rb'
 
-# @test: make sure calendar and event timezones are correct when creating and synching events
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -42,11 +41,9 @@ if google_calendar_id
     # @test: pagination with several calendars
     page_token = nil
     calendar_lists = google_calendar_service.list_calendar_lists(page_token: page_token)
-    summaries = (calendar_lists.items.map{ |calendar| calendar.summary })
-    summaries.each do |summary|
-      if summary == 'TomCalendar'.freeze
-        print StatusCodeStr::OK
-        return
+    calendar_lists.items.each do |calendar|
+      if (calendar.summary == 'TomCalendar'.freeze) && (calendar.id == google_calendar_id)
+        google_calendar = calendar
       end
     end
     if calendar_lists.next_page_token != page_token
@@ -69,16 +66,49 @@ unless google_calendar
     table_name: 'GoogleCalendarIDs',
     item: { google_id: google_id, google_calendar_id: google_calendar.id }
   }
+  google_calendar_id = google_calendar.id
 
   begin
     dynamodb.put_item(params)
+    # @remember: get all created and subscribed events then create all (maybe user deleted calendar or something)
   rescue
-    google_calendar_service.delete_calendar(google_calendar.id)
+    google_calendar_service.delete_calendar(google_calendar_id)
     print StatusCodeStr::error_message('Unable to add google calendar id')
     return
   end
-end
+else
+  sync_token_params = {
+    table_name: 'GoogleCalendarSyncTokens',
+    key: { google_id: google_id }
+  }
+  sync_token = dynamodb.get_item(sync_token_params)&.item['sync_token']
 
-# @current: sync missing google calendar events
+  page_token = nil
+  result     = nil
+  begin
+    # @test: single events as false and true
+    # @current: decide how to update changed events
+    result = google_calendar_service.list_events(google_calendar.id, page_token: page_token, sync_token: sync_token, show_deleted: true, max_results: 2500, single_events: false)
+    result.items.each do |event|
+      if event.status == 'cancelled'
+        # create_event
+      else
+        # update_event
+      end
+    end
+    if result.next_page_token != page_token
+      page_token = result.next_page_token
+    else
+      page_token = nil
+    end
+  end while !page_token.nil?
+  next_sync_token = result.next_sync_token
+
+  put_sync_token_params = {
+    table_name: 'GoogleCalendarSyncTokens',
+    item: { google_id: google_id, sync_token: next_sync_token }
+  }
+  dynamodb.put_item(put_sync_token_params)
+end
 
 print StatusCodeStr::OK
