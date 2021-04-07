@@ -74,6 +74,7 @@ print %(
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:blue;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Recreate Google Calendar</div>
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
@@ -308,6 +309,7 @@ print %(
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     var user_selected_time_zone = user_time_zone;
     var is_general_event = false;
+    var can_google_calendar_sync = true;
 
     function init() {
       if(is_desktop) {
@@ -661,6 +663,29 @@ print %(
       current_settings_page = "deactivate";
       var deactivate_page = document.getElementById("deactivate_page");
       deactivate_page.style.display = "block";
+    }
+    function onGoogleCalendarRecreate(id) {
+      if (!can_google_calendar_sync) { return };
+      var btn = document.getElementById(id);
+      btn.innerText = "Syncing";
+      btn.style.color = "yellow";
+      can_google_calendar_sync = false;
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'recreate_google_calendar', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if (http.status == 200) {
+          btn.innerText = "Google Calendar Recreated";
+          btn.style.color = "black";
+        } else {
+          // @remember: handle failed recreate
+          can_google_calendar_sync = true;
+          btn.innerText = "Recreate Google Calendar";
+          btn.style.color = "blue";
+        }
+      };
+      http.send('');
     }
     function saveEvent() {
       if (!document.getElementById("create_form_title_input").value.trim()) {

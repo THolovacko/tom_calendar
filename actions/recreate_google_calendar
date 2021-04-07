@@ -1,0 +1,64 @@
+#! /usr/bin/ruby
+
+require_relative '../lib/tom_calendar.rb'
+
+
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  print StatusCodeStr::BAD_REQUEST
+  return
+end
+
+session_id        = JSON.parse(cookie_session_id)
+dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+google_id         = session_id['google_id']
+google_authorizer = get_google_authorizer(dynamodb)
+
+google_calendar_service               = Google::Apis::CalendarV3::CalendarService.new
+google_calendar_service.authorization = google_authorizer.get_credentials(google_id)
+google_calendar_service.client_options.application_name = 'TomCalendar'.freeze
+
+# get google calendar id
+begin
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    key: { google_id: google_id }
+  }
+
+  result_item = dynamodb.get_item(params)&.item || {}
+  google_calendar_id = result_item['google_calendar_id']
+rescue Exception => e
+  print StatusCodeStr::error_message(e.message)
+  return
+end
+
+begin
+  google_calendar_service.delete_calendar(google_calendar_id) if google_calendar_id
+rescue Exception => e
+  # just continue thread
+end
+
+
+# create google calendar
+google_calendar = Google::Apis::CalendarV3::Calendar.new(summary: 'TomCalendar')
+google_calendar = google_calendar_service.insert_calendar(google_calendar)
+
+params = {
+  table_name: 'GoogleCalendarIDs',
+  item: { google_id: google_id, google_calendar_id: google_calendar.id }
+}
+google_calendar_id = google_calendar.id
+
+begin
+  dynamodb.put_item(params)
+  # @remember: get all created and subscribed events then create all
+  #`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
+rescue
+  google_calendar_service.delete_calendar(google_calendar_id)
+  print StatusCodeStr::error_message('Unable to add google calendar id')
+  return
+end
+
+print StatusCodeStr::OK
