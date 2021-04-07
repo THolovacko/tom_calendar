@@ -71,12 +71,14 @@ unless google_calendar
   begin
     dynamodb.put_item(params)
     # @remember: get all created and subscribed events then create all (maybe user deleted calendar or something)
+    #`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
   rescue
     google_calendar_service.delete_calendar(google_calendar_id)
     print StatusCodeStr::error_message('Unable to add google calendar id')
     return
   end
 else
+=begin  @remember: should auto correct events that user has changed on their google calendar (maybe in settings have a resync button)
   sync_token_params = {
     table_name: 'GoogleCalendarSyncTokens',
     key: { google_id: google_id }
@@ -90,6 +92,12 @@ else
     # @current: decide how to update changed events
     result = google_calendar_service.list_events(google_calendar.id, page_token: page_token, sync_token: sync_token, show_deleted: true, max_results: 2500, single_events: false)
     result.items.each do |event|
+      # get event and skip if equivalent or deleted
+      tomcalendar_event = dynamodb.get_item({ table_name: 'Events', key: { google_id: google_id, title: event.summary } })&.item
+      next unless tomcalendar_event
+
+      # next if equivalent
+
       if event.status == 'cancelled'
         # create_event
       else
@@ -109,6 +117,7 @@ else
     item: { google_id: google_id, sync_token: next_sync_token }
   }
   dynamodb.put_item(put_sync_token_params)
+=end
 end
 
 print StatusCodeStr::OK
