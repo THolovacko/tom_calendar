@@ -4,7 +4,6 @@ require_relative '../lib/tom_calendar.rb'
 require 'aws-sdk-s3'
 
 # @remember: should alert user if repeating event starts and ends on same day
-# @current:  need to alert error if end time is before start time
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -25,8 +24,21 @@ if event['image_extension'] && (event['image_extension'] != '')
 end
 
 unless ( event['title'] && (event['title'] != '') )
-  print StatusCodeStr::BAD_REQUEST
-  return;
+  print StatusCodeStr::bad_request_error_message('invalid title')
+  return
+end
+
+begin
+  if ( event['start_date'] && (event['start_date'] != '') ) && ( event['end_date'] && (event['end_date'] != '') )
+    start_date_time = Time.parse("#{event['start_date']} #{event['start_time']}").xmlschema[0..18]
+    end_date_time   = Time.parse("#{event['end_date']} #{event['end_time']}").xmlschema[0..18]
+    unless start_date_time <= end_date_time
+      print StatusCodeStr::bad_request_error_message('invalid date')
+      return
+    end
+  end
+rescue Exception => e
+  # keep going
 end
 
 begin
@@ -40,7 +52,7 @@ begin
   result_item = dynamodb.get_item(check_event_params)&.item
   if (result_item)
     print StatusCodeStr::BAD_REQUEST
-    return;
+    return
   end
 
   upload_url = nil

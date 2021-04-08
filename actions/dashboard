@@ -639,6 +639,11 @@ print %(
       is_general_event = false;
       document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
       document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
+
+      document.getElementById("start_datepicker_txt").style.color = "";
+      document.getElementById("end_datepicker_txt").style.color = "";
+      document.getElementById("start_timepicker_txt").style.color = "";
+      document.getElementById("end_timepicker_txt").style.color = "";
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -693,6 +698,8 @@ print %(
         return;
       }
 
+      // @remember: should validate start datetime is before or equal to end datetime on client
+
       document.getElementById("spinner_react_container").style.display = "block";
 
       var http = new XMLHttpRequest();
@@ -712,8 +719,19 @@ print %(
             onCreateClose();
           }
         } else {
-          // @remember: should validate it's a title error else notify network error
-          document.getElementById("create_form_title_input").style.borderColor = "red";
+          const title_error_regex = /title/;
+          const date_error_regex  = /date/;
+          var error_message       = http.statusText;
+          if (error_message.toLowerCase().match(title_error_regex)) {
+            document.getElementById("create_form_title_input").style.borderColor = "red";
+          } else if (error_message.toLowerCase().match(date_error_regex)) {
+            document.getElementById("start_datepicker_txt").style.color = "red";
+            document.getElementById("end_datepicker_txt").style.color = "red";
+            document.getElementById("start_timepicker_txt").style.color = "red";
+            document.getElementById("end_timepicker_txt").style.color = "red";
+          } else {
+            // @remember: handle unkown error
+          }
           document.getElementById("spinner_react_container").style.display = "none";
         }
       };

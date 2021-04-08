@@ -79,6 +79,7 @@ unless google_calendar
   end
 else
 =begin  @remember: should auto correct events that user has changed on their google calendar (maybe in settings have a resync button)
+        @remember: if sync tokens get used then should probably delete them when user deletes account
   sync_token_params = {
     table_name: 'GoogleCalendarSyncTokens',
     key: { google_id: google_id }
@@ -89,7 +90,6 @@ else
   result     = nil
   begin
     # @test: single events as false and true
-    # @current: decide how to update changed events
     result = google_calendar_service.list_events(google_calendar.id, page_token: page_token, sync_token: sync_token, show_deleted: true, max_results: 2500, single_events: false)
     result.items.each do |event|
       # get event and skip if equivalent or deleted

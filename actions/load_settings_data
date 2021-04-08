@@ -28,6 +28,8 @@ deactivation_code_thread = Thread.new {
   result[:deactivation_code] = code
 }
 
+# @optimize @remember: need to optimze this
+
 sessions_params = {
     table_name: 'Sessions',
     key_condition_expression: "#gid = :google_id",
