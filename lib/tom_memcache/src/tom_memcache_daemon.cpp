@@ -25,8 +25,7 @@ int main() {
   memset(&cliaddr, 0, sizeof(cliaddr));
 
   servaddr.sin_family      = AF_INET;
-  servaddr.sin_addr.s_addr = INADDR_ANY;
-  //servaddr.sin_addr.s_addr = INADDR_LOOPBACK;
+  servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
   servaddr.sin_port        = htons(PORT);
 
   if ( bind(socket_file_descriptor, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0 ) {

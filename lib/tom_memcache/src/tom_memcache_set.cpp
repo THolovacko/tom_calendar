@@ -24,15 +24,13 @@ int main() {
   memset(&servaddr, 0, sizeof(servaddr));
 
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = INADDR_ANY;
-  //servaddr.sin_addr.s_addr = INADDR_LOOPBACK;
+  servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
   servaddr.sin_port = htons(SERVER_PORT);
-
-  socklen_t length;
 
   sendto(socket_file_descriptor, (const char *)message, strlen(message), MSG_CONFIRM, (const struct sockaddr *) &servaddr, sizeof(servaddr));
   printf("message sent.\n");
 
+  socklen_t length;
   int server_message_length = recvfrom(socket_file_descriptor, (char *)socket_buffer, MAX_BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *) &servaddr, &length);
   socket_buffer[server_message_length] = '\0';
   printf("Server : %s\n", socket_buffer);
