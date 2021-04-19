@@ -1,7 +1,5 @@
 #include "tom_memcache.h" 
 
-// @current: set message from parsed command line params
-  
 int main(int argc, char* argv[]) {
   if (argc != 3) {
     printf("tom_memache_set key value\n");

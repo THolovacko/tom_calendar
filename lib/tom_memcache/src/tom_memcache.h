@@ -7,8 +7,10 @@
 #include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <thread>
  
 #define SERVER_IP_ADDRESS      "127.0.0.1"
 #define SERVER_PORT            4334
@@ -68,9 +70,21 @@ struct tom_socket {
   
   const std::string listen_for_server_response() {
     socklen_t length;
+    struct timeval timeout;
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 300000; // 300ms
+    if (setsockopt(file_descriptor, SOL_SOCKET, SO_RCVTIMEO,&timeout,sizeof(timeout)) < 0) {
+      perror("Error");
+    }
+
     int server_response_length = recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *) &servaddr, &length);
-    buffer[server_response_length] = '\0';
-    return std::string(buffer);
+    if (server_response_length >= 0) {
+      buffer[server_response_length] = '\0';
+      return std::string(buffer);
+    } else {
+      return "";
+    }
   }
 
   virtual ~tom_socket() {
