@@ -15,6 +15,7 @@
 #define SERVER_IP_ADDRESS      "127.0.0.1"
 #define SERVER_PORT            4334
 #define MAX_SOCKET_BUFFER_SIZE 1024
+#define CLIENT_SOCKET_TIMEOUT  300000 // 300 ms
 
 
 struct tom_socket {
@@ -37,6 +38,7 @@ struct tom_socket {
       
     std::memset(&servaddr, 0, sizeof(servaddr));
     std::memset(&cliaddr, 0, sizeof(cliaddr));
+    std::memset(buffer, '\0', sizeof(char) * MAX_SOCKET_BUFFER_SIZE);
 
     servaddr.sin_family      = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(server_ip_address);
@@ -53,8 +55,8 @@ struct tom_socket {
   }
 
   const std::string listen_for_client_message() {
-    int message_length = recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &client_address_length);
-    buffer[message_length] = '\0';
+    std::memset(buffer, '\0', sizeof(char) * MAX_SOCKET_BUFFER_SIZE);
+    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &client_address_length);
     return std::string(buffer);
   }
 
@@ -69,22 +71,17 @@ struct tom_socket {
   }
   
   const std::string listen_for_server_response() {
-    socklen_t length;
+    socklen_t address_length;
     struct timeval timeout;
 
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 300000; // 300ms
-    if (setsockopt(file_descriptor, SOL_SOCKET, SO_RCVTIMEO,&timeout,sizeof(timeout)) < 0) {
+    timeout.tv_sec  = 0;
+    timeout.tv_usec = CLIENT_SOCKET_TIMEOUT;
+    if (setsockopt(file_descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
       perror("Error");
     }
 
-    int server_response_length = recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *) &servaddr, &length);
-    if (server_response_length >= 0) {
-      buffer[server_response_length] = '\0';
-      return std::string(buffer);
-    } else {
-      return "";
-    }
+    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *) &servaddr, &address_length);
+    return std::string(buffer);
   }
 
   virtual ~tom_socket() {
