@@ -10,7 +10,6 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <thread>
  
 #define SERVER_IP_ADDRESS      "127.0.0.1"
 #define SERVER_PORT            4334
@@ -19,11 +18,18 @@
 
 
 struct tom_socket {
+  struct client {
+    struct sockaddr_in address;
+    socklen_t address_length;
+
+    client(struct sockaddr_in p_address, socklen_t p_address_length) : address(p_address), address_length(p_address_length) {};
+  };
+
  private:
   int file_descriptor;
   char buffer[MAX_SOCKET_BUFFER_SIZE];
   struct sockaddr_in servaddr, cliaddr;
-  socklen_t client_address_length;
+  socklen_t caddress_length;
  public:
   const char* server_ip_address;
   const int server_port;
@@ -51,18 +57,22 @@ struct tom_socket {
       }
     }
 
-    client_address_length = sizeof(cliaddr);
+    caddress_length = sizeof(cliaddr);
   }
 
   const std::string listen_for_client_message() {
     std::memset(buffer, '\0', sizeof(char) * MAX_SOCKET_BUFFER_SIZE);
-    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &client_address_length);
+    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &caddress_length);
     return std::string(buffer);
   }
 
-  void respond_to_client(const std::string& message) const {
+  const client get_client() const {
+    return client(cliaddr, caddress_length);
+  }
+
+  void respond_to_client(const std::string& message, const struct sockaddr_in client_address, socklen_t client_address_length) const {
     const char* message_data = message.data();
-    sendto(file_descriptor, message_data, strlen(message_data), MSG_CONFIRM, (const struct sockaddr *) &cliaddr, client_address_length);
+    sendto(file_descriptor, message_data, strlen(message_data), MSG_CONFIRM, (const struct sockaddr *) &client_address, client_address_length);
   }
 
   void message_server(const std::string& message) const {
