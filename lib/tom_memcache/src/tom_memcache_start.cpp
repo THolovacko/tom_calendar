@@ -1,9 +1,14 @@
 #include <thread>
 #include <vector>
 #include <queue>
+#include <condition_variable>
+#include <chrono>
 #include "tom_memcache.h"
 
 // @remember: do I need to increase OS default socket buffer size?
+// @current: refactor worker thread to use a blocking queue or maybe wait using a condition variable to lower cpu usage while no work
+//        https://rules.sonarsource.com/cpp/RSPEC-5404
+//        https://en.cppreference.com/w/cpp/thread/condition_variable/wait
 
 tom_socket server_socket(SERVER_IP_ADDRESS, SERVER_PORT, true);
 bool is_server_running = true;
@@ -16,6 +21,8 @@ void worker_thread(const std::size_t pool_index) {
       tom_socket::client_message current_client_data = thread_queues[pool_index]->front();
       server_socket.respond_to_client("OK", current_client_data.address, current_client_data.address_length);
       thread_queues[pool_index]->pop();
+
+      //printf("index: %d ---%s---",(int)pool_index,current_client_data.message.data());
     }
   }
 }
