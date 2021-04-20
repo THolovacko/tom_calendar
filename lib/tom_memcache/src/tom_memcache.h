@@ -18,11 +18,12 @@
 
 
 struct tom_socket {
-  struct client {
+  struct client_message {
     struct sockaddr_in address;
     socklen_t address_length;
+    std::string message;
 
-    client(struct sockaddr_in p_address, socklen_t p_address_length) : address(p_address), address_length(p_address_length) {};
+    client_message(const std::string& p_message, struct sockaddr_in p_address, socklen_t p_address_length) : address(p_address), address_length(p_address_length), message(p_message) {};
   };
 
  private:
@@ -60,17 +61,13 @@ struct tom_socket {
     caddress_length = sizeof(cliaddr);
   }
 
-  const std::string listen_for_client_message() {
+  const client_message listen_for_client_message() {
     std::memset(buffer, '\0', sizeof(char) * MAX_SOCKET_BUFFER_SIZE);
     recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &caddress_length);
-    return std::string(buffer);
+    return client_message(std::string(buffer), cliaddr, caddress_length);
   }
 
-  const client get_client() const {
-    return client(cliaddr, caddress_length);
-  }
-
-  void respond_to_client(const std::string& message, const struct sockaddr_in client_address, socklen_t client_address_length) const {
+  inline void respond_to_client(const std::string& message, const struct sockaddr_in client_address, const socklen_t client_address_length) const {
     const char* message_data = message.data();
     sendto(file_descriptor, message_data, strlen(message_data), MSG_CONFIRM, (const struct sockaddr *) &client_address, client_address_length);
   }

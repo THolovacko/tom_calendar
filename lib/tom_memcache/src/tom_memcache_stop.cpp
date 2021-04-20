@@ -1,7 +1,5 @@
 #include "tom_memcache.h" 
 
-// @current: set message from parsed command line params
-  
 int main(int argc, char* argv[]) {
   tom_socket client_socket(SERVER_IP_ADDRESS, SERVER_PORT, false);
 
