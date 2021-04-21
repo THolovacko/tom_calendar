@@ -7,7 +7,7 @@
 
 // @remember: do I need to increase OS default socket buffer size?
 // @remember: clients will need to verify recieved message isn't coming from late result for other client
-// @current: refactor worker thread to use a blocking queue or maybe wait using a condition variable to lower cpu usage while no work
+// @current: implement set
 
 tom_socket server_socket(SERVER_IP_ADDRESS, SERVER_PORT, true);
 bool is_server_running = true;
