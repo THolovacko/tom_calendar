@@ -3,6 +3,7 @@
 #include <queue>
 #include <condition_variable>
 #include <chrono>
+#include <unordered_map>
 #include "tom_memcache.h"
 
 // @remember: do I need to increase OS default socket buffer size?
@@ -16,14 +17,30 @@ std::vector<std::queue<tom_socket::client_message>*> thread_queues;
 std::vector<std::mutex*> thread_mutexes;
 std::vector<std::condition_variable*> thread_condition_variables;
 std::vector<bool> thread_flags;
+std::unordered_map<std::string, std::string> tom_cache;
 
 void worker_thread(const std::size_t pool_index) {
   while(is_server_running) {
     if (!thread_queues[pool_index]->empty()) {
       tom_socket::client_message current_client_data = thread_queues[pool_index]->front();
-      server_socket.respond_to_client("OK", current_client_data.address, current_client_data.address_length);
+
+
+
+      switch(current_client_data.message[0]) {  // decide if get or set
+        case 'g'  :
+          server_socket.respond_to_client(tom_cache["test"], current_client_data.address, current_client_data.address_length);  // "get " is 4 chars
+          break;
+        case 's'  :
+          //tom_cache[] = "";
+          break;
+      }
+
+
+
+
+
+
       thread_queues[pool_index]->pop();
-      //printf("index: %d ---%s---\n",(int)pool_index,current_client_data.message.data());
     } else {
       std::unique_lock<std::mutex> lock(*(thread_mutexes[pool_index]));
       thread_condition_variables[pool_index]->wait(lock, [&]{return thread_flags[pool_index];});
@@ -42,6 +59,9 @@ int main() {
   if ( (hardware_thread_count / 4) > 1) {
     thread_count = hardware_thread_count / 4;
   }
+
+  //tom_cache = new std::unordered_map<std::string, std::string>();
+  tom_cache["test"] = "tommmmm";
 
   // initalize thread pool and thread queues 
   for (std::size_t i=0; i < thread_count; ++i) {
