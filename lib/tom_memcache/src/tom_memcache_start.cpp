@@ -8,7 +8,6 @@
 
 // @remember: do I need to increase OS default socket buffer size?
 // @remember: clients will need to verify recieved message isn't coming from late result for other client
-// @current: implement set
 
 tom_socket server_socket(SERVER_IP_ADDRESS, SERVER_PORT, true);
 bool is_server_running = true;
@@ -17,28 +16,22 @@ std::vector<std::queue<tom_socket::client_message>*> thread_queues;
 std::vector<std::mutex*> thread_mutexes;
 std::vector<std::condition_variable*> thread_condition_variables;
 std::vector<bool> thread_flags;
-std::unordered_map<std::string, std::string> tom_cache;
+std::unordered_map<std::string, std::string>* tom_cache;
 
 void worker_thread(const std::size_t pool_index) {
   while(is_server_running) {
     if (!thread_queues[pool_index]->empty()) {
       tom_socket::client_message current_client_data = thread_queues[pool_index]->front();
 
-
-
       switch(current_client_data.message[0]) {  // decide if get or set
         case 'g'  :
-          server_socket.respond_to_client(tom_cache["test"], current_client_data.address, current_client_data.address_length);  // "get " is 4 chars
+          server_socket.respond_to_client( (*tom_cache)[ current_client_data.message.substr(4) ], current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "
           break;
         case 's'  :
-          //tom_cache[] = "";
+          std::size_t delimiter_position = current_client_data.message.find("%*=tom-cache-delim=*08071992%");
+          (*tom_cache)[current_client_data.message.substr(4, delimiter_position - 4)] = current_client_data.message.substr(delimiter_position + 29); // 4 is length of "set " and 29 is length of delimiter
           break;
       }
-
-
-
-
-
 
       thread_queues[pool_index]->pop();
     } else {
@@ -60,8 +53,7 @@ int main() {
     thread_count = hardware_thread_count / 4;
   }
 
-  //tom_cache = new std::unordered_map<std::string, std::string>();
-  tom_cache["test"] = "tommmmm";
+  tom_cache = new std::unordered_map<std::string, std::string>();
 
   // initalize thread pool and thread queues 
   for (std::size_t i=0; i < thread_count; ++i) {
