@@ -16,7 +16,7 @@ std::vector<std::thread*> thread_pool;
 std::vector<std::queue<tom_socket::client_message>*> thread_queues;
 std::vector<std::mutex*> thread_mutexes;
 std::vector<std::condition_variable*> thread_condition_variables;
-std::vector<bool> thread_flags;
+std::vector<bool> thread_flags; // @remember: make atomic variable?
 std::unordered_map<std::string, std::string>* tom_cache;
 const long int max_ram_bytes = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
 const long int max_cache_ram_bytes = max_ram_bytes / 3;
@@ -31,15 +31,15 @@ void worker_thread(const std::size_t pool_index) {
           server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count()) + "\n" + "buckets used: " + std::to_string(tom_cache->size()), current_client_data.address, current_client_data.address_length);
           break;
         case 'g'  :
-          // @current: check timestamp and return empty string if expired (also evict value)
+          // @current: check timestamp and return empty string if expired (don't evict from cache because most likely about to be reset by some client anyway)
           server_socket.respond_to_client( (*tom_cache)[ current_client_data.message.substr(4) ], current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "
           break;
         case 's'  :
           std::size_t delimiter_position = current_client_data.message.find("%*=tom-cache-delim=*08071992%");
           (*tom_cache)[current_client_data.message.substr(4, delimiter_position - 4)] = current_client_data.message.substr(delimiter_position + 29); // 4 is length of "set " and 29 is length of delimiter
 
-          // @current: decide how to track memory or maybe use bucket count with estimated size
-          // @current: if cache reaches decided max memory size then trigger delete all expired then evict some of the older keys if needed
+          // @current: manually track memory with atomic long int (std::atomic) (might not need atomic to do this if blocking cache access for whole set use case)
+          // @current: block cache access on set case - before set operation, check memory threshold and remove using priority queue as needed then ublock cache access
 
 
           break;
@@ -73,7 +73,7 @@ int main() {
   */
 
   tom_cache = new std::unordered_map<std::string, std::string>();
-  tom_cache->reserve(1000);
+  tom_cache->reserve(100000);
 
   // initalize thread pool and thread queues 
   for (std::size_t i=0; i < thread_count; ++i) {
