@@ -9,6 +9,7 @@
 // @remember: do I need to increase OS default socket buffer size?
 // @remember: clients will need to verify recieved message isn't coming from late result for other client
 // @remember: need to review bucket reserve count and memory percentage allocated for cache
+// @current: implemement custom concurrent hash map cache thing
 
 tom_socket server_socket(SERVER_IP_ADDRESS, SERVER_PORT, true);
 bool is_server_running = true;
@@ -31,15 +32,15 @@ void worker_thread(const std::size_t pool_index) {
           server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count()) + "\n" + "buckets used: " + std::to_string(tom_cache->size()), current_client_data.address, current_client_data.address_length);
           break;
         case 'g'  :
-          // @current: check timestamp and return empty string if expired (don't evict from cache because most likely about to be reset by some client anyway)
+          // @current: check timestamp and return empty string if expired
           server_socket.respond_to_client( (*tom_cache)[ current_client_data.message.substr(4) ], current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "
           break;
         case 's'  :
           std::size_t delimiter_position = current_client_data.message.find("%*=tom-cache-delim=*08071992%");
           (*tom_cache)[current_client_data.message.substr(4, delimiter_position - 4)] = current_client_data.message.substr(delimiter_position + 29); // 4 is length of "set " and 29 is length of delimiter
 
-          // @current: manually track memory with atomic long int (std::atomic) (might not need atomic to do this if blocking cache access for whole set use case)
-          // @current: block cache access on set case - before set operation, check memory threshold and remove using priority queue as needed then ublock cache access
+          // @current: manually track memory with atomic long int (std::atomic)
+          // @current: check memory threshold and remove stuff
 
 
           break;
