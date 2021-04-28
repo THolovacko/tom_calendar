@@ -12,53 +12,66 @@
 // @remember: do I need to increase OS default socket buffer size?
 // @remember: clients will need to verify recieved message isn't coming from late result for other client
 // @remember: need to review bucket reserve count and memory percentage allocated for cache
-// @current: implemement custom concurrent hash map cache thing
 
 
-std::atomic<long int> all_entry_memory_used_bytes(0);
+std::atomic<std::size_t> all_memory_used_bytes(0);
+std::size_t memory_threshold_bytes;
+
+void* operator new(std::size_t size) {
+  all_memory_used_bytes += (size + sizeof(size_t));
+  size_t* ptr = (size_t*) std::malloc(size + sizeof(size_t));
+  ptr[0] = size;
+  return (void*)(&ptr[1]); // return address after size storage
+}
+
+void* operator new[](std::size_t size) {
+  all_memory_used_bytes += (size + sizeof(size_t));
+  size_t* ptr = (size_t*) std::malloc(size + sizeof(size_t));
+  ptr[0] = size;
+  return (void*)(&ptr[1]); // return address after size storage
+}
+
+void operator delete(void* memory) {
+  size_t* ptr = (size_t*)memory;
+  size_t size = ptr[-1];
+  all_memory_used_bytes -= (size + sizeof(size_t));
+  void* original_ptr = (void*)(&ptr[-1]);
+  free(original_ptr);
+}
+
+void operator delete[](void* memory) {
+  size_t* ptr = (size_t*)memory;
+  size_t size = ptr[-1];
+  all_memory_used_bytes -= (size + sizeof(size_t));
+  void* original_ptr = (void*)(&ptr[-1]);
+  free(original_ptr);
+}
 
 struct tom_timed_map {
-  std::atomic<long int> memory_used_bytes;
-  long int memory_threshold_bytes;
-  const std::size_t bucket_count;
- 
   struct entry {
     const std::string key;
     const std::string value;
     const std::chrono::time_point<std::chrono::system_clock> expiration_time;
-
-    void* operator new(std::size_t size) {
-      all_entry_memory_used_bytes += size;
-      return std::malloc(size);
-    }
-
-    void operator delete(void* memory, std::size_t size) {
-      all_entry_memory_used_bytes -= size;
-      free(memory);
-    }
 
     entry(const std::string& p_key, const std::string& p_value, std::size_t expiration_delay_seconds) : key(p_key), value(p_value), expiration_time(std::chrono::system_clock::now() + std::chrono::seconds(expiration_delay_seconds) ) {}
   };
  
   typedef std::shared_ptr<entry> bucket;
   bucket* const buckets;
+  const std::size_t bucket_count;
 
   tom_timed_map(const std::size_t p_bucket_count, const long int ram_divisor) : bucket_count(p_bucket_count), buckets(new bucket[p_bucket_count]) {
     const long int max_ram_bytes = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
-    memory_threshold_bytes = max_ram_bytes / ram_divisor;
-    memory_used_bytes = sizeof(bucket) * bucket_count;
+    memory_threshold_bytes = (std::size_t) (max_ram_bytes / ram_divisor);
   }
   
   void set(const std::string& set_key, const std::string& set_value, const std::size_t expiration_seconds) {
-    memory_used_bytes += all_entry_memory_used_bytes.load();
-
-    if (memory_used_bytes.load() > memory_threshold_bytes) {
+    if (all_memory_used_bytes.load() > memory_threshold_bytes) {
       return;
     }
 
     size_t bucket_index = std::hash<std::string>{}(set_key) % bucket_count;
-    std::atomic_store( &(buckets[bucket_index]), std::shared_ptr<entry>(new entry(set_key,set_value,expiration_seconds)) );
-    //std::atomic_store( &(buckets[bucket_index]), std::make_shared<entry>(set_key,set_value,expiration_seconds) );
+    std::atomic_store( &(buckets[bucket_index]), std::make_shared<entry>(set_key,set_value,expiration_seconds) );
 
     // @current: remove stuff every time max 1 thread
   }
@@ -101,9 +114,9 @@ void worker_thread(const std::size_t pool_index) {
     if (!thread_queues[pool_index]->empty()) {
       tom_socket::client_message current_client_data = thread_queues[pool_index]->front();
 
-      switch(current_client_data.message[0]) {  // decide if get or set
+      switch(current_client_data.message[0]) {
         case 'i'  :
-          server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(tom_cache->memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(tom_cache->memory_used_bytes.load()), current_client_data.address, current_client_data.address_length);
+          server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(all_memory_used_bytes.load()), current_client_data.address, current_client_data.address_length);
           break;
         case 'g'  :
           server_socket.respond_to_client( tom_cache->search(current_client_data.message.substr(4)), current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "
