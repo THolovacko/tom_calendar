@@ -14,6 +14,7 @@
 // @remember: need to review bucket reserve count and memory percentage allocated for cache
 
 
+std::atomic<bool> is_garbage_collection_active(false);
 std::atomic<std::size_t> all_memory_used_bytes(0);
 std::size_t memory_threshold_bytes;
 
@@ -66,14 +67,24 @@ struct tom_timed_map {
   }
   
   void set(const std::string& set_key, const std::string& set_value, const std::size_t expiration_seconds) {
-    if (all_memory_used_bytes.load() > memory_threshold_bytes) {
-      return;
+    if (all_memory_used_bytes.load() <= memory_threshold_bytes) {
+      std::size_t bucket_index = std::hash<std::string>{}(set_key) % bucket_count;
+      std::atomic_store( &(buckets[bucket_index]), std::make_shared<entry>(set_key,set_value,expiration_seconds) );
     }
 
-    size_t bucket_index = std::hash<std::string>{}(set_key) % bucket_count;
-    std::atomic_store( &(buckets[bucket_index]), std::make_shared<entry>(set_key,set_value,expiration_seconds) );
+    if (!is_garbage_collection_active.load()) {
+      is_garbage_collection_active.store(true);
 
-    // @current: remove stuff every time max 1 thread
+      // @remember: maybe have candidate array of { timestamp, bucket_index } and only check expired timestamps
+      for(std::size_t i=0; i < bucket_count; ++i) {
+        std::shared_ptr<entry> current_entry = std::atomic_load( &(buckets[i]) );
+        if ( current_entry && (current_entry->expiration_time <= std::chrono::system_clock::now()) ) {
+          std::atomic_store( &(buckets[i]), std::shared_ptr<entry>(nullptr) );
+        }
+      }
+
+      is_garbage_collection_active.store(false);
+    }
   }
 
   const std::string search(const std::string& search_key) const {
@@ -116,7 +127,7 @@ void worker_thread(const std::size_t pool_index) {
 
       switch(current_client_data.message[0]) {
         case 'i'  :
-          server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(all_memory_used_bytes.load()), current_client_data.address, current_client_data.address_length);
+          server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(all_memory_used_bytes.load()) + " (" + std::to_string( (static_cast<float>(all_memory_used_bytes) / static_cast<float>(memory_threshold_bytes)) * 100.0f ) + "%)", current_client_data.address, current_client_data.address_length);
           break;
         case 'g'  :
           server_socket.respond_to_client( tom_cache->search(current_client_data.message.substr(4)), current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "
