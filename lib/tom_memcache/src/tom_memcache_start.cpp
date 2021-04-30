@@ -10,7 +10,6 @@
 #include "tom_memcache.h"
 
 // @remember: do I need to increase OS default socket buffer size?
-// @remember: clients will need to verify recieved message isn't coming from late result for other client
 // @remember: need to review bucket reserve count and memory percentage allocated for cache
 
 
@@ -99,7 +98,7 @@ struct tom_timed_map {
       if (search_result->key.compare(search_key) != 0) {
         return "";
       } else {
-        return search_result->value;
+        return search_key + ":" + search_result->value;
       }
     }
   }
