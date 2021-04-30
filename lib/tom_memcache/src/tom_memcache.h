@@ -13,7 +13,7 @@
  
 #define SERVER_IP_ADDRESS      "127.0.0.1"
 #define SERVER_PORT            4334
-#define MAX_SOCKET_BUFFER_SIZE 1024
+#define MAX_SOCKET_BUFFER_SIZE 10240
 #define CLIENT_SOCKET_TIMEOUT  300000 // 300 ms
 
 
@@ -63,7 +63,7 @@ struct tom_socket {
 
   const client_message listen_for_client_message() {
     std::memset(buffer, '\0', sizeof(char) * MAX_SOCKET_BUFFER_SIZE);
-    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, ( struct sockaddr *) &cliaddr, &caddress_length);
+    recvfrom(file_descriptor, (char *)buffer, MAX_SOCKET_BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *) &cliaddr, &caddress_length);
     return client_message(std::string(buffer), cliaddr, caddress_length);
   }
 

@@ -12,10 +12,3 @@ sudo mv /home/ubuntu/tom_calendar/lib/tom_memcache/tom_memcache_get /usr/bin/
 sudo mv /home/ubuntu/tom_calendar/lib/tom_memcache/tom_memcache_set /usr/bin/
 sudo mv /home/ubuntu/tom_calendar/lib/tom_memcache/tom_memcache_stop /usr/bin/
 sudo mv /home/ubuntu/tom_calendar/lib/tom_memcache/tom_memcache_info /usr/bin/
-
-#tput setaf 2
-#echo "sudo mv ./tom_memcache_start /usr/bin/"
-#echo "sudo mv ./tom_memcache_get /usr/bin/"
-#echo "sudo mv ./tom_memcache_set /usr/bin/"
-#echo "sudo mv ./tom_memcache_stop /usr/bin/"
-#tput setaf 0

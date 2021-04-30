@@ -9,7 +9,7 @@
 #include <memory>
 #include "tom_memcache.h"
 
-// @remember: do I need to increase OS default socket buffer size?
+// @remember: do I need to increase OS default socket buffer size? https://dropbox.tech/infrastructure/optimizing-web-servers-for-high-throughput-and-low-latency
 // @remember: need to review bucket reserve count and memory percentage allocated for cache
 
 
