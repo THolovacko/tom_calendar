@@ -6,7 +6,6 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
-# @remember: create event title doesn't turn blue once form has been closed
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -633,7 +632,7 @@ print %(
       document.getElementById("event_image_txt").value = "";
 
       user_selected_time_zone = user_time_zone;
-      document.getElementById("create_form_title_input").style.borderColor = "#ECEEF0";
+      document.getElementById("create_form_title_input").style.borderColor = "";
 
       document.getElementById("spinner_react_container").style.display = "none";
 
