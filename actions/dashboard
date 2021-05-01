@@ -6,6 +6,7 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
+# @current: thinking about using ipv6 for larger udp datagrams "jumbograms" to help cache dashboard
 
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
@@ -28,14 +29,22 @@ end
 
 user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
+
+cache_result = `tom_memcache_get "dashboard_#{IS_DESKTOP}"`
+unless cache_result == ""
+  print "Content-type: text/html\n\n".freeze
+  print cache_result
+  return
+end
+
 VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
 FONT_FACTOR = IS_DESKTOP ? 1.25 : 1
 
 
 # render dashboard
-print "Content-type: text/html\n\n"
-print %(
+print "Content-type: text/html\n\n".freeze
+print dashboard=%(
 <html lang="en">
   <title>Dashboard</title>
   <head>
@@ -2289,4 +2298,8 @@ print %(
     }
   </style>
 </html>
-)
+).freeze
+
+`tom_memcache_set "dashboard_#{IS_DESKTOP}" "#{dashboard}" "86400"`
+
+return
