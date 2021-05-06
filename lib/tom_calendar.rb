@@ -5,7 +5,7 @@ require 'googleauth/token_store'
 require "google/apis/calendar_v3"
 require 'json'
 require 'digest'
-
+require_relative './tom_memcache.rb'
 
 =begin
 @optimize: requiring library is taking pretty long:
@@ -107,6 +107,11 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone=
   return false unless cookie_session_id
   session_id = JSON.parse(cookie_session_id)
 
+  cache_result = TomMemcache::get("refresh_tokens_and_cookie_session_id_is_valid?#{cookie_session_id}#{time_zone}").freeze
+  if cache_result != ""
+    return (cache_result.downcase == "true")
+  end
+
   begin
     dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
@@ -134,6 +139,7 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone=
 
     dynamodb.put_item(session_params)
 
+    TomMemcache::set("refresh_tokens_and_cookie_session_id_is_valid?#{cookie_session_id}#{time_zone}", 'true', 60).freeze
     return true
   rescue Exception => e
     return false
@@ -182,14 +188,4 @@ def calculate_time_passed_in_words(previous_time)
   years = days / 365
   return '1 year ago' if years < 2
   return "#{years.to_i} years ago"
-end
-
-module TomCache
-  def self.get(key)
-    return `tom_memcache_get "#{key}"`.freeze
-  end
-
-  def self.set(key, value, expiration_in_seconds)
-    `tom_memcache_set "#{key}" "#{value}" "#{expiration_in_seconds}"`
-  end
 end
