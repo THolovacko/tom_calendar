@@ -1,5 +1,12 @@
 #! /usr/bin/ruby
 
+# @remember: figure out how to scale radius?
+# @remember: need to speed up body onload
+# @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
+# @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
+# @test:     user agent detection on several platforms
+# @remember: only allow valid values for create event input
+
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
 
@@ -19,7 +26,7 @@ print %(
     <script src="public/react-dom.production.min.js"></script>
     <script src="public/material-ui.production.min.js"></script>
     <script src="public/react_components.js?force_reload=#{rand(1000)}"></script>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['MAPS_API_KEY']}&libraries=places"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body onload="onNavIconSelect('explore'); init();">
@@ -2262,4 +2269,4 @@ print %(
     }
   </style>
 </html>
-).gsub(/\s+/,'').freeze
+).freeze

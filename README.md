@@ -29,5 +29,13 @@
   * GOOGLE_OAUTH_CLIENT_SECRET
   * SESSION_HASH_LEFT_PADDING (arbitrary sized random string)
   * SESSION_HASH_RIGHT_PADDING (arbitrary sized random string)
-  * MAPS_API_KEY
 * create tables in DynamoDB (will list tables later)
+
+# Deployment Requirements
+
+* set environment variables (must be first command)
+  * GOOGLE_MAPS_API_KEY
+* execute script `tasks/generate_dashboard desktop`
+* execute script `tasks/generate_dashboard mobile`
+* execute script `lib/tom_memcache/restart.sh`
+* execute `sudo sysctl -p`

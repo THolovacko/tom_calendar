@@ -35,7 +35,7 @@ module StatusCodeStr
 end
 
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze
-APPLICATION_NAME = "TomCalendar".freeze
+APPLICATION_NAME = 'TomCalendar'.freeze
 
 class DynamoDBTokenStore < Google::Auth::TokenStore
   def initialize(dynamodb_connection)
