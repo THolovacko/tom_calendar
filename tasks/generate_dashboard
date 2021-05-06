@@ -6,7 +6,6 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
-# @current: test ruby tomcache
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
