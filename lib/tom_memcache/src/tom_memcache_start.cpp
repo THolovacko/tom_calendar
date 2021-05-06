@@ -126,7 +126,18 @@ void worker_thread(const std::size_t pool_index) {
 
       switch(current_client_data.message[0]) {
         case 'i'  :
-          server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(all_memory_used_bytes.load()) + " (" + std::to_string( (static_cast<float>(all_memory_used_bytes) / static_cast<float>(memory_threshold_bytes)) * 100.0f ) + "%)", current_client_data.address, current_client_data.address_length);
+          {
+            std::string tom_cache_to_str = "\n---------\n";
+            for (std::size_t i=0; i < tom_cache->bucket_count; ++i) {
+              std::shared_ptr<tom_timed_map::entry> search_result;
+              search_result = std::atomic_load( &(tom_cache->buckets[i]) );
+              if ( search_result && (search_result->expiration_time > std::chrono::system_clock::now()) ) {
+                tom_cache_to_str += search_result->key + ": " + search_result->value + "\n";
+              }
+            }
+            tom_cache_to_str += "---------\n";
+            server_socket.respond_to_client( "bucket count: " + std::to_string(tom_cache->bucket_count) + "\nmemory threshold (bytes): " + std::to_string(memory_threshold_bytes) + "\nmemory used (bytes): " + std::to_string(all_memory_used_bytes.load()) + " (" + std::to_string( (static_cast<float>(all_memory_used_bytes) / static_cast<float>(memory_threshold_bytes)) * 100.0f ) + "%)" + tom_cache_to_str, current_client_data.address, current_client_data.address_length);
+          }
           break;
         case 'g'  :
           server_socket.respond_to_client( tom_cache->search(current_client_data.message.substr(4)), current_client_data.address, current_client_data.address_length);  // 4 is the length of "get "

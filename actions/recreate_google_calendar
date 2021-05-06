@@ -11,6 +11,12 @@ unless cookie_session_id
   return
 end
 
+cache_result = TomMemcache::get("recreate_gc#{cookie_session_id}").freeze
+if cache_result
+  print StatusCodeStr::OK
+  return
+end
+
 session_id        = JSON.parse(cookie_session_id)
 dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_id         = session_id['google_id']
@@ -61,4 +67,5 @@ rescue
   return
 end
 
+TomMemcache::set("recreate_gc#{cookie_session_id}", 'OK', 30)
 print StatusCodeStr::OK

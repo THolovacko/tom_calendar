@@ -10,6 +10,12 @@ unless cookie_session_id
   return
 end
 
+cache_result = TomMemcache::get("deactivate_tc#{cookie_session_id}").freeze
+if cache_result
+  print StatusCodeStr::OK
+  return
+end
+
 session_id            = JSON.parse(cookie_session_id)
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_id             = session_id['google_id']
@@ -97,4 +103,5 @@ end
 
 google_authorizer.revoke_authorization(google_id)
 
+TomMemcache::set("deactivate_tc#{cookie_session_id}", 'OK', 30).freeze
 print StatusCodeStr::OK

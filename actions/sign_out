@@ -11,6 +11,12 @@ unless cookie_session_id
   return
 end
 
+cache_result = TomMemcache::get("sign_out#{cookie_session_id}").freeze
+if cache_result
+  print StatusCodeStr::OK
+  return
+end
+
 session_id = JSON.parse(cookie_session_id)
 dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 device_id  = ARGF.first
@@ -26,4 +32,5 @@ rescue Aws::DynamoDB::Errors::ServiceError => error
   print StatusCodeStr::BAD_REQUEST
 end
 
+TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 30)
 print StatusCodeStr::OK

@@ -108,9 +108,7 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone=
   session_id = JSON.parse(cookie_session_id)
 
   cache_result = TomMemcache::get("refresh_tokens_and_cookie_session_id_is_valid?#{cookie_session_id}#{time_zone}").freeze
-  if cache_result != ""
-    return (cache_result.downcase == "true")
-  end
+  return (cache_result.downcase == "true") if cache_result
 
   begin
     dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
