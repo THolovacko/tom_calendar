@@ -6,4 +6,6 @@
 *~
 *.swp
 *.swo
-lib/generated*html
+/lib/generated*html
+lib/generated_desktop_dashboard.html
+lib/generated_mobile_dashboard.html
