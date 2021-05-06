@@ -1,40 +1,12 @@
 #! /usr/bin/ruby
 
-# @remember: figure out how to scale radius?
-# @remember: need to speed up body onload
-# @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
-# @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
-# @test:     user agent detection on several platforms
-# @remember: only allow valid values for create event input
-
-
-cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
-cookie_session_id = nil if cookie_session_id == ''
-
-unless cookie_session_id
-  print "Content-type: text/html\n\n"
-  print %(
-  <html lang="en">
-    <body onload="reSignIn()"></body>
-    <script>
-      function reSignIn() {
-        window.location = "https://tomcalendar.com";
-      }
-    </script>
-  </html>
-  )
-  return
-end
-
-user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
-IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
+dashboard_type = ARGV[0]
+IS_DESKTOP = dashboard_type == 'desktop'
 
 VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
 FONT_FACTOR = IS_DESKTOP ? 1.25 : 1
 
-
-# render dashboard
 print "Content-type: text/html\n\n".freeze
 print %(
 <html lang="en">
@@ -2290,4 +2262,4 @@ print %(
     }
   </style>
 </html>
-).freeze
+).gsub(/\s+/,'').freeze

@@ -183,3 +183,13 @@ def calculate_time_passed_in_words(previous_time)
   return '1 year ago' if years < 2
   return "#{years.to_i} years ago"
 end
+
+module TomCache
+  def self.get(key)
+    return `tom_memcache_get "#{key}"`.freeze
+  end
+
+  def self.set(key, value, expiration_in_seconds)
+    `tom_memcache_set "#{key}" "#{value}" "#{expiration_in_seconds}"`
+  end
+end
