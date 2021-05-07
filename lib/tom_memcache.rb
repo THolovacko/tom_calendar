@@ -1,3 +1,5 @@
+# @remember single quotes in values will probably break this (can use $ to fix  ex) $'aa\'bb' will allow single quotes in value )
+
 module TomMemcache
   def self.get(key)
     result = `tom_memcache_get '#{key}'`.freeze
