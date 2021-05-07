@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    printf("tom_memache_get key\n");
+    //printf("tom_memache_get key\n");
     return 0;
   }
 
