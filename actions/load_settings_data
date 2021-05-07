@@ -11,14 +11,11 @@ unless cookie_session_id
   return
 end
 
-=begin @remember: sessions too bug for UDP to cache???
 cache_result = TomMemcache::get("load_sessions#{cookie_session_id}").freeze
 if cache_result
-  return
   print "Content-type: application/json\n\n#{cache_result}"
   return
 end
-=end
 
 session_id = JSON.parse(cookie_session_id)
 dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
@@ -70,5 +67,6 @@ end
 
 deactivation_code_thread.join
 result_to_json = result.to_json.freeze
-#TomMemcache::set("load_sessions#{cookie_session_id}", result_to_json, 30)
+
+TomMemcache::set("load_sessions#{cookie_session_id}", result_to_json, 30)
 print "Content-type: application/json\n\n#{result_to_json}"
