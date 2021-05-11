@@ -1004,7 +1004,7 @@ print %(
         if (time_zone_parts.length > 2) {
           time_zone_str += `, ${time_zone_parts[time_zone_parts.length - 2].replace(/_/g, ' ')}`;
         }
-        time_zone_str += ` (${time_zone_parts[0].replace(/_/g, ' ')})`;
+        //time_zone_str += ` (${time_zone_parts[0].replace(/_/g, ' ')})`;
       }
       else {
         var time_zone_str = time_zone_parts[0].replace(/_/g, ' ');
