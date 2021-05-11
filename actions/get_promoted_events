@@ -1,0 +1,27 @@
+#! /usr/bin/ruby
+
+require_relative '../lib/tom_calendar.rb'
+
+
+cache_result = TomMemcache::get("get_promoted_events").freeze
+if cache_result
+  print "Content-type: application/json\n\n#{cache_result}"
+  return
+end
+
+dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+promoted_event_keys = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items&.map { |item| { google_id: item['event_google_id'], title: item['event_title'] } }
+
+batch_events_result = dynamodb.batch_get_item({
+  request_items: {
+    "Events" => {
+      keys: promoted_event_keys,
+    },
+  },
+})
+
+result = batch_events_result.responses["Events"]
+
+result_to_json = result.to_json.freeze
+TomMemcache::set("get_promoted_events", result_to_json, 86400)  # 86400 seconds is 24 hours
+print "Content-type: application/json\n\n#{result_to_json}"
