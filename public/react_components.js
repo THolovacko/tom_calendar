@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -83,5 +83,64 @@ class Spinner extends React.Component {
 
   render() {
     return /*#__PURE__*/React.createElement(CircularProgress, { className: "spinner_circle" });
+  }
+}
+
+class EventCard extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(Card, {
+        variant: "outlined",
+        square: true
+      }, /*#__PURE__*/React.createElement(CardHeader, {
+        avatar: /*#__PURE__*/React.createElement(Avatar, {
+          "aria-label": "recipe"
+        }, this.props.user_avatar),
+        title: this.props.user_name,
+        action: /*#__PURE__*/React.createElement(Icon, {
+          "aria-label": "options",
+          fontSize: "inherit",
+          style: {
+            marginTop: '14px',
+            marginRight: '2px'
+          }
+        }, "more_vert")
+      }), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(CardMedia, {
+        component: "img",
+        alt: this.props.title,
+        image: this.props.image,
+        title: this.props.title
+      }), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true,
+        variant: "h5",
+        component: "h2",
+        style: {
+          float: 'left'
+        }
+      }, this.props.title), /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true,
+        variant: "h6",
+        component: "h2",
+        style: {
+          float: 'right'
+        }
+      }, this.props.datetime))), /*#__PURE__*/React.createElement(CardActions, {
+        style: {
+          float: 'left'
+        }
+      }, /*#__PURE__*/React.createElement(Button, {
+        size: "medium",
+        color: "primary"
+      }, "Copy link")), /*#__PURE__*/React.createElement(CardActions, {
+        style: {
+          float: 'right'
+        }
+      }, /*#__PURE__*/React.createElement(Button, {
+        size: "medium",
+        color: "primary"
+      }, "Set reminder")));
   }
 }

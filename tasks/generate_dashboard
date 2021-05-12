@@ -41,7 +41,10 @@ print %(
         <i class="material-icons md-36 nav select" id="settings" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">settings</i>
       </div>
       <div class="page", id="explore_page">
-        <h1>explore</h1>
+        <div class="event_feed" id="explore_event_feed">
+          <div id="event_card_react_container_0" style="margin-top:#{6.15 * VH_FACTOR}vh;"></div>
+          <div id="event_card_react_container_1"></div>
+        </div>
       </div>
       <div class="page", id="search_page">
         <h1>search</h1>
@@ -314,11 +317,13 @@ print %(
         document.getElementById("create_form").addEventListener("wheel",function() { onCreateFormScroll(event,'create_form') },{passive: true});
       }
 
+      ReactDOM.render(React.createElement(EventCard,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
+      ReactDOM.render(React.createElement(EventCard,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
-        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:1;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
+        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
           <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
           <p id="time_zones_title">Time zone</p>
         </div>
@@ -1509,6 +1514,9 @@ print %(
     #create_form::-webkit-scrollbar {
       display: none;
     }
+    .event_feed::-webkit-scrollbar {
+      display: none;
+    }
     #navbar {
       margin: 0;
       background-color: rgba(254, 255, 254, .7);
@@ -1521,6 +1529,7 @@ print %(
       top: 0;
       left: 0;
       right: 0;
+      z-index: 1;
     }
     #background {
       border: none;
@@ -1529,6 +1538,18 @@ print %(
     .navbar_space {
       width: #{12 * VW_FACTOR}vw;
       display: inline-block;
+    }
+    .event_feed {
+      position: fixed;
+      overflow-y: scroll;
+      width: #{( IS_DESKTOP ? '32' : '100' )}%;
+      height: 100%;
+      top: 0;
+      left: #{( IS_DESKTOP ? '34%' : '0' )};
+      bottom: 0;
+      right: 0;
+      text-align: center;
+      z-index: 0;
     }
     #create_form, #time_zones_react_container {
       display: none;
@@ -1727,20 +1748,20 @@ print %(
       float: left;
       margin-top: #{1.25 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
-      z-index: 1;
+      z-index: 2;
     }
     #date_type {
       display: none;
       float: left;
       margin-top: #{1.25 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
-      z-index: 1;
+      z-index: 2;
     }
     #end_date {
       display: inline-block;
       float: left;
       margin-left: #{14 * VW_FACTOR}vw;
-      z-index: 1;
+      z-index: 2;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
     #event_location, #event_description, #event_image {
@@ -1782,13 +1803,13 @@ print %(
       float: right;
       right: 0;
       margin-top: #{1.25 * VH_FACTOR}vh;
-      z-index: 1;
+      z-index: 2;
     }
     #end_time {
       display: inline-block;
       float: right;
       right: 0;
-      z-index: 1;
+      z-index: 2;
       margin-top: #{1.25 * VH_FACTOR}vh
     }
     #start_time input[type=text], #end_time input[type=text] {
@@ -1997,7 +2018,7 @@ print %(
       height: #{18 * VH_FACTOR}vh;
       width: #{20 * VW_FACTOR}vw;
       background-color: yellow;
-      z-index: 1;
+      z-index: 2;
       opacity: 0;
     }
     .hour_wheel_desktop_cover, .minute_wheel_desktop_cover, .period_wheel_desktop_cover, .day_wheel_desktop_cover {
@@ -2006,7 +2027,7 @@ print %(
       height: #{18 * VH_FACTOR}vh;
       width: #{10 * VW_FACTOR}vw;
       background-color: yellow;
-      z-index: 1;
+      z-index: 2;
       opacity: 0;
     }
     .repeat_n_wheel_desktop_cover {
@@ -2015,7 +2036,7 @@ print %(
       height: #{18 * VH_FACTOR}vh;
       width: #{24 * VW_FACTOR}vw;
       background-color: yellow;
-      z-index: 1;
+      z-index: 2;
       opacity: 0;
     }
     .repeat_month_wheel_desktop_cover {
@@ -2025,7 +2046,7 @@ print %(
       width: #{60 * VW_FACTOR}vw;
       margin-left: #{13.5 * VW_FACTOR}vw;
       background-color: yellow;
-      z-index: 1;
+      z-index: 2;
       opacity: 0;
     }
     .day_wheel, .day_wheel_desktop_cover {
@@ -2182,7 +2203,7 @@ print %(
       float: left;
       margin-top: #{1 * VH_FACTOR}vh;
       margin-left: #{14 * VW_FACTOR}vw;
-      z-index: 1;
+      z-index: 2;
     }
     #repeat_on_select_checkbox {
       text-align: center;
@@ -2210,7 +2231,7 @@ print %(
       display: inline-block;
       float: right;
       right: 0;
-      z-index: 1;
+      z-index: 2;
       margin-right: 4vw;
       height: #{ IS_DESKTOP ? '30px' : "#{4 * VH_FACTOR}vh"};
       border-radius: #{2 * VH_FACTOR}vh;
