@@ -42,8 +42,8 @@ print %(
       </div>
       <div class="page", id="explore_page">
         <div class="event_feed" id="explore_event_feed">
-          <div id="event_card_react_container_0" style="margin-top:#{6.15 * VH_FACTOR}vh;"></div>
-          <div id="event_card_react_container_1"></div>
+          <div class="event_card_react_container" id="event_card_react_container_0" style="margin-top:#{6.3 * VH_FACTOR}vh;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onEventCardSelect(this.id)"></div>
+          <div class="event_card_react_container" id="event_card_react_container_1" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onEventCardSelect(this.id)"></div>
         </div>
       </div>
       <div class="page", id="search_page">
@@ -452,7 +452,7 @@ print %(
 
       document.getElementById('event_image_file').addEventListener('change', function(){
         document.getElementById('event_image_txt').value = this.files[0].name;
-      })
+      });
     }
     function signOut() {
       document.getElementById("background").style.webkitFilter = "blur(100px)";
@@ -1471,6 +1471,8 @@ print %(
         }, 12);
       }
     }
+    function onEventCardSelect(id) {
+    }
   </script>
   <style>
     html {
@@ -1519,7 +1521,7 @@ print %(
     }
     #navbar {
       margin: 0;
-      background-color: rgba(254, 255, 254, .7);
+      background-color: rgba(254, 255, 254, .9);
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
@@ -1583,6 +1585,7 @@ print %(
     }
     #spinner_react_container { /* also defined with popup_close_layer */
       transform: scale(1.2, 1.2);
+      z-index: 2;
     }
     .spinner_circle { /* from react component */
       margin-top: #{40 * VH_FACTOR}vh;
@@ -1602,7 +1605,7 @@ print %(
     .material-icons.nav {
       margin-top: #{1.5 * VH_FACTOR}vh;
       margin-bottom: #{0.75 * VH_FACTOR}vh;
-      font-size: #{7.5 * FONT_FACTOR}rem;
+      font-size: #{7 * FONT_FACTOR}rem;
       color: #000000;
       text-align: center;
       transition: color .175s;
@@ -1614,6 +1617,7 @@ print %(
     }
     .material-icons.nav.create {
       color: #0F9D58;
+      background-color: rgba(254, 255, 254, 1);
       border-style: solid;
       border-color: #4285F4;
       border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
@@ -2289,6 +2293,64 @@ print %(
       height: 0px;
       padding: 0;
       margin: 0;
+    }
+    .event_card_react_container .MuiAvatar-root {
+      transform: scale(0.9, 0.9);
+      font-size: #{4 * FONT_FACTOR}rem;
+      background-color: #F44336;
+    }
+    .event_card_react_container .MuiCardHeader-root {
+      height: #{3 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiTypography-root {
+      height: #{3 * VH_FACTOR}vh;
+      font-size: #{3 * FONT_FACTOR}rem;
+      line-height: #{3 * VH_FACTOR}vh;
+      vertical-align: middle;
+      text-align: left;
+      font-family: 'Roboto', sans-serif;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .material-icons {
+      font-size: #{3 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      transform: scale(1.75, 1.75);
+      padding-right: #{1 * VW_FACTOR}vw;
+    }
+    .event_card_react_container .MuiTypography-h5 {
+      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-family: 'Roboto', sans-serif;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiTypography-h6 {
+      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-family: 'Roboto', sans-serif;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+      font-style: italic;
+    }
+    .event_card_react_container .MuiButtonBase-root {
+      font-size: #{3 * FONT_FACTOR}rem;
+    }
+    .event_card_react_container .MuiCardContent-root {
+      padding-top: #{1 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiCardActions-root {
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiButtonBase-root {
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{1 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiCardActionArea-root {
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .MuiTouchRipple-root {
+      display: none;
+    }
+    .MuiCardActionArea-focusHighlight {
+      display: none;
     }
   </style>
 </html>

@@ -92,17 +92,18 @@ class EventCard extends React.Component {
   }
 
   render() {
+    this.props.disableTouchRipple = true;
     return /*#__PURE__*/React.createElement(Card, {
         variant: "outlined",
         square: true
       }, /*#__PURE__*/React.createElement(CardHeader, {
         avatar: /*#__PURE__*/React.createElement(Avatar, {
-          "aria-label": "recipe"
+          "aria-label": this.props.user_name
         }, this.props.user_avatar),
         title: this.props.user_name,
         action: /*#__PURE__*/React.createElement(Icon, {
           "aria-label": "options",
-          fontSize: "inherit",
+          //fontSize: "inherit",
           style: {
             marginTop: '14px',
             marginRight: '2px'
@@ -115,14 +116,14 @@ class EventCard extends React.Component {
         title: this.props.title
       }), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(Typography, {
         gutterBottom: true,
-        variant: "h5",
+        variant: "h6",
         component: "h2",
         style: {
           float: 'left'
         }
       }, this.props.title), /*#__PURE__*/React.createElement(Typography, {
         gutterBottom: true,
-        variant: "h6",
+        variant: "h5",
         component: "h2",
         style: {
           float: 'right'
