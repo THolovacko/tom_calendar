@@ -1567,6 +1567,7 @@ print %(
       left: 0;
       bottom: 0;
       right: 0;
+      z-index: 2;
     }
     #popup_close_layer, #spinner_react_container {
       display: none;
@@ -1578,6 +1579,7 @@ print %(
       left: 0;
       bottom: 0;
       right: 0;
+      z-index: 1;
     }
     #spinner_react_container { /* also defined with popup_close_layer */
       transform: scale(1.2, 1.2);
