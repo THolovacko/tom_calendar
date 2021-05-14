@@ -103,10 +103,9 @@ class EventCard extends React.Component {
         title: this.props.user_name,
         action: /*#__PURE__*/React.createElement(Icon, {
           "aria-label": "options",
-          //fontSize: "inherit",
           style: {
-            marginTop: '14px',
-            marginRight: '2px'
+            marginTop: '8px',
+            marginRight: '8px'
           }
         }, "more_vert")
       }), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(CardMedia, {
