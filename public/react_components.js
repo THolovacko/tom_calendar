@@ -92,7 +92,6 @@ class EventCard extends React.Component {
   }
 
   render() {
-    this.props.disableTouchRipple = true;
     return /*#__PURE__*/React.createElement(Card, {
         variant: "outlined",
         square: true
@@ -142,5 +141,65 @@ class EventCard extends React.Component {
         size: "medium",
         color: "primary"
       }, "Set reminder")));
+  }
+}
+
+class EventCard2 extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(Card, {
+        variant: "outlined",
+        square: true
+      }, /*#__PURE__*/React.createElement(CardHeader, {
+        avatar: /*#__PURE__*/React.createElement(Avatar, {
+          "aria-label": "recipe"
+        }, "T"),
+        title: "tom.holovacko",
+        action: /*#__PURE__*/React.createElement(Icon, {
+          "aria-label": "options",
+          fontSize: "inherit",
+          style: {
+            marginTop: '14px',
+            marginRight: '2px'
+          }
+        }, "more_vert")
+      }), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(CardMedia, {
+        component: "img",
+        alt: "Arfest",
+        image: "https://tomcalendareventimages.s3.us-east-2.amazonaws.com/c2cbadab55aa9bde06ee853d490952b29d8dfa594f0bac59fb68c09d5af1f93e.jpg",
+        title: "Artfest"
+      }), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true,
+        variant: "h5",
+        component: "h2",
+        style: {
+          float: 'left'
+        }
+      }, "Artfest"), /*#__PURE__*/React.createElement(CardActions, {
+        style: {
+          float: 'right'
+        }
+      }, /*#__PURE__*/React.createElement(Button, {
+        size: "large",
+        color: "primary"
+      }, "Set reminder")))), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true
+      }, /*#__PURE__*/React.createElement(Icon, {
+        "aria-label": "options",
+        fontSize: "inherit"
+      }, "date_range"), "May 12, 2021 - May 15, 2021 from 9am - 11pm every week on sunday"), /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true
+      }, /*#__PURE__*/React.createElement(Icon, {
+        "aria-label": "options",
+        fontSize: "inherit"
+      }, "location_on"), "Madison Square Garden, Pennsylvania Plaza, New York, NY, USA"), /*#__PURE__*/React.createElement(Typography, {
+        gutterBottom: true
+      }, /*#__PURE__*/React.createElement(Icon, {
+        "aria-label": "options",
+        fontSize: "inherit"
+      }, "notes"), "The film reboots the Batman film series, telling the origin story of Bruce Wayne from the death of his parents to his journey to become Batman and his fight to stop Ra's al Ghul and the Scarecrow from plunging Gotham City into chaos")));
   }
 }
