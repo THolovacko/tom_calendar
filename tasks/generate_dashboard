@@ -6,13 +6,14 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
+# @current: handle event card text too long and hide attributes if none
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
 
 VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
-FONT_FACTOR = IS_DESKTOP ? 1.25 : 1
+FONT_FACTOR = IS_DESKTOP ? 1.2 : 1
 
 print "Content-type: text/html\n\n".freeze
 print %(
@@ -317,8 +318,8 @@ print %(
         document.getElementById("create_form").addEventListener("wheel",function() { onCreateFormScroll(event,'create_form') },{passive: true});
       }
 
-      ReactDOM.render(React.createElement(EventCard2,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
-      ReactDOM.render(React.createElement(EventCard2,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
+      ReactDOM.render(React.createElement(EventCard,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
+      ReactDOM.render(React.createElement(EventCard,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
@@ -2333,31 +2334,28 @@ print %(
     .event_card_react_container .material-icons:hover {
       background-color: #EEEEEE;
     }
-    .event_card_react_container .MuiTypography-h5 {
-      font-size: #{3.3 * FONT_FACTOR}rem;
-      font-family: 'Roboto', sans-serif;
-      padding-bottom: #{0 * VH_FACTOR}vh;
-      cursor: default;
-    }
     .event_card_react_container .MuiTypography-h6 {
-      font-size: #{3.3 * FONT_FACTOR}rem;
+      font-size: #{4 * FONT_FACTOR}rem;
       font-family: 'Roboto', sans-serif;
       padding-bottom: #{0 * VH_FACTOR}vh;
-      font-style: italic;
       cursor: default;
     }
     .event_card_react_container .MuiCardContent-root {
       padding-top: #{1 * VH_FACTOR}vh;
+      padding-right: #{0 * VW_FACTOR}vw;
+      font-size: #{3.4 * FONT_FACTOR}rem;
     }
     .event_card_react_container .MuiCardActions-root {
       padding-top: #{0 * VH_FACTOR}vh;
       padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiButtonBase-root {
-      font-size: #{2.8 * FONT_FACTOR}rem;
+      font-size: #{3.4 * FONT_FACTOR}rem;
+      vertical-align: middle;
       padding-top: #{0 * VH_FACTOR}vh;
       padding-bottom: #{0 * VH_FACTOR}vh;
-      margin-bottom: #{1 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiCardActionArea-root {
       padding-top: #{0 * VH_FACTOR}vh;
@@ -2373,6 +2371,24 @@ print %(
     }
     .event_card_react_container img {
       cursor: pointer;
+    }
+    .event_card_react_container .MuiCardActionArea-root p {
+      margin: 0;
+      padding: 0;
+      font-size: #{3.2 * FONT_FACTOR}rem;
+      vertical-align: middle;
+    }
+    .event_card_react_container .MuiCardActionArea-root .material-icons {
+      margin-left: #{2.75 * VW_FACTOR}vw;
+      cursor: default;
+      font-size: #{2.75 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      padding-top: #{0.25 * VH_FACTOR}vh;
+      border-radius: 0px;
+      color: black;
+    }
+    .event_card_react_container .MuiCardActionArea-root .material-icons:hover {
+      background-color: white;
     }
   </style>
 </html>
