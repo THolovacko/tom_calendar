@@ -9,8 +9,14 @@ if cache_result
   return
 end
 
-dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-promoted_event_keys = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items&.map { |item| { google_id: item['event_google_id'], title: item['event_title'] } }
+dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+promoted_event_ids = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items
+unless promoted_event_ids
+  print "Content-type: application/json\n\n#{[].to_json}"
+  return
+end
+promoted_event_ids.sort_by! { |promoted_event_key| promoted_event_key['id'] }
+promoted_event_keys = promoted_event_ids.map { |item| { google_id: item['event_google_id'], title: item['event_title'] } }
 
 batch_events_result = dynamodb.batch_get_item({
   request_items: {
@@ -20,7 +26,16 @@ batch_events_result = dynamodb.batch_get_item({
   },
 })
 
-result = batch_events_result.responses["Events"]
+promoted_events = batch_events_result.responses["Events"]
+result = []
+promoted_event_ids.each do |promoted_event_id|
+  promoted_events.each do |promoted_event|
+    if (promoted_event_id['event_google_id'] == promoted_event['google_id']) && (promoted_event_id['event_title'] == promoted_event['title'])
+      result.push(promoted_event)
+      break
+    end
+  end
+end
 
 result_to_json = result.to_json.freeze
 TomMemcache::set("get_promoted_events", result_to_json, 86400)  # 86400 seconds is 24 hours

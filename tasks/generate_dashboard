@@ -6,7 +6,7 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
-# @current: handle event card text too long and hide attributes if none
+# @current: handle event card text too long
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -43,8 +43,7 @@ print %(
       </div>
       <div class="page", id="explore_page">
         <div class="event_feed" id="explore_event_feed">
-          <div class="event_card_react_container" id="event_card_react_container_0" style="margin-top:#{6.5 * VH_FACTOR}vh;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onEventCardSelect(this.id)"></div>
-          <div class="event_card_react_container" id="event_card_react_container_1" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onEventCardSelect(this.id)"></div>
+          <div id="event_card_react_container_explore_0" style="margin-top:#{6.5 * VH_FACTOR}vh;"></div>
         </div>
       </div>
       <div class="page", id="search_page">
@@ -318,8 +317,6 @@ print %(
         document.getElementById("create_form").addEventListener("wheel",function() { onCreateFormScroll(event,'create_form') },{passive: true});
       }
 
-      ReactDOM.render(React.createElement(EventCard,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
-      ReactDOM.render(React.createElement(EventCard,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
@@ -329,6 +326,20 @@ print %(
           <p id="time_zones_title">Time zone</p>
         </div>
       `);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'get_promoted_events', true);
+      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      xhr.onload = function() {
+        if(xhr.status == 200) {
+          var event_cards = JSON.parse(xhr.responseText);
+          insertEventCardsToFeed('explore_event_feed', event_cards);
+        }
+      };
+      xhr.send();
+
+      //ReactDOM.render(React.createElement(EventCard,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
+      //ReactDOM.render(React.createElement(EventCard,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
 
       var http = new XMLHttpRequest();
       http.open('POST', 'validate_tokens_and_load_initial_content', true);
@@ -513,7 +524,7 @@ print %(
 
       document.getElementById("all_sessions_log_out").blur(); // this fixes auto focus bug on mobile
     }
-    function onNavIconSelect(nav_icon_id) {
+    async function onNavIconSelect(nav_icon_id) {
       unactivateAllNavIcons();
       unactivateAllPages();
       var nav_icon = document.getElementById(nav_icon_id);
@@ -1474,6 +1485,44 @@ print %(
     }
     function onEventCardSelect(id) {
     }
+    function calculate_image_url(image_id, image_extension) {
+      return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
+    }
+    function insertEventCardsToFeed(feed_id, event_cards) {
+      var event_feed = document.getElementById(feed_id);
+      for (i=0; i < event_cards.length; ++i) {
+        event_feed.insertAdjacentHTML("beforeend", `<div class="event_card_react_container" id="event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        var event_card_container = document.getElementById(`event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
+
+        // @remember: need to get username and avatar
+        var event_card_avatar = "T";
+        var event_card_user_name = "tom.holovacko";
+        var event_card_image = calculate_image_url(event_cards[i]['image_id'], event_cards[i]['image_extension']);
+        var event_card_date_time;
+        if (event_cards[i]['is_general_event']) {
+          if (event_cards[i]['date_type'] && (event_cards[i]['date_type'] != '')) {
+            event_card_date_time = 'TBD';
+          } else {
+            event_card_date_time = event_cards[i]['date_type'];
+          }
+        } else if ( (event_cards[i]['start_date'] == '') || (!event_cards[i]['start_date']) ) {
+          event_card_date_time = 'TBD';
+        }
+        else {
+          // @remember: need to parse card datetime
+          event_card_date_time = event_cards[i]['start_date'];
+        }
+        var event_card_params = { user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
+
+        ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
+        if (!event_cards[i]['location']) {
+          event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
+        }
+        if (!event_cards[i]['description']) {
+          event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
+        }
+      }
+    }
   </script>
   <style>
     html {
@@ -2338,6 +2387,7 @@ print %(
       font-size: #{4 * FONT_FACTOR}rem;
       font-family: 'Roboto', sans-serif;
       padding-bottom: #{0 * VH_FACTOR}vh;
+      left: 0;
       cursor: default;
     }
     .event_card_react_container .MuiCardContent-root {
@@ -2379,7 +2429,7 @@ print %(
       vertical-align: middle;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
-      margin-left: #{2.75 * VW_FACTOR}vw;
+      margin-left: #{3.3 * VW_FACTOR}vw;
       cursor: default;
       font-size: #{2.75 * FONT_FACTOR}rem;
       vertical-align: middle;

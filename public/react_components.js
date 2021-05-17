@@ -128,17 +128,20 @@ class EventCard extends React.Component {
         size: "medium",
         color: "primary"
       }, "Set reminder")))), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(Typography, {
-        gutterBottom: true
+        gutterBottom: true,
+        className: "date_range_txt"
       }, /*#__PURE__*/React.createElement(Icon, {
         "aria-label": "date range",
         fontSize: "inherit"
       }, "date_range"), this.props.date_time), /*#__PURE__*/React.createElement(Typography, {
-        gutterBottom: true
+        gutterBottom: true,
+        className: "location_txt"
       }, /*#__PURE__*/React.createElement(Icon, {
         "aria-label": "location",
         fontSize: "inherit"
       }, "location_on"), this.props.location), /*#__PURE__*/React.createElement(Typography, {
-        gutterBottom: true
+        gutterBottom: true,
+        className: "description_txt"
       }, /*#__PURE__*/React.createElement(Icon, {
         "aria-label": "description",
         fontSize: "inherit"
