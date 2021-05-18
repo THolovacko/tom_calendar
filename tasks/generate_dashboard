@@ -92,7 +92,7 @@ print %(
       <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title" maxlength="100"></div>
       <div id="date_type_toggle">
         <i class="material-icons md-36" id="date_type_icon">date_range</i>
-        <input type="text" id="date_type_description_txt" value="Seasonal/Quarterly" readonly>
+        <input type="text" id="date_type_description_txt" value="Approximation" readonly>
         <div id="create_event_switch_react_container"></div>
       </div>
       <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
