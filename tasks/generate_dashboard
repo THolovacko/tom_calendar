@@ -6,12 +6,13 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
-# @current: handle event card text too long
+# @current: parse event card date range then avatar + username then event card actions
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
 
-VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
+VW_FACTOR   = IS_DESKTOP ? 0.25 : 1
+#VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
 FONT_FACTOR = IS_DESKTOP ? 1.2 : 1
 
@@ -1501,23 +1502,28 @@ print %(
         var event_card_date_time;
         if (event_cards[i]['is_general_event']) {
           if (event_cards[i]['date_type'] && (event_cards[i]['date_type'] != '')) {
-            event_card_date_time = 'TBD';
-          } else {
             event_card_date_time = event_cards[i]['date_type'];
+          } else {
+            event_card_date_time = 'TBD';
           }
-        } else if ( (event_cards[i]['start_date'] == '') || (!event_cards[i]['start_date']) ) {
+        } else if (!event_cards[i]['start_date']) {
           event_card_date_time = 'TBD';
         }
         else {
-          // @remember: need to parse card datetime
           event_card_date_time = event_cards[i]['start_date'];
+          if (event_cards[i]['end_date'] && (event_cards[i]['end_date'] != event_cards[i]['start_date'])) {
+            event_card_date_time += ` - ${event_cards[i]['end_date']}`;
+          }
+          if (event_cards[i]['start_time'] && event_cards[i]['end_time']) {
+            event_card_date_time += ` from ${event_cards[i]['start_time'].toLowerCase().replace(' ','')} - ${event_cards[i]['end_time'].toLowerCase().replace(' ','')}`;
+          }
+          if ( event_cards[i]['repeats'] && (event_cards[i]['repeats'] != 'Does not repeat') ) {
+            event_card_date_time += event_cards[i]['repeats'].replace('Repeats','');
+            if (event_cards[i]['repeats_on']) {
+              event_card_date_time += ` ${event_cards[i]['repeats_on'].charAt(0).toLowerCase() + event_cards[i]['repeats_on'].slice(1)}`;
+            }
+          }
         }
-
-        /*TESTING*/
-        event_card_date_time = "May 5th, 2021 - May 8th, 2021 from 12pm - 6pm every week on Wednesday, Thursday, and Friday";
-        event_cards[i]['description'] = "The film reboots the Batman film series, telling the origin story of Bruce Wayne from the death of his parents to his journey to become Batman and his fight to stop Ra's al Ghul and the Scarecrow from plunging Gotham City into chaos.";
-        /*TESTING*/
-
 
         var event_card_params = { user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
@@ -2438,7 +2444,7 @@ print %(
       vertical-align: middle;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
-      margin-left: #{3.3 * VW_FACTOR}vw;
+      margin-left: #{3.5 * VW_FACTOR}vw;
       cursor: default;
       font-size: #{2.75 * FONT_FACTOR}rem;
       vertical-align: middle;
