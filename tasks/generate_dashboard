@@ -6,6 +6,7 @@
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
+# @remember: event cards should auto convert datetime to user's local timezone
 # @current: parse event card date range then avatar + username then event card actions
 
 dashboard_type = ARGV[0]
@@ -1515,7 +1516,7 @@ print %(
             event_card_date_time += ` - ${event_cards[i]['end_date']}`;
           }
           if (event_cards[i]['start_time'] && event_cards[i]['end_time']) {
-            event_card_date_time += ` from ${event_cards[i]['start_time'].toLowerCase().replace(' ','')} - ${event_cards[i]['end_time'].toLowerCase().replace(' ','')}`;
+            event_card_date_time += ` from ${event_cards[i]['start_time'].toLowerCase().replace(' ','')} - ${event_cards[i]['end_time'].toLowerCase().replace(' ','')} (${parseTimeZone(event_cards[i]['time_zone'])} time)`;
           }
           if ( event_cards[i]['repeats'] && (event_cards[i]['repeats'] != 'Does not repeat') ) {
             event_card_date_time += event_cards[i]['repeats'].replace('Repeats','');
@@ -2384,7 +2385,6 @@ print %(
       text-align: left;
       font-family: 'Roboto', sans-serif;
       padding-bottom: #{0 * VH_FACTOR}vh;
-      cursor: default;
     }
     .event_card_react_container .material-icons {
       font-size: #{3 * FONT_FACTOR}rem;
@@ -2462,7 +2462,6 @@ print %(
     }
     .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
       height: 4px;
-      cusor: pointer;
     }
   </style>
 </html>
