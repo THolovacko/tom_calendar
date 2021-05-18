@@ -99,7 +99,7 @@ class EventCard extends React.Component {
         avatar: /*#__PURE__*/React.createElement(Avatar, {
           "aria-label": this.props.user_name
         }, this.props.user_avatar),
-        title: this.props.title,
+        title: this.props.user_name,
         action: /*#__PURE__*/React.createElement(Icon, {
           "aria-label": "options",
           fontSize: "inherit",

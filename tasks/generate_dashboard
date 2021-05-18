@@ -1512,6 +1512,13 @@ print %(
           // @remember: need to parse card datetime
           event_card_date_time = event_cards[i]['start_date'];
         }
+
+        /*TESTING*/
+        event_card_date_time = "May 5th, 2021 - May 8th, 2021 from 12pm - 6pm every week on Wednesday, Thursday, and Friday";
+        event_cards[i]['description'] = "The film reboots the Batman film series, telling the origin story of Bruce Wayne from the death of his parents to his journey to become Batman and his fight to stop Ra's al Ghul and the Scarecrow from plunging Gotham City into chaos.";
+        /*TESTING*/
+
+
         var event_card_params = { user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
         ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
@@ -2351,19 +2358,22 @@ print %(
       border-color: #E8E8EB;
     }
     .event_card_react_container .MuiAvatar-root {
-      transform: scale(0.9, 0.9);
+      transform: scale(0.85, 0.85);
       font-size: #{4 * FONT_FACTOR}rem;
       background-color: #F44336;
       cursor: pointer;
     }
+    .event_card_react_container .MuiCardHeader-avatar {
+      margin-right: #{2 * VW_FACTOR}vw;
+    }
     .event_card_react_container .MuiCardHeader-root {
-      height: #{3 * VH_FACTOR}vh;
+      height: #{2.75 * VH_FACTOR}vh;
       cursor: default;
     }
     .event_card_react_container .MuiTypography-root {
-      height: #{3 * VH_FACTOR}vh;
-      font-size: #{3 * FONT_FACTOR}rem;
-      line-height: #{3 * VH_FACTOR}vh;
+      height: #{2.75 * VH_FACTOR}vh;
+      font-size: #{3.2 * FONT_FACTOR}rem;
+      line-height: #{2.75 * VH_FACTOR}vh;
       vertical-align: middle;
       text-align: left;
       font-family: 'Roboto', sans-serif;
@@ -2387,7 +2397,6 @@ print %(
       font-size: #{4 * FONT_FACTOR}rem;
       font-family: 'Roboto', sans-serif;
       padding-bottom: #{0 * VH_FACTOR}vh;
-      left: 0;
       cursor: default;
     }
     .event_card_react_container .MuiCardContent-root {
@@ -2438,7 +2447,16 @@ print %(
       color: black;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons:hover {
-      background-color: white;
+      background-color: rgba(1, 1, 1, 0);
+    }
+    .event_card_react_container .date_range_txt, .event_card_react_container .location_txt, .event_card_react_container .description_txt {
+      white-space: nowrap;
+      overflow-x: scroll;
+      overflow-y: hidden;
+    }
+    .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
+      height: 4px;
+      cusor: pointer;
     }
   </style>
 </html>
