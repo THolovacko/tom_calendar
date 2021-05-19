@@ -7,13 +7,12 @@
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
-# @current: parse event card date range then avatar + username then event card actions
+# @current: avatar + username then event card actions
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
 
 VW_FACTOR   = IS_DESKTOP ? 0.25 : 1
-#VW_FACTOR   = IS_DESKTOP ? 0.3 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
 FONT_FACTOR = IS_DESKTOP ? 1.2 : 1
 
@@ -45,7 +44,7 @@ print %(
       </div>
       <div class="page", id="explore_page">
         <div class="event_feed" id="explore_event_feed">
-          <div id="event_card_react_container_explore_0" style="margin-top:#{6.5 * VH_FACTOR}vh;"></div>
+          <div id="event_card_react_container_explore_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
         </div>
       </div>
       <div class="page", id="search_page">
@@ -295,6 +294,8 @@ print %(
     var user_selected_time_zone = user_time_zone;
     var is_general_event = false;
     var can_google_calendar_sync = true;
+    const event_card_img_max_height = '#{40 * VH_FACTOR}vh';
+    const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
 
     function init() {
       if(is_desktop) {
@@ -1526,7 +1527,7 @@ print %(
           }
         }
 
-        var event_card_params = { user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
+        var event_card_params = { container_id: event_card_container.id, user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
         ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
         if (!event_cards[i]['location']) {
@@ -1535,6 +1536,14 @@ print %(
         if (!event_cards[i]['description']) {
           event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
         }
+      }
+    }
+    function handleEventCardImageClick(img_ev) {
+      var current_image = img_ev.target;
+      if (current_image.style.maxHeight == event_card_img_expand_height) {
+        current_image.style.maxHeight = event_card_img_max_height;
+      } else {
+        current_image.style.maxHeight = event_card_img_expand_height;
       }
     }
   </script>
@@ -1616,6 +1625,7 @@ print %(
       right: 0;
       text-align: center;
       z-index: 0;
+      background-color: #E8E8EB;
     }
     #create_form, #time_zones_react_container {
       display: none;
@@ -2359,10 +2369,11 @@ print %(
       margin: 0;
     }
     .event_card_react_container .MuiCard-root {
-      border-top-style: none;
-      border-bottom-style: solid;
-      border-width: thin;
-      border-color: #E8E8EB;
+      width: 95.5%;
+      margin-right: 2.25%;
+      margin-left: 2.25%;
+      margin-bottom: 2.25%;
+      padding-bottom: #{1.25 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiAvatar-root {
       transform: scale(0.85, 0.85);
@@ -2400,15 +2411,19 @@ print %(
       background-color: #EEEEEE;
     }
     .event_card_react_container .MuiTypography-h6 {
+      line-height: #{2.5 * VH_FACTOR}vh;
       font-size: #{4 * FONT_FACTOR}rem;
       font-family: 'Roboto', sans-serif;
+      vertical-align: middle;
       padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
       cursor: default;
+      //transform: scale(1.025, 1.025);
     }
     .event_card_react_container .MuiCardContent-root {
       padding-top: #{1 * VH_FACTOR}vh;
       padding-right: #{0 * VW_FACTOR}vw;
-      font-size: #{3.4 * FONT_FACTOR}rem;
+      height: #{2.5 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiCardActions-root {
       padding-top: #{0 * VH_FACTOR}vh;
@@ -2416,7 +2431,8 @@ print %(
       margin-bottom: #{0 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiButtonBase-root {
-      font-size: #{3.4 * FONT_FACTOR}rem;
+      line-height: #{2.5 * VH_FACTOR}vh;
+      font-size: #{3.5 * FONT_FACTOR}rem;
       vertical-align: middle;
       padding-top: #{0 * VH_FACTOR}vh;
       padding-bottom: #{0 * VH_FACTOR}vh;
@@ -2436,6 +2452,11 @@ print %(
     }
     .event_card_react_container img {
       cursor: pointer;
+      max-height: #{40 * VH_FACTOR}vh;
+      transition-property: max-height;
+      transition-timing-function: linear;
+      transition-delay: 0s;
+      transition-duration: 0s;
     }
     .event_card_react_container .MuiCardActionArea-root p {
       margin: 0;

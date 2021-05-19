@@ -93,7 +93,7 @@ class EventCard extends React.Component {
 
   render() {
     return /*#__PURE__*/React.createElement(Card, {
-        variant: "outlined",
+        variant: "elevation",
         square: true
       }, /*#__PURE__*/React.createElement(CardHeader, {
         avatar: /*#__PURE__*/React.createElement(Avatar, {
@@ -112,7 +112,8 @@ class EventCard extends React.Component {
         component: "img",
         alt: this.props.title,
         image: this.props.image,
-        title: this.props.title
+        title: this.props.title,
+        onClick: function(ev) { handleEventCardImageClick(ev) } /* handler function defined in dashboard */
       }), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(Typography, {
         gutterBottom: true,
         variant: "h6",
