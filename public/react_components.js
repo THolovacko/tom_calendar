@@ -97,8 +97,10 @@ class EventCard extends React.Component {
         square: true
       }, /*#__PURE__*/React.createElement(CardHeader, {
         avatar: /*#__PURE__*/React.createElement(Avatar, {
-          "aria-label": this.props.user_name
-        }, this.props.user_avatar),
+          variant: "circle",
+          alt: this.props.user_name,
+          src: this.props.user_avatar
+        }),
         title: this.props.user_name,
         action: /*#__PURE__*/React.createElement(Icon, {
           "aria-label": "options",

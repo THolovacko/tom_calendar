@@ -4,6 +4,7 @@ require_relative '../lib/tom_calendar.rb'
 require 'aws-sdk-s3'
 
 # @remember: should alert user if repeating event starts and ends on same day
+# @remember: if user changes profile picture then all users events
 
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -68,12 +69,11 @@ begin
     upload_url = obj.presigned_url(:put)
   end
 
-  event_params = {
-    table_name: 'Events',
-    item: event
-  }
+  profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
+  event['creator_email'] = profile_item['email']
+  event['creator_picture'] = profile_item['picture']
 
-  dynamodb.put_item(event_params)
+  dynamodb.put_item({ table_name: 'Events', item: event })
 rescue Exception => e
   raise e
 end

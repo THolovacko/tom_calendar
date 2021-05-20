@@ -7,14 +7,14 @@
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
-# @current: avatar + username then event card actions
+# @current: event card actions
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
 
 VW_FACTOR   = IS_DESKTOP ? 0.25 : 1
 VH_FACTOR   = IS_DESKTOP ? 1 : 1
-FONT_FACTOR = IS_DESKTOP ? 1.2 : 1
+FONT_FACTOR = IS_DESKTOP ? 1.1 : 1
 
 print "Content-type: text/html\n\n".freeze
 print %(
@@ -1497,9 +1497,8 @@ print %(
         event_feed.insertAdjacentHTML("beforeend", `<div class="event_card_react_container" id="event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
         var event_card_container = document.getElementById(`event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
-        // @remember: need to get username and avatar
-        var event_card_avatar = "T";
-        var event_card_user_name = "tom.holovacko";
+        var event_card_avatar = event_cards[i]['creator_picture'];
+        var event_card_user_name = event_cards[i]['creator_email'].replace('@gmail.com', '');
         var event_card_image = calculate_image_url(event_cards[i]['image_id'], event_cards[i]['image_extension']);
         var event_card_date_time;
         if (event_cards[i]['is_general_event']) {
@@ -2376,17 +2375,18 @@ print %(
       padding-bottom: #{1.25 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiAvatar-root {
-      transform: scale(0.85, 0.85);
       font-size: #{4 * FONT_FACTOR}rem;
       background-color: #F44336;
       cursor: pointer;
     }
-    .event_card_react_container .MuiCardHeader-avatar {
-      margin-right: #{2 * VW_FACTOR}vw;
-    }
     .event_card_react_container .MuiCardHeader-root {
-      height: #{2.75 * VH_FACTOR}vh;
+      height: #{2.5 * VH_FACTOR}vh;
       cursor: default;
+    }
+    .event_card_react_container .MuiCardHeader-avatar {
+      margin-right: #{2.2 * VW_FACTOR}vw;
+    }
+    .event_card_react_container .MuiCardHeader-avatar img {
     }
     .event_card_react_container .MuiTypography-root {
       height: #{2.75 * VH_FACTOR}vh;
@@ -2399,7 +2399,7 @@ print %(
     }
     .event_card_react_container .material-icons {
       font-size: #{3 * FONT_FACTOR}rem;
-      vertical-align: middle;
+      vertical-align: top;
       transform: scale(1.75, 1.75);
       margin-right: #{1 * VW_FACTOR}vw;
       cursor: pointer;
@@ -2417,6 +2417,7 @@ print %(
       vertical-align: middle;
       padding-bottom: #{0 * VH_FACTOR}vh;
       margin-bottom: #{0 * VH_FACTOR}vh;
+      margin-top: #{0.25 * VH_FACTOR}vh;
       cursor: default;
       //transform: scale(1.025, 1.025);
     }
@@ -2424,6 +2425,7 @@ print %(
       padding-top: #{1 * VH_FACTOR}vh;
       padding-right: #{0 * VW_FACTOR}vw;
       height: #{2.5 * VH_FACTOR}vh;
+      padding-bottom: #{1.25 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiCardActions-root {
       padding-top: #{0 * VH_FACTOR}vh;
@@ -2437,6 +2439,7 @@ print %(
       padding-top: #{0 * VH_FACTOR}vh;
       padding-bottom: #{0 * VH_FACTOR}vh;
       margin-bottom: #{0 * VH_FACTOR}vh;
+      margin-top: #{0.25 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiCardActionArea-root {
       padding-top: #{0 * VH_FACTOR}vh;
