@@ -2380,11 +2380,17 @@ print %(
       cursor: pointer;
     }
     .event_card_react_container .MuiCardHeader-root {
-      height: #{2.5 * VH_FACTOR}vh;
+      height: #{2.75 * VH_FACTOR}vh;
       cursor: default;
     }
+    .event_card_react_container .MuiCardHeader-title {
+      //margin-top: #{0.5 * VW_FACTOR}vh;
+    }
     .event_card_react_container .MuiCardHeader-avatar {
-      margin-right: #{2.2 * VW_FACTOR}vw;
+      margin-right: #{2 * VW_FACTOR}vw;
+      //margin-bottom: #{2 * VH_FACTOR}vh;
+      //height: 10px;
+      //width: 10px;
     }
     .event_card_react_container .MuiCardHeader-avatar img {
     }
