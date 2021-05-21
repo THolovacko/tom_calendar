@@ -1544,16 +1544,18 @@ print %(
       }
     }
     function handleEventCardAvatarClick(ev) {
-      var event_user_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
-      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
+      var container_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
+      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
     }
     function handleEventCardOptionsClick(ev) {
-      var event_user_id = ev.target.id.replace('options_event_card_react_container_','');
-      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
+      var container_id = ev.target.id.replace('options_event_card_react_container_','');
+      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
+      var event_title = container_id.substring(container_id.lastIndexOf("-") + 1);
     }
     function handleEventCardSetReminderClick(ev) {
-      var event_user_id = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
-      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
+      var container_id = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
+      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
+      var event_title = container_id.substring(container_id.lastIndexOf("-") + 1);
     }
   </script>
   <style>
