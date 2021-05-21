@@ -97,18 +97,22 @@ class EventCard extends React.Component {
         square: true
       }, /*#__PURE__*/React.createElement(CardHeader, {
         avatar: /*#__PURE__*/React.createElement(Avatar, {
+          id: "avatar_" + this.props.container_id,
           variant: "circle",
           alt: this.props.user_name,
-          src: this.props.user_avatar
+          src: this.props.user_avatar,
+          onClick: function(ev) { handleEventCardAvatarClick(ev) } /* handler function defined in dashboard */
         }),
         title: this.props.user_name,
         action: /*#__PURE__*/React.createElement(Icon, {
+          id: "options_" + this.props.container_id,
           "aria-label": "options",
           fontSize: "inherit",
           style: {
             marginTop: '8px',
             marginRight: '8px'
-          }
+          },
+          onClick: function(ev) { handleEventCardOptionsClick(ev) } /* handler function defined in dashboard */
         }, "more_vert")
       }), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(CardMedia, {
         component: "img",
@@ -128,8 +132,10 @@ class EventCard extends React.Component {
           float: 'right'
         }
       }, /*#__PURE__*/React.createElement(Button, {
+        id: "reminder_btn_" + this.props.container_id,
         size: "medium",
-        color: "primary"
+        color: "primary",
+        onClick: function(ev) { handleEventCardSetReminderClick(ev) } /* handler function defined in dashboard */
       }, "Set reminder")))), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(Typography, {
         gutterBottom: true,
         className: "date_range_txt"

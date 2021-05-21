@@ -1486,8 +1486,6 @@ print %(
         }, 12);
       }
     }
-    function onEventCardSelect(id) {
-    }
     function calculate_image_url(image_id, image_extension) {
       return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
     }
@@ -1544,6 +1542,18 @@ print %(
       } else {
         current_image.style.maxHeight = event_card_img_expand_height;
       }
+    }
+    function handleEventCardAvatarClick(ev) {
+      var event_user_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
+      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
+    }
+    function handleEventCardOptionsClick(ev) {
+      var event_user_id = ev.target.id.replace('options_event_card_react_container_','');
+      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
+    }
+    function handleEventCardSetReminderClick(ev) {
+      var event_user_id = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
+      event_user_id = event_user_id.substring(0,event_user_id.lastIndexOf("-"));
     }
   </script>
   <style>

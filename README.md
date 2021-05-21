@@ -8,6 +8,7 @@
   * tzinfo (2.0.4) gem
 * Apache/2.4.41
 * AWS DynamoDB
+* gcc version 9.3.0 (Ubuntu 9.3.0-10ubuntu2)
 
 # Setup
 
