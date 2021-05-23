@@ -1,13 +1,20 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
 
+cache_result = `tom_memcache_get 'get_promoted_events'`.freeze
+cache_result = nil if (cache_result == '')
 
-cache_result = TomMemcache::get("get_promoted_events").freeze
 if cache_result
   print "Content-type: application/json\n\n#{cache_result}"
   return
 end
+
+
+require_relative '../lib/tom_calendar.rb'
+
+=begin
+cache_result = TomMemcache::get("get_promoted_events").freeze
+=end
 
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 promoted_event_ids = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items
