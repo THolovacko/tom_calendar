@@ -12,9 +12,6 @@ end
 
 require_relative '../lib/tom_calendar.rb'
 
-=begin
-cache_result = TomMemcache::get("get_promoted_events").freeze
-=end
 
 dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 promoted_event_ids = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items

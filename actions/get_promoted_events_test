@@ -1,3 +1,0 @@
-#! /usr/bin/ruby
-
-puts `../ruby_bin_exec get_promoted_events.bin`
