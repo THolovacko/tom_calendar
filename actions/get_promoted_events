@@ -19,7 +19,7 @@ unless promoted_event_ids
   print "Content-type: application/json\n\n#{[].to_json}"
   return
 end
-promoted_event_ids.sort_by! { |promoted_event_key| promoted_event_key['id'] }
+promoted_event_ids.sort_by! { |promoted_event_key| promoted_event_key['id'].to_i }
 promoted_event_keys = promoted_event_ids.map { |item| { google_id: item['google_id'], title: item['title'] } }
 
 batch_events_result = dynamodb.batch_get_item({

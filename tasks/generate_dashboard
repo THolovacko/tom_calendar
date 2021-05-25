@@ -7,7 +7,7 @@
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
-# @current: event card actions
+# @current: event card actions (pre check if already subscribed to an event)
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -1553,9 +1553,27 @@ print %(
       var event_title = container_id.substring(container_id.lastIndexOf("-") + 1);
     }
     function handleEventCardSetReminderClick(ev) {
-      var container_id = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
+      var container_id  = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
       var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
-      var event_title = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var event_title   = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var button_text   = document.getElementById(ev.target.parentNode.id).getElementsByClassName('MuiButton-label')[0];
+      var is_creating   = button_text.textContent == "Set reminder";
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'create_or_delete_reminder', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
+          // @remember: maybe have pending state then set state to finished here
+        }
+      };
+      http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
+
+      if (is_creating) {
+        button_text.textContent = "Reminder on";
+      } else {
+        button_text.textContent = "Set reminder";
+      }
     }
   </script>
   <style>

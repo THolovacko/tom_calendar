@@ -74,6 +74,7 @@ begin
   event['creator_picture'] = profile_item['picture']
 
   dynamodb.put_item({ table_name: 'Events', item: event })
+  dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} })
 rescue Exception => e
   raise e
 end

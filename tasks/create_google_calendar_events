@@ -14,11 +14,15 @@ require 'tzinfo'
 
 events = JSON.parse(ARGV[0])
 google_calendar_id = ARGV[1]
+google_id = ARGV[2] || events[0]['google_id']
+if !google_id || (google_id == '') || (google_id == ' ')
+  google_id = events[0]['google_id']
+end
 
 dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_authorizer     = get_google_authorizer(dynamodb)
 service               = Google::Apis::CalendarV3::CalendarService.new
-service.authorization = google_authorizer.get_credentials(events[0]['google_id'])
+service.authorization = google_authorizer.get_credentials(google_id)
 service.client_options.application_name = 'TomCalendar'.freeze
 
 events.each do |event|
@@ -142,6 +146,6 @@ events.each do |event|
   begin
     service.insert_event(google_calendar_id, google_event) # @remember: if api fail then retry
   rescue Exception => e
-    raise "#{rrule}\n#{e}"
+    raise e
   end
 end
