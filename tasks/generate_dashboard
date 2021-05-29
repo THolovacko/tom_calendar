@@ -7,6 +7,7 @@
 # @test:     user agent detection on several platforms
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
+# @remember: make dashboard loading screen
 # @current: event card actions (pre check if already subscribed to an event)
 
 dashboard_type = ARGV[0]
@@ -296,6 +297,7 @@ print %(
     var can_google_calendar_sync = true;
     const event_card_img_max_height = '#{40 * VH_FACTOR}vh';
     const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
+    var is_currently_syncing_event = false;
 
     function init() {
       if(is_desktop) {
@@ -1559,20 +1561,25 @@ print %(
       var button_text   = document.getElementById(ev.target.parentNode.id).getElementsByClassName('MuiButton-label')[0];
       var is_creating   = button_text.textContent == "Set reminder";
 
-      var http = new XMLHttpRequest();
-      http.open('POST', 'create_or_delete_reminder', true);
-      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
-      http.onload = function() {
-        if(http.status == 200) {
-          // @remember: maybe have pending state then set state to finished here
-        }
-      };
-      http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
+      if (!is_currently_syncing_event) {
+        is_currently_syncing_event = true;
+        var http = new XMLHttpRequest();
+        http.open('POST', 'create_or_delete_reminder', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.onload = function() {
+          if(http.status == 200) {
+            // @remember: maybe have pending state then set state to finished here
+            // @remember: should allow users to set reminder on and off as quick as they want (maybe queue?)
+            is_currently_syncing_event = false;
+          }
+        };
+        http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
 
-      if (is_creating) {
-        button_text.textContent = "Reminder on";
-      } else {
-        button_text.textContent = "Set reminder";
+        if (is_creating) {
+          button_text.textContent = "Reminder on";
+        } else {
+          button_text.textContent = "Set reminder";
+        }
       }
     }
   </script>
