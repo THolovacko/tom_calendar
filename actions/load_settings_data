@@ -16,7 +16,6 @@ if cache_result
   return
 end
 
-
 require_relative '../lib/tom_calendar.rb'
 #cache_result = TomMemcache::get("load_sessions#{cookie_session_id}").freeze
 
@@ -66,7 +65,6 @@ begin
 rescue Aws::DynamoDB::Errors::ServiceError => error
   print StatusCodeStr::BAD_REQUEST
 end
-
 
 deactivation_code_thread.join
 result_to_json = result.to_json.freeze
