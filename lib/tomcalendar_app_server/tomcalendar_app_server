@@ -23,8 +23,6 @@ while true do
   signature = message.slice(0,message.index('signature'))
   message.sub!("#{signature}signature",'')
 
-  puts "#{remote_host} sent #{message}"
-
-  response = "signature:#{signature}OK"
+  response = "#{signature}:Content-type: text/plain\nStatus: 200 OK\n\ntesting from server".freeze
   socket.send(response, 0, remote_host, remote_port)
 end
