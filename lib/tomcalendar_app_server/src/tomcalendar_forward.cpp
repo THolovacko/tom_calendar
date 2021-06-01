@@ -28,16 +28,16 @@ int main(int argc, char* argv[]) {
   tom_socket client_socket(SERVER_IP_ADDRESS, server_port, false);
 
   /* get message body */
-  std::string message_body;
+  const std::string signature = std::to_string(microseconds_since_epoch);
+  std::string message_body = signature;
+  message_body += "signature";
+
   std::string message_line;
   while (std::getline(std::cin, message_line)) {
     message_body += message_line += "\n";
   }
 
   /* forward request */
-  std::string signature = std::to_string(microseconds_since_epoch);
-  message_body += "signature";
-  message_body += signature;
   client_socket.message_server(message_body);
 
   /* return app-server response */

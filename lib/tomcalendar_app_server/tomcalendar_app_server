@@ -1,0 +1,30 @@
+#! /usr/bin/ruby
+
+require_relative '../tom_calendar.rb'
+require 'socket'
+
+# @current: curl isn't getting response
+
+if ARGV.length != 1
+  puts "port number is only param".freeze
+  return
+end
+
+host = '127.0.0.1'.freeze
+port = ARGV[0].to_i
+socket = UDPSocket.new
+socket.bind(host, port)
+
+while true do
+  message, addr = socket.recvfrom(65535)
+  remote_host = addr[3]
+  remote_port = addr[1]
+
+  signature = message.slice(0,message.index('signature'))
+  message.sub!("#{signature}signature",'')
+
+  puts "#{remote_host} sent #{message}"
+
+  response = "signature:#{signature}OK"
+  socket.send(response, 0, remote_host, remote_port)
+end
