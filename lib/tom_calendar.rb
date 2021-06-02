@@ -187,3 +187,7 @@ def calculate_time_passed_in_words(previous_time)
   return '1 year ago' if years < 2
   return "#{years.to_i} years ago"
 end
+
+def exec_ruby_vm_code(file_path)
+  return RubyVM::InstructionSequence.load_from_binary( File.open(file_path, 'r').readlines.join('') ).eval
+end

