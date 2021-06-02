@@ -10,6 +10,7 @@
 # @remember: make dashboard loading screen
 # @current: event card actions (pre check if already subscribed to an event)
 # @current:   look into aws Neptune and need to speedup script start times
+# @current:   need to fix deploy script and fix and verify documentation
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'

@@ -16,7 +16,7 @@
 * add `Alias "/favicon.ico" "/decided/path/tom_calendar/public/favicon.ico"` to apache virtual host config
 * add `Alias "/public" "/decided/path/tom_calendar/public/"` to apache virtual host config
 * add `ErrorDocument 404 https://DecidedWebsiteName.com/not_found` to apache virtual host config
-* enable apache cgi mods then add `ScriptAlias "/" "/decided/path/tom_calendar/actions/"` to apache virtual host config
+* enable apache cgi mods then add `ScriptAlias "/" "/usr/bin/tomcalendar_forward"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
 * enable google calendar API in google developer console
 * enable google places API in google developer console
