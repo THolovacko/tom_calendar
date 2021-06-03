@@ -1,8 +1,5 @@
 #! /usr/bin/ruby
 
-require 'jwt'
-require_relative '../lib/tom_calendar.rb'
-
 # @remember: need submit consent screen for OAuth verification
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 # @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
@@ -11,7 +8,7 @@ begin
   # create google tokens (store credentials) and  create session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
-  authorization_code = ARGF.first
+  authorization_code = TomEnv::get('MESSAGE')
   raise 'invalid authorization code' unless authorization_code
   credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
 
@@ -28,7 +25,7 @@ begin
 
   session_params = {
     table_name: 'Sessions',
-    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: ENV['HTTP_USER_AGENT'] }
+    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: TomEnv::get('HTTP_USER_AGENT') }
   }
   dynamodb.put_item(session_params)
 

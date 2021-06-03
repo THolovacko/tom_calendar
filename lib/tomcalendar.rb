@@ -5,7 +5,10 @@ require 'googleauth/token_store'
 require "google/apis/calendar_v3"
 require 'json'
 require 'digest'
-require_relative './tom_memcache.rb'
+require 'jwt'
+require 'aws-sdk-s3'
+require 'time'
+require 'tzinfo'
 
 module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
@@ -88,7 +91,7 @@ def get_google_authorizer(dynamodb_connection)
 end
 
 def get_session_id_from_cookies()
-  session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+  session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
   return nil unless session_id
   return nil if session_id == ''
   return JSON.parse(session_id)
@@ -184,6 +187,19 @@ def exec_ruby_vm_code(file_path)
     return RubyVM::InstructionSequence.load_from_binary( File.open(file_path, 'r').readlines.join('') ).eval
   else
     return StatusCodeStr::BAD_REQUEST
+  end
+end
+
+module TomMemcache
+  # @remember single quotes in values will probably break this (can use $ to fix  ex) $'aa\'bb' will allow single quotes in value )
+  def self.get(key)
+    result = `tom_memcache_get '#{key}'`.freeze
+    result = nil if (result == '')
+    result
+  end
+
+  def self.set(key, value, expiration_in_seconds)
+    `tom_memcache_set '#{key}' '#{value}' '#{expiration_in_seconds}'`
   end
 end
 

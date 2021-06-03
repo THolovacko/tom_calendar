@@ -1,8 +1,6 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
-require 'time'
-require 'tzinfo'
+require_relative '../lib/tomcalendar.rb'
 
 # https://developers.google.com/calendar/create-events
 # https://developers.google.com/calendar/v3/reference/events

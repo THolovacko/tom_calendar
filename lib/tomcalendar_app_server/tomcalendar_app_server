@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-require_relative '../tom_calendar.rb'
+require_relative '../tomcalendar.rb'
 require 'socket'
 require 'thread'
 
@@ -29,8 +29,9 @@ def worker_thread_work(worker_queue,socket)
     request_message.sub!("EOENV",'')
     environment_variables.each do |env_var|
       key_value = env_var.split('=',2)
-      TomEnv::set(key_value[0],key_value[1])
+      TomEnv::set(key_value[0], key_value[1])
     end
+    TomEnv::set('MESSAGE', request_message)
 
     script_path = "#{TomEnv::get('ROOT_DIR_PATH')}/actions#{TomEnv::get('REQUEST_URI').sub("?#{TomEnv::get('QUERY_STRING')}",'')}".freeze
 

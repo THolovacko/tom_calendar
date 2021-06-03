@@ -37,4 +37,4 @@ end
 
 result_to_json = result.to_json.freeze
 TomMemcache::set("get_promoted_events", result_to_json, 86400)  # 86400 seconds is 24 hours
-"Content-type: application/json\n\n#{result_to_json}#{TomEnv::get('HTTP_USER_AGENT')}"
+"Content-type: application/json\n\n#{result_to_json}"

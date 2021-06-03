@@ -4,10 +4,10 @@
 # @remember: remove login if already logged in
 
 
-cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
-user_agent_str = ENV['HTTP_USER_AGENT']&.downcase
+user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
 
