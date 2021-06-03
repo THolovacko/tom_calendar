@@ -7,15 +7,6 @@ require 'json'
 require 'digest'
 require_relative './tom_memcache.rb'
 
-=begin
-@optimize: requiring library is taking pretty long:
-  real    0m0.576s
-  user    0m0.486s
-  sys     0m0.089s
-
-  requiring dynamodb is about .4 seconds
-=end
-
 module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
   BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
@@ -189,5 +180,22 @@ def calculate_time_passed_in_words(previous_time)
 end
 
 def exec_ruby_vm_code(file_path)
-  return RubyVM::InstructionSequence.load_from_binary( File.open(file_path, 'r').readlines.join('') ).eval
+  if File.exist?(file_path)
+    return RubyVM::InstructionSequence.load_from_binary( File.open(file_path, 'r').readlines.join('') ).eval
+  else
+    return StatusCodeStr::BAD_REQUEST
+  end
+end
+
+$app_server_env = {}
+class TomEnv
+  def self.init_thread()
+    $app_server_env[Thread.current.object_id] = {}
+  end
+  def self.get(key)
+    return $app_server_env.fetch(Thread.current.object_id)&.fetch(key)
+  end
+  def self.set(key, value)
+    return $app_server_env[Thread.current.object_id][key] = value
+  end
 end

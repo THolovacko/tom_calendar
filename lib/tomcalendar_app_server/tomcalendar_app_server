@@ -4,7 +4,6 @@ require_relative '../tom_calendar.rb'
 require 'socket'
 require 'thread'
 
-
 class TomRequest
   attr_accessor :message, :remote_host, :remote_port
 
@@ -21,29 +20,28 @@ def worker_thread_work(worker_queue,socket)
     request_message = request.message
     request_remote_host = request.remote_host
     request_remote_port = request.remote_port
+    TomEnv::init_thread()
 
     signature = request_message.slice(0,request_message.index('signature'))
     request_message.sub!("#{signature}signature",'')
 
     environment_variables = request_message.slice(0,request_message.index('EOENV')).split("\n")
     request_message.sub!("EOENV",'')
-    tom_env = {}
     environment_variables.each do |env_var|
       key_value = env_var.split('=',2)
-      tom_env[key_value[0]] = key_value[1]
+      TomEnv::set(key_value[0],key_value[1])
     end
 
-    script_path = "#{tom_env['ROOT_DIR_PATH']}/actions#{tom_env['REQUEST_URI'].sub("?#{tom_env['QUERY_STRING']}",'')}".freeze
+    script_path = "#{TomEnv::get('ROOT_DIR_PATH')}/actions#{TomEnv::get('REQUEST_URI').sub("?#{TomEnv::get('QUERY_STRING')}",'')}".freeze
 
-    response = exec_ruby_vm_code("#{script_path}.rvmbin").freeze
-    #response = "#{signature}:Content-type: text/plain\nStatus: 200 OK\n\n#{script_path}".freeze
+    script_response = exec_ruby_vm_code("#{script_path}.rvmbin").freeze
+    response = "#{signature}:#{script_response}".freeze
 
     socket.send(response, 0, request_remote_host, request_remote_port)
   end
 end
 
 
-# main thread work
 if ARGV.length != 1
   puts "tomcalendar_app_server port_number".freeze
   return
