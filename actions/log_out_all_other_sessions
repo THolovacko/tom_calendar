@@ -4,14 +4,12 @@ cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cooki
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 cache_result = TomMemcache::get("log_out_all_other_sessions#{cookie_session_id}").freeze
 if cache_result
-  print StatusCodeStr::OK
-  return
+  return StatusCodeStr::OK
 end
 
 session_id = JSON.parse(cookie_session_id)
@@ -38,9 +36,9 @@ begin
     dynamodb.delete_item(delete_params) unless session['device_id'] == session_id['device_id']
   end
 rescue Aws::DynamoDB::Errors::ServiceError => error
-  print StatusCodeStr::BAD_REQUEST
+  return StatusCodeStr::BAD_REQUEST
 end
 
 TomMemcache::set("log_out_all_other_sessions#{cookie_session_id}", 'OK', 30)
 
-print StatusCodeStr::OK
+return StatusCodeStr::OK

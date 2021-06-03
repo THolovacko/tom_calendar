@@ -4,16 +4,14 @@ cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cooki
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 cache_result = `tom_memcache_get 'load_sessions#{cookie_session_id}'`.freeze
 cache_result = nil if (cache_result == '')
 
 if cache_result
-  print "Content-type: application/json\n\n#{cache_result}"
-  return
+  return "Content-type: application/json\n\n#{cache_result}"
 end
 
 session_id = JSON.parse(cookie_session_id)
@@ -60,11 +58,11 @@ begin
     session_index = session_index + 1
   end
 rescue Aws::DynamoDB::Errors::ServiceError => error
-  print StatusCodeStr::BAD_REQUEST
+  return StatusCodeStr::BAD_REQUEST
 end
 
 deactivation_code_thread.join
 result_to_json = result.to_json.freeze
 
 TomMemcache::set("load_sessions#{cookie_session_id}", result_to_json, 30)
-print "Content-type: application/json\n\n#{result_to_json}"
+return "Content-type: application/json\n\n#{result_to_json}"

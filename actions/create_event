@@ -7,8 +7,7 @@ cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cooki
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 session_id    = JSON.parse(cookie_session_id)
@@ -22,8 +21,7 @@ if event['image_extension'] && (event['image_extension'] != '')
 end
 
 unless ( event['title'] && (event['title'] != '') )
-  print StatusCodeStr::bad_request_error_message('invalid title')
-  return
+  return StatusCodeStr::bad_request_error_message('invalid title')
 end
 
 begin
@@ -31,8 +29,7 @@ begin
     start_date_time = Time.parse("#{event['start_date']} #{event['start_time']}").xmlschema[0..18]
     end_date_time   = Time.parse("#{event['end_date']} #{event['end_time']}").xmlschema[0..18]
     unless start_date_time <= end_date_time
-      print StatusCodeStr::bad_request_error_message('invalid date')
-      return
+      return StatusCodeStr::bad_request_error_message('invalid date')
     end
   end
 rescue Exception => e
@@ -49,8 +46,7 @@ begin
 
   result_item = dynamodb.get_item(check_event_params)&.item
   if (result_item)
-    print StatusCodeStr::BAD_REQUEST
-    return
+    return StatusCodeStr::BAD_REQUEST
   end
 
   upload_url = nil
@@ -85,10 +81,9 @@ begin
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
 rescue Exception => e
-  print StatusCodeStr::error_message(e.message)
-  return
+  return StatusCodeStr::error_message(e.message)
 end
 
 `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
 
-print StatusCodeStr::plain_text(upload_url)
+return StatusCodeStr::plain_text(upload_url)

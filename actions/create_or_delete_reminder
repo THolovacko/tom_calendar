@@ -4,8 +4,7 @@ cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cooki
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 session_id    = JSON.parse(cookie_session_id)
@@ -29,4 +28,4 @@ rescue Exception => e
   raise e
 end
 
-print StatusCodeStr::OK
+return StatusCodeStr::OK

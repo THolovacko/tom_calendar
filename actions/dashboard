@@ -1,11 +1,13 @@
 #! /usr/bin/ruby
 
-cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+#cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print "Content-type: text/html\n\n"
-  print %(
+  print %(Content-type: text/html
+
+
   <html lang="en">
     <body onload="reSignIn()"></body>
     <script>
@@ -15,7 +17,6 @@ unless cookie_session_id
     </script>
   </html>
   )
-  return
 end
 
 user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase.freeze || ''.freeze

@@ -12,8 +12,9 @@ IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 VW_FACTOR  = IS_DESKTOP ? 0.35 : 1
 
 
-print "Content-type: text/html\n\n"
-print %(
+return %(Content-type: text/html
+
+
 <html lang="en">
   <title>Login</title>
   <head>

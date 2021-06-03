@@ -1,9 +1,8 @@
 #! /usr/bin/ruby
 
-  #<img src="https://tomcalendar.com/public/morty.gif" alt="morty.gif" style="width:512px;height:256px;margin-top:64px;">
+return %(Content-type: text/html
 
-print "Content-type: text/html\n\n"
-print %(
+
 <html lang="en">
   <title>Page Not Found</title>
   <head>
@@ -21,6 +20,3 @@ print %(
   </style>
 </html>
 )
-
-
-

@@ -13,4 +13,4 @@ if refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone)
   # load initial data
 end
 
-print "Content-type: application/json\n\n#{result.to_json}"
+return "Content-type: application/json\n\n#{result.to_json}"

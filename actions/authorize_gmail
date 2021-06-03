@@ -35,8 +35,7 @@ begin
   }
   dynamodb.put_item(google_profile_params)
 rescue Exception => e
-  print StatusCodeStr::UNAUTHORIZED
-  return
+  return StatusCodeStr::UNAUTHORIZED
 end
 
-print "Content-type: application/json\n\n#{session_id.to_json}"
+return "Content-type: application/json\n\n#{session_id.to_json}"

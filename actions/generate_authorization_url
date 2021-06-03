@@ -4,4 +4,4 @@ dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 google_authorizer = get_google_authorizer(dynamodb)
 authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
 
-print StatusCodeStr::plain_text(authorization_url)
+return StatusCodeStr::plain_text(authorization_url)

@@ -4,14 +4,12 @@ cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cooki
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 cache_result = TomMemcache::get("deactivate_tc#{cookie_session_id}").freeze
 if cache_result
-  print StatusCodeStr::OK
-  return
+  return StatusCodeStr::OK
 end
 
 session_id            = JSON.parse(cookie_session_id)
@@ -33,13 +31,11 @@ begin
   result_item = dynamodb.get_item(params)&.item || {}
   valid_code = result_item['code']
 rescue Exception => e
-  print StatusCodeStr::error_message(e.message)
-  return
+  return StatusCodeStr::error_message(e.message)
 end
 
 unless code == valid_code
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
 # get google calendar id
@@ -52,8 +48,7 @@ begin
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
 rescue Exception => e
-  print StatusCodeStr::error_message(e.message)
-  return
+  return StatusCodeStr::error_message(e.message)
 end
 
 # delete google calendar if exists
@@ -68,8 +63,7 @@ if google_calendar_id
   begin
     dynamodb.delete_item(params)
   rescue
-    print StatusCodeStr::error_message('Unable to delete google calendar id')
-    return
+    return StatusCodeStr::error_message('Unable to delete google calendar id')
   end
 end
 
@@ -95,11 +89,10 @@ begin
     dynamodb.delete_item(delete_params)
   end
 rescue Aws::DynamoDB::Errors::ServiceError => error
-  print StatusCodeStr::error_message(e.message)
-  return
+  return StatusCodeStr::error_message(e.message)
 end
 
 google_authorizer.revoke_authorization(google_id)
 
 TomMemcache::set("deactivate_tc#{cookie_session_id}", 'OK', 30).freeze
-print StatusCodeStr::OK
+return StatusCodeStr::OK
