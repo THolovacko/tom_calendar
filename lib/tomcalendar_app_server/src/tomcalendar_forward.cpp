@@ -6,15 +6,6 @@
 
 // @remeber: memcache and app-server size are limited by UDP (65,535 bytes)
 
-/* helpful for debugging
-  printf("Content-type: text/html\n\n");
-  printf( R"html(%s)html", message_body.data());
-  return 0;
-*/
-
-/* get environment variables (not needed but leaving for reference) */
-// std::string env_region(getenv("AWS_REGION"));
-
 extern char **environ;
 
 int main(int argc, char* argv[]) {

@@ -186,7 +186,7 @@ def exec_ruby_vm_code(file_path)
   if File.exist?(file_path)
     return RubyVM::InstructionSequence.load_from_binary( File.open(file_path, 'r').readlines.join('') ).eval
   else
-    return StatusCodeStr::BAD_REQUEST
+    return RubyVM::InstructionSequence.load_from_binary( File.open(TomEnv::get('ROOT_DIR_PATH') + '/actions/not_found.rvmbin', 'r').readlines.join('') ).eval
   end
 end
 

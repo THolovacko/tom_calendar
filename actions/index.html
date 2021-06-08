@@ -3,7 +3,7 @@
 # @remember: use image(screenshot)?
 # @remember: maybe say something like "Stay updated for things you are interested in"
 
-#cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+#raise ENV['HTTP_COOKIE']
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
@@ -19,12 +19,10 @@ unless cookie_session_id.nil?
   )
 end
 
-#query_str = TomEnv::get('QUERY_STRING')
 query_str = ENV['QUERY_STRING']
 code      = query_str.match(/code=([^&]*)/)&.to_s&.sub('code=','')
 code      = nil if (code == '') || (code == ' ')
 
-#user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase || ''
 user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 VH_FACTOR   = IS_DESKTOP ? 1.5 : 1
@@ -40,7 +38,7 @@ print %(Content-type: text/html
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
-    <script src="public/google_api_platform.js" async defer></script>
+    <script src="https://tomcalendar.com/public/google_api_platform.js" async defer></script>
     <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
@@ -68,7 +66,7 @@ print %(Content-type: text/html
         var today_time = new Date().getTime();
         var expiration_date = new Date();
         expiration_date.setTime(today_time + (31 * 86400000));
-        document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() +";secure";
+        document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
         window.location = "https://tomcalendar.com/dashboard";
       }
 
@@ -89,12 +87,12 @@ print %(Content-type: text/html
       else {
         // get authorization url
         var http = new XMLHttpRequest();
-        http.open('POST', 'generate_authorization_url', true);
+        http.open('POST', 'https://tomcalendar.com/generate_authorization_url', true);
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.onload = function() {
           if (http.status == 200) {
             authorization_url = http.responseText;
-            gapi.auth2.getAuthInstance().signOut();
+            //gapi.auth2.getAuthInstance().signOut();
           }
           else {
             // @remember: handle error
@@ -118,7 +116,7 @@ print %(Content-type: text/html
     }
     function onSignIn(auth_code) {
       var http = new XMLHttpRequest();
-      http.open('POST', 'authorize_gmail', true);
+      http.open('POST', 'https://tomcalendar.com/authorize_gmail', true);
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if(http.status == 200) {
@@ -127,7 +125,7 @@ print %(Content-type: text/html
           var expiration_date = new Date();
           expiration_date.setTime(today_time + (31 * 86400000));
           localStorage.setItem("session_id", result);
-          document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() +";secure";
+          document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
           window.location = "https://tomcalendar.com/dashboard";
         }
         else {

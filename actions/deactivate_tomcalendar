@@ -34,7 +34,7 @@ rescue Exception => e
   return StatusCodeStr::error_message(e.message)
 end
 
-unless code == valid_code
+unless code.to_i == valid_code.to_i
   return StatusCodeStr::BAD_REQUEST
 end
 
