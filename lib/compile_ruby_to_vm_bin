@@ -3,6 +3,8 @@
 source_code = File.open(ARGV[0], 'r')
 
 RubyVM::InstructionSequence.compile_option = true
+$stdout.reopen("/dev/null", "w")
+$stderr.reopen("/dev/null", "w")
 compiled_code = RubyVM::InstructionSequence.compile(source_code)
 binary_code = compiled_code.to_binary
 

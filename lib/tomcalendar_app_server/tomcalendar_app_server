@@ -1,5 +1,7 @@
 #! /usr/bin/ruby
 
+# @remember: maybe have a server(s) dedicated to backround tasks
+
 require_relative '../tomcalendar.rb'
 require 'socket'
 require 'thread'

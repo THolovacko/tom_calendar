@@ -12,15 +12,18 @@
 
 # Setup
 
-* clone repo in server directory then give it read and execute permissions for configured apache user
+* clone repo in decided server directory then give it read and execute permissions for configured apache user
 * add `Alias "/favicon.ico" "/decided/path/tom_calendar/public/favicon.ico"` to apache virtual host config
 * add `Alias "/public" "/decided/path/tom_calendar/public/"` to apache virtual host config
 * add `ErrorDocument 404 https://DecidedWebsiteName.com/not_found` to apache virtual host config
-* enable apache cgi mods then add `ScriptAlias "/" "/usr/bin/tomcalendar_forward"` to apache virtual host config
+* enable apache cgi mods
+* add `ScriptAliasMatch "^/.{0}$" "/decided/path/tom_calendar/actions/index.html"` to apache virtual host config
+* add `ScriptAliasMatch "^/dashboard" "/decided/path/tom_calendar/actions/dashboard"` to apache virtual host config
+* add `ScriptAliasMatch "/" "/decided/path/tom_calendar/lib/tomcalendar_app_server/tomcalendar_forward.tomexe"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
 * enable google calendar API in google developer console
 * enable google places API in google developer console
-* set apache user environment variables
+* set environment variables in /etc/environment and using SetEnv in apache virtual host config
   * ROOT_DIR_PATH
   * AWS_ACCESS_KEY_ID
   * AWS_SECRET_ACCESS_KEY
@@ -30,13 +33,15 @@
   * GOOGLE_OAUTH_CLIENT_SECRET
   * SESSION_HASH_LEFT_PADDING (arbitrary sized random string)
   * SESSION_HASH_RIGHT_PADDING (arbitrary sized random string)
+  * GOOGLE_MAPS_API_KEY
 * create tables in DynamoDB (will list tables later)
 
 # Deployment Requirements
 
-* set environment variables (must be first command)
-  * GOOGLE_MAPS_API_KEY
+* execute script `compile_ruby.sh`
+* execute script `lib/tomcalendar_app_server/build.sh`
 * execute script `tasks/generate_dashboard desktop`
 * execute script `tasks/generate_dashboard mobile`
+* execute script `lib/tomcalendar_app_server/restart.sh`
 * execute script `lib/tom_memcache/restart.sh`
-* execute `sudo sysctl -p`
+* execute `sudo systemctl restart apache2`
