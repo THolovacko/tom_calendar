@@ -4,7 +4,12 @@ cache_result = `tom_memcache_get 'get_promoted_events'`.freeze
 cache_result = nil if (cache_result == '')
 
 if cache_result
-  return "Content-type: application/json\n\n#{cache_result}"
+  events = JSON.parse(cache_result)
+  is_reminder_set_hash = generate_is_reminder_set_hash(events)
+  events.each do |event|
+    event['is_reminder_set'] = true if is_reminder_set_hash[event['event_id']]
+  end
+  return "Content-type: application/json\n\n#{cache_result.to_json.freeze}"
 end
 
 dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
@@ -32,6 +37,11 @@ promoted_event_ids.each do |promoted_event_id|
       break
     end
   end
+end
+
+is_reminder_set_hash = generate_is_reminder_set_hash(events)
+promoted_events.each do |event|
+  event['is_reminder_set'] = true if is_reminder_set_hash[event['event_id']]
 end
 
 result_to_json = result.to_json.freeze
