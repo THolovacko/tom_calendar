@@ -1,11 +1,14 @@
 #! /usr/bin/ruby
 
+session_id = get_session_id_from_cookies()
+current_google_id = session_id['google_id']
+
 cache_result = `tom_memcache_get 'get_promoted_events'`.freeze
 cache_result = nil if (cache_result == '')
 
 if cache_result
   events = JSON.parse(cache_result)
-  is_reminder_set_hash = generate_is_reminder_set_hash(events)
+  is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,events)
   events.each do |event|
     event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
   end
@@ -39,9 +42,9 @@ promoted_event_ids.each do |promoted_event_id|
   end
 end
 
-#TomMemcache::set("get_promoted_events", result.to_json, 86400)  # 86400 seconds is 24 hours
+TomMemcache::set("get_promoted_events", result.to_json, 86400)  # 86400 seconds is 24 hours
 
-is_reminder_set_hash = generate_is_reminder_set_hash(result)
+is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,result)
 result.each do |event|
   event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
 end

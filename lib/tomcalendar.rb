@@ -216,11 +216,10 @@ class TomEnv
   end
 end
 
-def generate_is_reminder_set_hash(events)
+def generate_is_reminder_set_hash(current_google_id, events)
   is_reminder_set_hash = {}
   return is_reminder_set_hash unless events && !events.empty?
   dynamodb  = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-  google_id = events[0]['google_id']
   event_ids = events.map { |event| "#{event['google_id']}-#{event['title']}" }
 
   threads = []
@@ -230,7 +229,7 @@ def generate_is_reminder_set_hash(events)
       key_condition_expression: "#sid = :subscriber_id AND #eid = :event_id",
       projection_expression: "event_id",
       expression_attribute_names: { "#sid" => "subscriber_id", "#eid" => "event_id" },
-      expression_attribute_values: { ":subscriber_id" => google_id, ":event_id" => event_id }
+      expression_attribute_values: { ":subscriber_id" => current_google_id, ":event_id" => event_id }
     }
 
     begin
