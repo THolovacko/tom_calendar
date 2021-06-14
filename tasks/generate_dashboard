@@ -1536,6 +1536,11 @@ print %(
         if (!event_cards[i]['description']) {
           event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
         }
+
+        if (event_cards[i]['is_reminder_set']) {
+          var button_text = event_card_container.getElementsByClassName('MuiButton-label')[0];
+          button_text.textContent = "Reminder on";
+        }
       }
     }
     function handleEventCardImageClick(img_ev) {

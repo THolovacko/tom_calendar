@@ -7,9 +7,9 @@ if cache_result
   events = JSON.parse(cache_result)
   is_reminder_set_hash = generate_is_reminder_set_hash(events)
   events.each do |event|
-    event['is_reminder_set'] = true if is_reminder_set_hash[event['event_id']]
+    event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
   end
-  return "Content-type: application/json\n\n#{cache_result.to_json.freeze}"
+  return "Content-type: application/json\n\n#{events.to_json.freeze}"
 end
 
 dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
@@ -39,11 +39,12 @@ promoted_event_ids.each do |promoted_event_id|
   end
 end
 
-is_reminder_set_hash = generate_is_reminder_set_hash(events)
-promoted_events.each do |event|
-  event['is_reminder_set'] = true if is_reminder_set_hash[event['event_id']]
+#TomMemcache::set("get_promoted_events", result.to_json, 86400)  # 86400 seconds is 24 hours
+
+is_reminder_set_hash = generate_is_reminder_set_hash(result)
+result.each do |event|
+  event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
 end
 
 result_to_json = result.to_json.freeze
-TomMemcache::set("get_promoted_events", result_to_json, 86400)  # 86400 seconds is 24 hours
 return "Content-type: application/json\n\n#{result_to_json}"
