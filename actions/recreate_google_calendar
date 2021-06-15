@@ -53,11 +53,31 @@ google_calendar_id = google_calendar.id
 
 begin
   dynamodb.put_item(params)
-  # @remember: get all created and subscribed events then create all
-  #`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
-rescue
+
+  reminders_params = {
+    table_name: 'EventReminders',
+    key_condition_expression: "#sid = :subscriber_id",
+    expression_attribute_names: { "#sid" => "subscriber_id" },
+    expression_attribute_values: { ":subscriber_id" => google_id }
+  }
+
+  subscribed_events = []
+  query_result = dynamodb.query(reminders_params)
+  query_result.items.each do |reminder|
+    event_id = reminder['event_id'].split('-')
+    event_params = {
+      table_name: 'Events',
+      key: { google_id: event_id[0], title: event_id[1] }
+    }
+    result_event = dynamodb.get_item(event_params)&.item
+    subscribed_events.push(result_event) if result_event
+  end
+
+  # @remember: should probably do for each n events
+  `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
+rescue Exception => e
   google_calendar_service.delete_calendar(google_calendar_id)
-  return StatusCodeStr::error_message('Unable to add google calendar id')
+  return StatusCodeStr::error_message("Unable to add google calendar id (#{e.message})")
 end
 
 TomMemcache::set("recreate_gc#{cookie_session_id}", 'OK', 30)
