@@ -13,19 +13,5 @@ require_relative '../lib/tomcalendar.rb'
 events = JSON.parse(ARGV[0])
 google_calendar_id = ARGV[1]
 google_id = ARGV[2] || events[0]['google_id']
-if !google_id || (google_id == '') || (google_id == ' ')
-  google_id = events[0]['google_id']
-end
 
-dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_authorizer     = get_google_authorizer(dynamodb)
-service               = Google::Apis::CalendarV3::CalendarService.new
-service.authorization = google_authorizer.get_credentials(google_id)
-service.client_options.application_name = 'TomCalendar'.freeze
-
-events.each do |event|
-  result = service.list_events(google_calendar_id, private_extended_property: "tomcalendar_id=#{event['google_id']}-#{event['title']}")
-  result.items.each do |google_event|
-    service.delete_event(google_calendar_id, google_event.id)
-  end
-end
+delete_google_calendar_events(events,google_calendar_id,google_id)
