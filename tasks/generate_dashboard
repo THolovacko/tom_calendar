@@ -9,7 +9,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @current: event card actions (options then user profile)
-# @current:   check delete reminders on account deactivate? handle paginated api requests and threshold limit exceptions
+# @current:   handle paginated api requests, threshold limit exceptions, and failed api requests
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
