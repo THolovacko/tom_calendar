@@ -46,7 +46,7 @@ begin
 
   result_item = dynamodb.get_item(check_event_params)&.item
   if (result_item)
-    return StatusCodeStr::BAD_REQUEST
+    return StatusCodeStr::bad_request_error_message('invalid title')
   end
 
   upload_url = nil

@@ -14,13 +14,14 @@ module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
   BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
   UNAUTHORIZED = "Content-type: text/plain\nStatus: 401 Unauthorized\n\n".freeze
+  INTERNAL_SERVER_ERROR = "Content-type: text/plain\nStatus: 500 Internal Server Error\n\n".freeze
 
   def self.bad_request_error_message(message)
-    "Content-type: text/plain\nStatus: 400 Bad Request #{message}\n\n".freeze
+    "Content-type: text/plain\nStatus: 400 #{message}\n\n".freeze
   end
 
   def self.error_message(message)
-    "Content-type: text/plain\nStatus: 500 Internal Server Error\n\n#{message}".freeze
+    "Content-type: text/plain\nStatus: 500 #{message}\n\n".freeze
   end
 
   def self.plain_text(message)

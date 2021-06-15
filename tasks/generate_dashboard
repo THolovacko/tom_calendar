@@ -734,6 +734,8 @@ print %(
             document.getElementById("end_timepicker_txt").style.color = "red";
           } else {
             // @remember: handle unkown error
+            //document.getElementById("create_form_title_input").style.borderColor = "red";
+            console.log(error_message.toLowerCase());
           }
           document.getElementById("spinner_react_container").style.display = "none";
         }
