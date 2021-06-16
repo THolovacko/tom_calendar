@@ -5,17 +5,19 @@
 # @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
 
 begin
+  retries ||= 0
+
   # create google tokens (store credentials) and  create session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
   authorization_code = TomEnv::get('MESSAGE')
-  raise 'invalid authorization code' unless authorization_code
+  return StatusCodeStr::UNAUTHORIZED 'invalid authorization code' unless authorization_code
   credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
 
   user_data = JWT.decode(credentials.id_token, nil, false).first
-  raise 'invalid iss' unless user_data['iss'] == 'https://accounts.google.com'.freeze
-  raise 'invalid aud' unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
-  raise 'invalid exp' unless user_data['exp'] > 0
+  return StatusCodeStr::UNAUTHORIZED unless user_data['iss'] == 'https://accounts.google.com'.freeze
+  return StatusCodeStr::UNAUTHORIZED unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
+  return StatusCodeStr::UNAUTHORIZED unless user_data['exp'] > 0
 
   google_id  = user_data['sub']
   device_id  = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{Time.now}#{rand}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
@@ -35,7 +37,12 @@ begin
   }
   dynamodb.put_item(google_profile_params)
 rescue Exception => e
-  return StatusCodeStr::UNAUTHORIZED
+  #return StatusCodeStr::bad_request_error_message("#{e.class} #{e.message}")
+  return StatusCodeStr::INTERNAL_SERVER_ERROR unless retries <= 5
+
+  sleep( (2 ** retries) * 0.1 )
+  retries = retries + 1
+  retry
 end
 
 return "Content-type: application/json\n\n#{session_id.to_json}"

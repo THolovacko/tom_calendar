@@ -8,6 +8,7 @@
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
+# @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (options then user profile)
 # @current:   handle paginated api requests, threshold limit exceptions, and failed api requests
 

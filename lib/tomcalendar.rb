@@ -425,3 +425,16 @@ def delete_google_calendar_events(events, google_calendar_id, google_id=nil)
     end
   end
 end
+
+def exponential_backoff(&block)
+  retries = 0
+  begin
+    block.call
+  rescue Exception => e
+    return StatusCodeStr::INTERNAL_SERVER_ERROR unless retries <= 5
+
+    sleep( (2 ** retries) * 0.1 )
+    retries = retries + 1
+    retry
+  end
+end
