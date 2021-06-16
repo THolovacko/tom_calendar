@@ -4,9 +4,8 @@
 # @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
 # @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
 
-begin
-  retries ||= 0
-
+session_id = {}
+exponential_backoff do
   # create google tokens (store credentials) and  create session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
@@ -36,13 +35,6 @@ begin
     item: { google_id: google_id, email: user_data['email'], name: user_data['name'], picture: user_data['picture'], given_name: user_data['given_name'], family_name: user_data['family_name'], locale: user_data['locale'] }
   }
   dynamodb.put_item(google_profile_params)
-rescue Exception => e
-  #return StatusCodeStr::bad_request_error_message("#{e.class} #{e.message}")
-  return StatusCodeStr::INTERNAL_SERVER_ERROR unless retries <= 5
-
-  sleep( (2 ** retries) * 0.1 )
-  retries = retries + 1
-  retry
 end
 
 return "Content-type: application/json\n\n#{session_id.to_json}"

@@ -36,7 +36,9 @@ rescue Exception => e
   # keep going
 end
 
-begin
+google_calendar_id = nil
+upload_url = nil
+exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
   check_event_params = {
@@ -66,13 +68,10 @@ begin
   event['creator_email'] = profile_item['email']
   event['creator_picture'] = profile_item['picture']
 
+  # @remember: this should be atomic
   dynamodb.put_item({ table_name: 'Events', item: event })
   dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} })
-rescue Exception => e
-  raise e
-end
 
-begin
   params = {
     table_name: 'GoogleCalendarIDs',
     key: { google_id: event['google_id'] }
@@ -80,8 +79,6 @@ begin
 
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
-rescue Exception => e
-  return StatusCodeStr::error_message(e.message)
 end
 
 `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
