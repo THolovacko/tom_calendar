@@ -28,13 +28,11 @@ exponential_backoff do
     table_name: 'Sessions',
     item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: TomEnv::get('HTTP_USER_AGENT') }
   }
-  #dynamodb.put_item(session_params)
 
   google_profile_params = {
     table_name: 'GoogleProfiles',
     item: { google_id: google_id, email: user_data['email'], name: user_data['name'], picture: user_data['picture'], given_name: user_data['given_name'], family_name: user_data['family_name'], locale: user_data['locale'] }
   }
-  #dynamodb.put_item(google_profile_params)
 
   dynamodb.transact_write_items({
     transact_items: [
