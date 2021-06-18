@@ -15,7 +15,7 @@ event_user_id = request_input[0]
 event_title   = request_input[1]
 is_creating   = request_input[2]
 
-begin
+exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
   event = dynamodb.get_item({ table_name: 'Events', key: {google_id: event_user_id, title: event_title} })&.item
@@ -26,8 +26,6 @@ begin
     dynamodb.delete_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })
     delete_google_calendar_events([event],google_calendar_id,session_id['google_id'])
   end
-rescue Exception => e
-  raise e
 end
 
 return StatusCodeStr::OK

@@ -36,7 +36,6 @@ rescue Exception => e
   # keep going
 end
 
-google_calendar_id = nil
 upload_url = nil
 exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
@@ -61,16 +60,12 @@ exponential_backoff do
     s3 = Aws::S3::Resource.new(client: aws_client)
     bucket = s3.bucket('tomcalendareventimages')
     obj = bucket.object("#{event['image_id']}.#{event['image_extension']}")
-    upload_url = obj.presigned_url(:put)
+    tmp_upload_url = obj.presigned_url(:put)
   end
 
   profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
   event['creator_email'] = profile_item['email']
   event['creator_picture'] = profile_item['picture']
-
-  # @remember: this should be atomic
-  dynamodb.put_item({ table_name: 'Events', item: event })
-  dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} })
 
   params = {
     table_name: 'GoogleCalendarIDs',
@@ -79,8 +74,18 @@ exponential_backoff do
 
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
+
+  dynamodb.transact_write_items({
+    transact_items: [
+      { put: { table_name: 'Events', item: event } },
+      { put: { table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} } }
+    ]
+  })
+
+  `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
+  upload_url = tmp_upload_url
 end
 
-`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
+return StatusCodeStr::INTERNAL_SERVER_ERROR unless upload_url
 
 return StatusCodeStr::plain_text(upload_url)

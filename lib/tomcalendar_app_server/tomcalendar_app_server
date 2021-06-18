@@ -6,6 +6,11 @@ require_relative '../tomcalendar.rb'
 require 'socket'
 require 'thread'
 
+$stdout.reopen("/var/log/tomcalendar_app_server.log", "w")
+$stdout.sync = true
+$stderr.reopen("/var/log/tomcalendar_app_server.log", "w")
+$stderr.sync = true
+
 class TomRequest
   attr_accessor :message, :remote_host, :remote_port
 
@@ -37,8 +42,13 @@ def worker_thread_work(worker_queue,socket)
 
     script_path = "#{TomEnv::get('ROOT_DIR_PATH')}/actions#{TomEnv::get('REQUEST_URI').sub("?#{TomEnv::get('QUERY_STRING')}",'')}".freeze
 
-    script_response = exec_ruby_vm_code("#{script_path}.rvmbin").freeze
-    response = "#{signature}:#{script_response}".freeze
+    begin
+      script_response = exec_ruby_vm_code("#{script_path}.rvmbin").freeze
+      response = "#{signature}:#{script_response}".freeze
+    rescue StandardError => e
+      puts("#{TomEnv::get('REQUEST_URI')} -> #{e.full_message}")
+      response = StatusCodeStr::INTERNAL_SERVER_ERROR
+    end
 
     socket.send(response, 0, request_remote_host, request_remote_port)
   end
