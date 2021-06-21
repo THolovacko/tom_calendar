@@ -61,6 +61,8 @@ exponential_backoff do
     bucket = s3.bucket('tomcalendareventimages')
     obj = bucket.object("#{event['image_id']}.#{event['image_extension']}")
     tmp_upload_url = obj.presigned_url(:put)
+  else
+    tmp_upload_url = ''
   end
 
   profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
@@ -82,7 +84,7 @@ exponential_backoff do
     ]
   })
 
-  `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{[event].to_json}' '#{google_calendar_id}' >/dev/null &`
+  create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
   upload_url = tmp_upload_url
 end
 

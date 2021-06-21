@@ -5,6 +5,7 @@
 # @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
+# @remember: maybe force garbage collection in app server
 # @remember: only allow valid values for create event input
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen

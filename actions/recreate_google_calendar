@@ -64,7 +64,7 @@ begin
   subscribed_events = []
   query_result = dynamodb.query(reminders_params)
   query_result.items.each do |reminder|
-    event_id = reminder['event_id'].split('-')
+    event_id = reminder['event_id'].split('-',2)
     event_params = {
       table_name: 'Events',
       key: { google_id: event_id[0], title: event_id[1] }
@@ -74,6 +74,7 @@ begin
   end
 
   # @remember: should probably do for each n events
+  #create_google_calendar_events(subscribed_events,google_calendar_id,session_id['google_id']) unless subscribed_events.empty?
   `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
 rescue Exception => e
   google_calendar_service.delete_calendar(google_calendar_id)

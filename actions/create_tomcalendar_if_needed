@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-# @current: test this stuff
+# @test: more many google calendars and many events with forced api failures (test without cache)
 
 cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -38,7 +38,6 @@ exponential_backoff do
   google_calendar = nil
   if google_calendar_id
     begin
-      # @test: pagination with several calendars
       page_token ||= nil
       calendar_lists = google_calendar_service.list_calendar_lists(page_token: page_token)
       calendar_lists.items.each do |calendar|
@@ -81,6 +80,7 @@ unless google_calendar
 
   begin
     last_evaluated_key ||= nil
+    puts last_evaluated_key || 'nil'
     db_attempts ||= 0
     dynamodb.put_item(params) if last_evaluated_key.nil?
 
@@ -91,10 +91,14 @@ unless google_calendar
       expression_attribute_values: { ":subscriber_id" => google_id }
     }
 
-    subscribed_events  = []
-    query_result = dynamodb.query(reminders_params, exclusive_start_key: last_evaluated_key)
+    subscribed_events = []
+    query_result = dynamodb.query(reminders_params, exclusive_start_key: last_evaluated_key, limit: 5)
+    while query_result.next_page?
+      puts last_evaluated_key
+    end
+    puts query_result.items.size
     query_result.items.each do |reminder|
-      event_id = reminder['event_id'].split('-')
+      event_id = reminder['event_id'].split('-',2)
       event_params = {
         table_name: 'Events',
         key: { google_id: event_id[0], title: event_id[1] }
@@ -108,14 +112,17 @@ unless google_calendar
       last_evaluated_key = nil
     end
 
+    # @remember: need to partition subscribed_events
     `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
-  rescue
+  rescue Exception => e
     if db_attempts < 3
       db_attempts = db_attempts + 1
       sleep 1
       retry
     else
-      google_calendar_service.delete_calendar(google_calendar_id)
+      exponential_backoff do
+        google_calendar_service.delete_calendar(google_calendar_id)
+      end
       return StatusCodeStr::error_message('Unable to add google calendar id')
     end
   end while !last_evaluated_key.nil?
