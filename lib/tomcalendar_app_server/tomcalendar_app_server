@@ -34,6 +34,7 @@ def worker_thread_work(worker_queue,socket)
 
     environment_variables = request_message.slice!(0,request_message.index('EOENV')).split("\n")
     request_message.sub!("EOENV",'')
+    request_message.strip!
     environment_variables.each do |env_var|
       key_value = env_var.split('=',2)
       TomEnv::set(key_value[0], key_value[1])

@@ -56,6 +56,6 @@ exponential_backoff do
   end
 end
 
-TomMemcache::set("log_out_all_other_sessions#{cookie_session_id}", 'OK', 5)
+TomMemcache::set("log_out_all_other_sessions#{cookie_session_id}", 'OK', 3)
 
 return StatusCodeStr::OK

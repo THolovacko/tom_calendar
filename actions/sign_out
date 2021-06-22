@@ -29,5 +29,5 @@ exponential_backoff do
   end
 end
 
-TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 10)
+TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 3)
 return StatusCodeStr::OK
