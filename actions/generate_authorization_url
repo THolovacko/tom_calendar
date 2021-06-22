@@ -1,7 +1,10 @@
 #! /usr/bin/ruby
 
-dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_authorizer = get_google_authorizer(dynamodb)
-authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
+authorization_url = nil
+exponential_backoff do
+  dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_authorizer = get_google_authorizer(dynamodb)
+  authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
+end
 
 return StatusCodeStr::plain_text(authorization_url)

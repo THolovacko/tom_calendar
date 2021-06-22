@@ -12,20 +12,22 @@ if cache_result
   return StatusCodeStr::OK
 end
 
-session_id = JSON.parse(cookie_session_id)
-dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-device_id  = TomEnv::get('MESSAGE')
-device_id  = session_id['device_id'] if device_id.nil? || (device_id == '') || (device_id == ' ')
+exponential_backoff do
+  session_id = JSON.parse(cookie_session_id)
+  dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  device_id  = TomEnv::get('MESSAGE')
+  device_id  = session_id['device_id'] if device_id.nil? || (device_id == '') || (device_id == ' ')
 
-begin
-  delete_params = {
-   table_name: 'Sessions',
-   key: { google_id: session_id['google_id'], device_id: device_id }
-  }
-  dynamodb.delete_item(delete_params)
-rescue Aws::DynamoDB::Errors::ServiceError => error
-  return StatusCodeStr::BAD_REQUEST
+  begin
+    delete_params = {
+     table_name: 'Sessions',
+     key: { google_id: session_id['google_id'], device_id: device_id }
+    }
+    dynamodb.delete_item(delete_params)
+  rescue Aws::DynamoDB::Errors::ServiceError => error
+    return StatusCodeStr::BAD_REQUEST
+  end
 end
 
-TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 30)
+TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 10)
 return StatusCodeStr::OK

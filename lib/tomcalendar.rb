@@ -10,6 +10,20 @@ require 'aws-sdk-s3'
 require 'time'
 require 'tzinfo'
 
+def exponential_backoff(&block)
+  retries = 0
+  begin
+    block.call
+  rescue StandardError => e
+    if retries <= 5
+      sleep( (2 ** retries) * 0.1 )
+      retries = retries + 1
+      retry
+    end
+    raise
+  end
+end
+
 module StatusCodeStr
   OK           = "Content-type: text/plain\nStatus: 200 OK\n\n".freeze
   BAD_REQUEST  = "Content-type: text/plain\nStatus: 400 Bad Request\n\n".freeze
@@ -48,7 +62,7 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
 
     begin
       @dynamodb.put_item(params)
-    rescue  Aws::DynamoDB::Errors::ServiceError => error
+    rescue Aws::DynamoDB::Errors::ServiceError => error
       raise "Unable to add token: #{item.to_s}"
     end
   end
@@ -85,9 +99,12 @@ class DynamoDBTokenStore < Google::Auth::TokenStore
 end
 
 def get_google_authorizer(dynamodb_connection)
-  client_id   = Google::Auth::ClientId.new(ENV['GOOGLE_OAUTH_CLIENT_ID'], ENV['GOOGLE_OAUTH_CLIENT_SECRET'])
-  token_store = DynamoDBTokenStore.new(dynamodb_connection)
-  authorizer  = Google::Auth::UserAuthorizer.new(client_id, GOOGLE_PERMISSION_SCOPES, token_store, 'https://tomcalendar.com')
+  authorizer = nil
+  exponential_backoff do
+    client_id   = Google::Auth::ClientId.new(ENV['GOOGLE_OAUTH_CLIENT_ID'], ENV['GOOGLE_OAUTH_CLIENT_SECRET'])
+    token_store = DynamoDBTokenStore.new(dynamodb_connection)
+    authorizer  = Google::Auth::UserAuthorizer.new(client_id, GOOGLE_PERMISSION_SCOPES, token_store, 'https://tomcalendar.com')
+  end
   authorizer
 end
 
@@ -106,59 +123,39 @@ def refresh_tokens_and_cookie_session_id_is_valid?(cookie_session_id, time_zone=
   return (cache_result.downcase == "true") if cache_result
 
   begin
-    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+    exponential_backoff do
+      dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
-    params = {
-      table_name: 'Sessions',
-      key: session_id
-    }
+      params = {
+        table_name: 'Sessions',
+        key: session_id
+      }
 
-    item = dynamodb.get_item(params).item
+      item = dynamodb.get_item(params).item
 
-    return false unless item
-    google_authorizer = get_google_authorizer(dynamodb)
-    google_credentials = google_authorizer.get_credentials(item['google_id'])
-    google_credentials.refresh!
-    return false if google_credentials.expired?
+      return false unless item
+      google_authorizer = get_google_authorizer(dynamodb)
+      google_credentials = google_authorizer.get_credentials(item['google_id'])
+      google_credentials.refresh!
+      return false if google_credentials.expired?
 
-    # update the item
-    item['last_updated'] = Time.now.to_s
-    item['time_zone']    = time_zone
+      # update the item
+      item['last_updated'] = Time.now.to_s
+      item['time_zone']    = time_zone
 
-    session_params = {
-      table_name: 'Sessions',
-      item: item
-    }
+      session_params = {
+        table_name: 'Sessions',
+        item: item
+      }
 
-    dynamodb.put_item(session_params)
+      dynamodb.put_item(session_params)
+    end
 
     TomMemcache::set("refresh_tokens_and_cookie_session_id_is_valid?#{cookie_session_id}#{time_zone}", 'true', 60).freeze
     return true
   rescue Exception => e
     return false
   end
-end
-
-def get_primary_google_calendar(google_id)
-  dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-  google_authorizer     = get_google_authorizer(dynamodb)
-  service               = Google::Apis::CalendarV3::CalendarService.new
-  service.authorization = google_authorizer.get_credentials(google_id)
-  service.client_options.application_name = 'TomCalendar'.freeze
-
-  page_token = nil
-  begin
-    calendar_list = service.list_calendar_lists(page_token: page_token)
-    calendar_list.items.each do |item|
-      return item if item.primary?
-    end
-    if calendar_list.next_page_token != page_token
-      page_token = calendar_list.next_page_token
-    else
-      page_token = nil
-    end
-  end while !page_token.nil?
-  return nil
 end
 
 def calculate_time_passed_in_words(previous_time)
@@ -225,21 +222,35 @@ def generate_is_reminder_set_hash(current_google_id, events)
 
   threads = []
   event_ids.each do |event_id| threads << Thread.new {
-    reminders_params = {
-      table_name: 'EventReminders',
-      key_condition_expression: "#sid = :subscriber_id AND #eid = :event_id",
-      projection_expression: "event_id",
-      expression_attribute_names: { "#sid" => "subscriber_id", "#eid" => "event_id" },
-      expression_attribute_values: { ":subscriber_id" => current_google_id, ":event_id" => event_id }
-    }
-
     begin
+      last_evaluated_key ||= nil
+      db_attempts ||= 0
+      reminders_params = {
+        table_name: 'EventReminders',
+        key_condition_expression: "#sid = :subscriber_id AND #eid = :event_id",
+        projection_expression: "event_id",
+        expression_attribute_names: { "#sid" => "subscriber_id", "#eid" => "event_id" },
+        exclusive_start_key: last_evaluated_key,
+        expression_attribute_values: { ":subscriber_id" => current_google_id, ":event_id" => event_id }
+      }
+
       query_result = dynamodb.query(reminders_params)
       query_result.items.each do |reminder|
         is_reminder_set_hash[reminder['event_id']] = true
       end
+      if query_result.last_evaluated_key != last_evaluated_key
+        last_evaluated_key = query_result.last_evaluated_key
+      else
+        last_evaluated_key = nil
+      end
     rescue Exception => e
-      raise e
+      if db_attempts < 3
+        db_attempts = db_attempts + 1
+        sleep 1
+        retry
+      else
+        raise e
+      end
     end
   } end
   threads.each(&:join)
@@ -389,7 +400,9 @@ def create_google_calendar_events(events, google_calendar_id, google_id=nil)
     )
 
     begin
-      service.insert_event(google_calendar_id, google_event) # @remember: if api fail then retry
+      exponential_backoff do
+        service.insert_event(google_calendar_id, google_event)
+      end
     rescue Exception => e
       raise e
     end
@@ -419,23 +432,19 @@ def delete_google_calendar_events(events, google_calendar_id, google_id=nil)
   service.client_options.application_name = 'TomCalendar'.freeze
 
   events.each do |event|
-    result = service.list_events(google_calendar_id, private_extended_property: "tomcalendar_id=#{event['google_id']}-#{event['title']}")
-    result.items.each do |google_event|
-      service.delete_event(google_calendar_id, google_event.id)
+    exponential_backoff do
+      page_token = nil
+      begin
+        result = service.list_events(google_calendar_id, private_extended_property: "tomcalendar_id=#{event['google_id']}-#{event['title']}", page_token: page_token)
+        result.items.each do |google_event|
+          service.delete_event(google_calendar_id, google_event.id)
+        end
+        if result.next_page_token != page_token
+          page_token = result.next_page_token
+        else
+          page_token = nil
+        end
+      end while !page_token.nil?
     end
-  end
-end
-
-def exponential_backoff(&block)
-  retries = 0
-  begin
-    block.call
-  rescue StandardError => e
-    if retries <= 5
-      sleep( (2 ** retries) * 0.1 )
-      retries = retries + 1
-      retry
-    end
-    raise
   end
 end

@@ -12,10 +12,14 @@ if cache_result
   return StatusCodeStr::OK
 end
 
-session_id = JSON.parse(cookie_session_id)
-dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+exponential_backoff do
+  session_id = JSON.parse(cookie_session_id)
+  dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
-sessions_params = {
+  last_evaluated_key = nil
+  db_attempts = 0
+
+  sessions_params = {
     table_name: 'Sessions',
     key_condition_expression: "#gid = :google_id",
     expression_attribute_names: {
@@ -23,22 +27,35 @@ sessions_params = {
     },
     expression_attribute_values: {
         ":google_id" => session_id['google_id']
-    }
-}
+    },
+    exclusive_start_key: last_evaluated_key
+  }
 
-begin
-  query_result = dynamodb.query(sessions_params)
-  query_result.items.each do |session|
-    delete_params = {
-     table_name: 'Sessions',
-     key: { google_id: session['google_id'], device_id: session['device_id'] }
-    }
-    dynamodb.delete_item(delete_params) unless session['device_id'] == session_id['device_id']
+  begin
+    query_result = dynamodb.query(sessions_params)
+    query_result.items.each do |session|
+      delete_params = {
+       table_name: 'Sessions',
+       key: { google_id: session['google_id'], device_id: session['device_id'] }
+      }
+      dynamodb.delete_item(delete_params) unless session['device_id'] == session_id['device_id']
+    end
+    if query_result.last_evaluated_key != last_evaluated_key
+      last_evaluated_key = query_result.last_evaluated_key
+    else
+      last_evaluated_key = nil
+    end
+  rescue Aws::DynamoDB::Errors::ServiceError => error
+    if db_attempts < 3
+      db_attempts = db_attempts + 1
+      sleep 1
+      retry
+    else
+      return StatusCodeStr::BAD_REQUEST
+    end
   end
-rescue Aws::DynamoDB::Errors::ServiceError => error
-  return StatusCodeStr::BAD_REQUEST
 end
 
-TomMemcache::set("log_out_all_other_sessions#{cookie_session_id}", 'OK', 30)
+TomMemcache::set("log_out_all_other_sessions#{cookie_session_id}", 'OK', 5)
 
 return StatusCodeStr::OK

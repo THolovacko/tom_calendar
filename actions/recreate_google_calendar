@@ -21,29 +21,35 @@ google_calendar_service               = Google::Apis::CalendarV3::CalendarServic
 google_calendar_service.authorization = google_authorizer.get_credentials(google_id)
 google_calendar_service.client_options.application_name = 'TomCalendar'.freeze
 
-# get google calendar id
-begin
-  params = {
-    table_name: 'GoogleCalendarIDs',
-    key: { google_id: google_id }
-  }
+google_calendar_id = nil
+exponential_backoff do
+  # get google calendar id
+  begin
+    params = {
+      table_name: 'GoogleCalendarIDs',
+      key: { google_id: google_id }
+    }
 
-  result_item = dynamodb.get_item(params)&.item || {}
-  google_calendar_id = result_item['google_calendar_id']
-rescue Exception => e
-  return StatusCodeStr::error_message(e.message)
+    result_item = dynamodb.get_item(params)&.item || {}
+    google_calendar_id = result_item['google_calendar_id']
+  rescue Exception => e
+    return StatusCodeStr::error_message(e.message)
+  end
+
+  # delete google calendar if exists
+  begin
+    google_calendar_service.delete_calendar(google_calendar_id) if google_calendar_id
+  rescue Exception => e
+    # just continue thread
+  end
 end
-
-begin
-  google_calendar_service.delete_calendar(google_calendar_id) if google_calendar_id
-rescue Exception => e
-  # just continue thread
-end
-
 
 # create google calendar
 google_calendar = Google::Apis::CalendarV3::Calendar.new(summary: 'TomCalendar')
-google_calendar = google_calendar_service.insert_calendar(google_calendar)
+
+exponential_backoff do
+  google_calendar = google_calendar_service.insert_calendar(google_calendar)
+end
 
 params = {
   table_name: 'GoogleCalendarIDs',
@@ -52,13 +58,17 @@ params = {
 google_calendar_id = google_calendar.id
 
 begin
-  dynamodb.put_item(params)
+  last_evaluated_key ||= nil
+  db_attempts ||= 0
+  dynamodb.put_item(params) if last_evaluated_key.nil?
 
   reminders_params = {
     table_name: 'EventReminders',
     key_condition_expression: "#sid = :subscriber_id",
     expression_attribute_names: { "#sid" => "subscriber_id" },
-    expression_attribute_values: { ":subscriber_id" => google_id }
+    expression_attribute_values: { ":subscriber_id" => google_id },
+    limit: 500,
+    exclusive_start_key: last_evaluated_key
   }
 
   subscribed_events = []
@@ -72,14 +82,26 @@ begin
     result_event = dynamodb.get_item(event_params)&.item
     subscribed_events.push(result_event) if result_event
   end
+  if query_result.last_evaluated_key != last_evaluated_key
+    last_evaluated_key = query_result.last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
 
-  # @remember: should probably do for each n events
   #create_google_calendar_events(subscribed_events,google_calendar_id,session_id['google_id']) unless subscribed_events.empty?
   `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
 rescue Exception => e
-  google_calendar_service.delete_calendar(google_calendar_id)
-  return StatusCodeStr::error_message("Unable to add google calendar id (#{e.message})")
+  if db_attempts < 3
+    db_attempts = db_attempts + 1
+    sleep 1
+    retry
+  else
+    exponential_backoff do
+      google_calendar_service.delete_calendar(google_calendar_id)
+    end
+    return StatusCodeStr::error_message("Unable to add google calendar id (#{e.message})")
+  end
 end
 
-TomMemcache::set("recreate_gc#{cookie_session_id}", 'OK', 30)
+TomMemcache::set("recreate_gc#{cookie_session_id}", 'OK', 10)
 return StatusCodeStr::OK

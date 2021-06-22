@@ -80,7 +80,6 @@ unless google_calendar
 
   begin
     last_evaluated_key ||= nil
-    puts last_evaluated_key || 'nil'
     db_attempts ||= 0
     dynamodb.put_item(params) if last_evaluated_key.nil?
 
@@ -88,15 +87,13 @@ unless google_calendar
       table_name: 'EventReminders',
       key_condition_expression: "#sid = :subscriber_id",
       expression_attribute_names: { "#sid" => "subscriber_id" },
+      limit: 500,
+      exclusive_start_key: last_evaluated_key,
       expression_attribute_values: { ":subscriber_id" => google_id }
     }
 
     subscribed_events = []
-    query_result = dynamodb.query(reminders_params, exclusive_start_key: last_evaluated_key, limit: 5)
-    while query_result.next_page?
-      puts last_evaluated_key
-    end
-    puts query_result.items.size
+    query_result = dynamodb.query(reminders_params)
     query_result.items.each do |reminder|
       event_id = reminder['event_id'].split('-',2)
       event_params = {
@@ -112,8 +109,7 @@ unless google_calendar
       last_evaluated_key = nil
     end
 
-    # @remember: need to partition subscribed_events
-    `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
+    `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' '#{google_id}' >/dev/null &` unless subscribed_events.empty?
   rescue Exception => e
     if db_attempts < 3
       db_attempts = db_attempts + 1
