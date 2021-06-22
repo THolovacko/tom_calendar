@@ -11,7 +11,6 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (options then user profile)
-# @current:   handle paginated api requests, threshold limit exceptions, and failed api requests
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
