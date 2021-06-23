@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -112,7 +112,7 @@ class EventCard extends React.Component {
             marginTop: '8px',
             marginRight: '8px'
           },
-          onClick: function(ev) { handleEventCardOptionsClick(ev) } /* handler function defined in dashboard */
+          onClick: function(ev) { setCardOptionsMenuAnchor(ev); handleEventCardOptionsClick(ev) } /* handler function defined in dashboard */
         }, "more_vert")
       }), /*#__PURE__*/React.createElement(CardActionArea, null, /*#__PURE__*/React.createElement(CardMedia, {
         component: "img",
@@ -156,4 +156,34 @@ class EventCard extends React.Component {
         fontSize: "inherit"
       }, "notes"), this.props.description)));
   }
+}
+
+var current_option_container_id = '';
+var setCardOptionsMenuAnchor;
+function CardOptionsMenu() {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget);
+    current_option_container_id = event.currentTarget.id.replace('options_event_card_react_container_','');
+  };
+  setCardOptionsMenuAnchor = handleClick;
+  
+  const handleClose = event => {
+    setAnchorEl(null);
+    handleOptionClick(event);
+  };
+
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Menu, {
+    id: "card-options",
+    anchorEl: anchorEl,
+    keepMounted: true,
+    disableAutoFocusItem: true,
+    open: Boolean(anchorEl),
+    onClose: handleClose
+  }, /*#__PURE__*/React.createElement(MenuItem, {
+    onClick: handleClose
+  }, "Copy link"), /*#__PURE__*/React.createElement(MenuItem, {
+    onClick: handleClose
+  }, "Report")));
 }
