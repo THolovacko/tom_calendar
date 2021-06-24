@@ -2560,6 +2560,10 @@ print %(
       height: #{4 * VH_FACTOR}vh;
       font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 4 * FONT_FACTOR}rem;
     }
+    .MuiMenuItem-root:hover {
+      color: yellow;
+      background-color: green;
+    }
   </style>
 </html>
 ).freeze
