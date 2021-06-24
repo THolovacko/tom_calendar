@@ -214,6 +214,7 @@ print %(
       <div id="event_divider"></div>
     </div>
     <div class="card_options_react_container" id="card_options_react_container"></div>
+    <div id="snackbar_notification_react_container"></div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
     <div id="spinner_react_container"></div>
   </body>
@@ -328,6 +329,7 @@ print %(
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(CardOptionsMenu), document.getElementById("card_options_react_container"));
+      ReactDOM.render(React.createElement(SimpleSnackbar), document.getElementById("snackbar_notification_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
         <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
@@ -1594,13 +1596,23 @@ print %(
       }
     }
     function handleOptionClick(ev) {
-      // @current: finishing this
-      var option_txt = ev.currentTarget.innerText;
+      var container_id  = current_option_container_id;
+      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
+      var event_title   = container_id.substring(container_id.lastIndexOf("-") + 1);
 
-      if (option_txt == 'Copy link') {
-        console.log('copyyy ' + current_option_container_id);
+      var option_txt = ev.currentTarget.innerText;
+      if (option_txt.trim() == "Copy link") {
+        navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${container_id}`));
+        snackbar_notification_message = `Link copied for ${event_title}`;
+        snackbarNotify();
       } else if (option_txt == 'Report') {
-        console.log('reporting ' + current_option_container_id);
+        snackbar_notification_message = `${event_title} has been reported`;
+        snackbarNotify();
+
+        var http = new XMLHttpRequest();
+        http.open('POST', 'https://tomcalendar.com/report_event', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.send(container_id);
       }
     }
   </script>
@@ -2563,6 +2575,12 @@ print %(
     .MuiMenuItem-root:hover {
       color: yellow;
       background-color: green;
+    }
+    .MuiSnackbarContent-message {
+      font-size: #{3.75 * FONT_FACTOR}rem;
+    }
+    .MuiSnackbar-root {
+      pointer-events:none;
     }
   </style>
 </html>

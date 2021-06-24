@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem, Snackbar, CloseIcon } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -186,4 +186,34 @@ function CardOptionsMenu() {
   }, "Copy link"), /*#__PURE__*/React.createElement(MenuItem, {
     onClick: handleClose
   }, "Report")));
+}
+
+var snackbar_notification_message = '';
+var snackbarNotify;
+function SimpleSnackbar() {
+  const [open, setOpen] = React.useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+  snackbarNotify = handleClick;
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      setOpen(false);
+      return;
+    }
+    setOpen(false);
+  };
+
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Snackbar, {
+    anchorOrigin: {
+      vertical: 'bottom',
+      horizontal: 'center'
+    },
+    open: open,
+    autoHideDuration: 1500,
+    onClose: handleClose,
+    message: snackbar_notification_message
+  }));
 }

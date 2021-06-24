@@ -9,6 +9,7 @@ require 'jwt'
 require 'aws-sdk-s3'
 require 'time'
 require 'tzinfo'
+require 'uri'
 
 def exponential_backoff(&block)
   retries = 0

@@ -1,0 +1,27 @@
+#! /usr/bin/ruby
+
+event_id   = TomEnv::get('QUERY_STRING')
+event_id   = CGI.unescape(event_id)
+event_id   = event_id.split('-', 2)
+creator_id = event_id[0].sub('e=','')
+title      = event_id[1]
+
+return %(Content-type: text/html
+
+
+<html lang="en">
+  <title>#{title}</title>
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
+  </head>
+  <h1>creator:#{creator_id}title:#{title}</h1>
+  <style type="text/css">
+    html {
+      text-align: center;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.75vw;
+    }
+  </style>
+</html>
+)

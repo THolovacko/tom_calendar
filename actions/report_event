@@ -1,0 +1,23 @@
+#! /usr/bin/ruby
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+session_id        = JSON.parse(cookie_session_id)
+reported_event_id = TomEnv::get('MESSAGE')
+cache_result      = TomMemcache::get("report_event#{reported_event_id}").freeze
+if cache_result
+  return StatusCodeStr::OK
+end
+
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  dynamodb.put_item({ table_name: 'ReportedEvents', item: {event_id: reported_event_id, reported_by: session_id['google_id'], report_time: Time.now.to_s} })
+end
+
+TomMemcache::set("report_event#{reported_event_id}", 'OK', 900).freeze
+return StatusCodeStr::OK
