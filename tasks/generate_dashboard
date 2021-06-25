@@ -295,6 +295,7 @@ print %(
       'sq_wheel'           : -1,
       'sq_year_wheel'      : -1
     }
+    var event_url_ids = {};
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     var user_selected_time_zone = user_time_zone;
     var is_general_event = false;
@@ -1534,6 +1535,7 @@ print %(
           }
         }
 
+        event_url_ids[`${event_cards[i]['google_id']}-${event_cards[i]['title']}`] = event_cards[i]['url_id'];
         var event_card_params = { container_id: event_card_container.id, user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
         ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
@@ -1599,10 +1601,11 @@ print %(
       var container_id  = current_option_container_id;
       var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
       var event_title   = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var event_url_id  = event_url_ids[`${event_user_id}-${event_title}`];
 
       var option_txt = ev.currentTarget.innerText;
       if (option_txt.trim() == "Copy link") {
-        navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${container_id}`));
+        navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${event_url_id}`));
         snackbar_notification_message = `Link copied for ${event_title}`;
         snackbarNotify();
       } else if (option_txt == 'Report') {

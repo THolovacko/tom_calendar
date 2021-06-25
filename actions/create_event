@@ -76,11 +76,14 @@ exponential_backoff do
 
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
+  event_url_id = Digest::SHA256.hexdigest("#{event['google_id']}-#{event['title']}")[0..( (rand * 10).to_i + 12 )]
+  event['url_id'] = event_url_id
 
   dynamodb.transact_write_items({
     transact_items: [
       { put: { table_name: 'Events', item: event } },
-      { put: { table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} } }
+      { put: { table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated: Time.now.to_s, subscriber_id: event['google_id']} } },
+      { put: { table_name: 'EventURLIDs', item: {url_id: event_url_id, event_id: "#{event['google_id']}-#{event['title']}"} } }
     ]
   })
 

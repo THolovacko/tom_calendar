@@ -1,21 +1,33 @@
 #! /usr/bin/ruby
 
-event_id   = TomEnv::get('QUERY_STRING')
-event_id   = CGI.unescape(event_id)
-event_id   = event_id.split('-', 2)
-creator_id = event_id[0].sub('e=','')
-title      = event_id[1]
+# @current: more testing for this
 
-return %(Content-type: text/html
+url_id = TomEnv::get('QUERY_STRING')
+url_id = url_id.split('=')[1]
+
+event = nil
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  result_item = dynamodb.get_item({ table_name: 'EventURLIDs', key: {url_id: url_id} })&.item
+  return StatusCodeStr::bad_request_error_message('event has no url') unless result_item
+  event_id = result_item['event_id']
+  event_id = event_id.split('-',2)
+  creator_id = event_id[0]
+  title = event_id[1]
+  event = dynamodb.get_item({ table_name: 'Events', key: {google_id: creator_id, title: title} })&.item
+end
+
+return %(content-type: text/html
 
 
 <html lang="en">
-  <title>#{title}</title>
+  <title>#{event['title']}</title>
   <head>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
-  <h1>creator:#{creator_id}title:#{title}</h1>
+  <p>#{event.to_s}</p>
   <style type="text/css">
     html {
       text-align: center;
