@@ -19,8 +19,8 @@ result = nil
 exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
   promoted_event_ids = dynamodb.scan({ table_name: 'PromotedEventIDs' })&.items
-  unless promoted_event_ids
-    return "Content-type: application/json\n\n#{[].to_json}"
+  if promoted_event_ids.empty?
+    return StatusCodeStr::json([])
   end
   promoted_event_ids.sort_by! { |promoted_event_key| promoted_event_key['id'].to_i }
   promoted_event_keys = promoted_event_ids.map { |item| { google_id: item['google_id'], title: item['title'] } }

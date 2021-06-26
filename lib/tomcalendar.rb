@@ -42,6 +42,10 @@ module StatusCodeStr
   def self.plain_text(message)
     "Content-type: text/plain\n\n#{message}".freeze
   end
+
+  def self.json(message)
+    "Content-type: application/json\n\n#{message.is_a?(String) ? message : message.to_json}".freeze
+  end
 end
 
 GOOGLE_PERMISSION_SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/calendar'].freeze

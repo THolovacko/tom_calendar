@@ -1,20 +1,25 @@
 #! /usr/bin/ruby
 
-# @current: more testing for this
-
 url_id = TomEnv::get('QUERY_STRING')
 url_id = url_id.split('=')[1]
 
 event = nil
-exponential_backoff do
-  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-  result_item = dynamodb.get_item({ table_name: 'EventURLIDs', key: {url_id: url_id} })&.item
-  return StatusCodeStr::bad_request_error_message('event has no url') unless result_item
-  event_id = result_item['event_id']
-  event_id = event_id.split('-',2)
-  creator_id = event_id[0]
-  title = event_id[1]
-  event = dynamodb.get_item({ table_name: 'Events', key: {google_id: creator_id, title: title} })&.item
+cache_result = TomMemcache::get("url_id#{url_id}").freeze
+if cache_result
+  event = JSON.parse(cache_result)
+else
+  exponential_backoff do
+    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+    result_item = dynamodb.get_item({ table_name: 'EventURLIDs', key: {url_id: url_id} })&.item
+    return StatusCodeStr::bad_request_error_message('event has no url') unless result_item
+    event_id = result_item['event_id']
+    event_id = event_id.split('-',2)
+    creator_id = event_id[0]
+    title = event_id[1]
+    event = dynamodb.get_item({ table_name: 'Events', key: {google_id: creator_id, title: title} })&.item
+  end
+
+  TomMemcache::set("url_id#{url_id}", event.to_json, 30).freeze
 end
 
 return %(content-type: text/html
