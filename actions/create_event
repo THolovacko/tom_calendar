@@ -50,7 +50,6 @@ exponential_backoff do
     return StatusCodeStr::bad_request_error_message('invalid title')
   end
 
-  upload_url = nil
   if event['image_id']
     aws_client = Aws::S3::Client.new(
       region:               ENV['AWS_REGION'],
@@ -63,6 +62,8 @@ exponential_backoff do
     tmp_upload_url = obj.presigned_url(:put)
   else
     tmp_upload_url = ''
+    event['image_id'] = "default_#{(rand() * 10).to_i % 3}"
+    event['image_extension'] = "png"
   end
 
   profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
@@ -76,7 +77,12 @@ exponential_backoff do
 
   result_item = dynamodb.get_item(params)&.item || {}
   google_calendar_id = result_item['google_calendar_id']
-  event_url_id = Digest::SHA256.hexdigest("#{event['google_id']}-#{event['title']}")[0..( (rand * 10).to_i + 12 )]
+  event_url_id_lower = Digest::SHA256.hexdigest("#{event['google_id']}-#{event['title']}")[0..( (rand * 10).to_i + 12 )]
+  event_url_id = ''
+  event_url_id_lower.each_char do |c|
+    c.upcase! if c.match?(/[[:alpha:]]/) && ((rand() * 10) > 5)
+    event_url_id << c
+  end
   event['url_id'] = event_url_id
 
   dynamodb.transact_write_items({
