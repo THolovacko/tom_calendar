@@ -29,21 +29,31 @@ return %(content-type: text/html
   <title>#{event['title']}</title>
   <head>
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
   <body>
     <div id="event_image" align="center">
-      <div id="header_img">
-        <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:30vh;max-width:90vw;visibility:hidden;">
-      </div>
+    </div>
+    <div id="header_img">
+      <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
+    </div>
+    <p style="font-size:5rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
+    <div id="event_date">
+      <i style="display:inline-block;" class="material-icons md-36" id="date_type_icon">date_range</i>
+      Testtttttttttttttttttttttt
     </div>
   </body>
   <style type="text/css">
     html {
       text-align: center;
       font-family: 'Roboto', sans-serif;
-      font-size: 1.75vw;
+      font-size: 16px;
+    }
+    body {
+      background-color: #FEFFFE;
+      overflow: auto;
     }
     #event_image::before {
       background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
@@ -57,6 +67,9 @@ return %(content-type: text/html
       width: 100vw;
       height: 32vh;
     }
+    #event_image {
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+    }
     #header_img {
       background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
       background-position: center;
@@ -64,9 +77,23 @@ return %(content-type: text/html
       background-size: cover;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
       display: inline-block;
-      margin-top: -31vh;
+      margin-top: -30vh;
       z-index: 3;
       position: relative;
+    }
+    #event_date {
+      display: flex;
+      text-align: left;
+      font-size: 3rem;
+      overflow: auto;
+      margin-left: 5vw;
+    }
+    #event_date p {
+      width: 4%;
+    }
+    .material-icons {
+      font-size: 3rem;
+      margin-right: 3vw;
     }
   </style>
 </html>
