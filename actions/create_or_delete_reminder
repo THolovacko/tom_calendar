@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 
 # @remember: bug if out of sync dashboard on another device sets a reminder that already is set (duplicate events)
+# @remember: bug setting and deleting reminders
 
 cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
