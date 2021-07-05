@@ -33,7 +33,7 @@ return %(content-type: text/html
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
-  <body>
+  <body onload="init();">
     <div id="event_image" align="center">
     </div>
     <div id="header_img">
@@ -42,9 +42,63 @@ return %(content-type: text/html
     <p style="font-size:5rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
     <div id="event_date">
       <i style="display:inline-block;" class="material-icons md-36" id="date_type_icon">date_range</i>
-      Testtttttttttttttttttttttt
+      <span id="event_date_txt">TBD</span>
+    </div>
+    <div id="event_repeat">
+      <i style="display:inline-block;" class="material-icons md-36" id="date_type_icon">refresh</i>
+      <span id="event_repeat_txt">Does not repeat</span>
     </div>
   </body>
+  <script>
+    const CURRENT_EVENT = #{event.to_json};
+
+    function init() {
+      update_event_txt();
+    }
+    function parseTimeZone(target_time_zone) {
+      if (!target_time_zone) {
+        return '';
+      }
+      var time_zone_parts = target_time_zone.split('/');
+      if (time_zone_parts.length > 1) {
+        var time_zone_str = time_zone_parts[time_zone_parts.length - 1].replace(/_/g, ' ');
+        if (time_zone_parts.length > 2) {
+          time_zone_str += `, ${time_zone_parts[time_zone_parts.length - 2].replace(/_/g, ' ')}`;
+        }
+      }
+      else {
+        var time_zone_str = time_zone_parts[0].replace(/_/g, ' ');
+      }
+      return time_zone_str;
+    }
+    function update_event_txt() {
+      var event_date_txt = document.getElementById('event_date_txt');
+      var time_zone = `${parseTimeZone(CURRENT_EVENT['time_zone'])} Time`;
+
+      if (CURRENT_EVENT['is_general_event']) {
+        if (CURRENT_EVENT['date_type']) {
+          event_date_txt.innerText = CURRENT_EVENT["date_type"];
+        } else {
+          event_date_txt.innerText = 'TBD';
+        }
+      } else if (!CURRENT_EVENT['start_date']) {
+        event_date_txt.innerText = 'TBD';
+      }
+      else {
+        var event_date_time = CURRENT_EVENT["start_date"];
+
+        if (CURRENT_EVENT['end_date'] && (CURRENT_EVENT['end_date'] != CURRENT_EVENT['start_date'])) {
+          event_date_time += ` - ${CURRENT_EVENT['end_date']}`;
+        }
+        if (CURRENT_EVENT['start_time'] && CURRENT_EVENT['end_time']) {
+          event_date_time += `\n\n ${CURRENT_EVENT['start_time'].toLowerCase().replace(' ','')} - ${CURRENT_EVENT['end_time'].toLowerCase().replace(' ','')}`;
+          event_date_time += `\n\n ${time_zone}`;
+        }
+
+        event_date_txt.innerText = event_date_time;
+      }
+    }
+  </script>
   <style type="text/css">
     html {
       text-align: center;
@@ -81,18 +135,20 @@ return %(content-type: text/html
       z-index: 3;
       position: relative;
     }
-    #event_date {
-      display: flex;
+    #event_date, #event_repeat {
+      display: table;
       text-align: left;
-      font-size: 3rem;
-      overflow: auto;
+      font-size: 2.5rem;
       margin-left: 5vw;
+      vertical-align: middle;
     }
-    #event_date p {
-      width: 4%;
+    #event_date_txt, #event_repeat_txt {
+      line-height: 0.7;
+      display: table-cell;
+      vertical-align: middle;
     }
     .material-icons {
-      font-size: 3rem;
+      font-size: 3.25rem;
       margin-right: 3vw;
     }
   </style>

@@ -61,7 +61,7 @@ print %(
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
-        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:blue;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Recreate Google Calendar</div>
+        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:blue;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
@@ -690,12 +690,12 @@ print %(
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if (http.status == 200) {
-          btn.innerText = "Google Calendar Recreated";
+          btn.innerText = "Google Calendar sync complete";
           btn.style.color = "black";
         } else {
           // @remember: handle failed recreate
           can_google_calendar_sync = true;
-          btn.innerText = "Recreate Google Calendar";
+          btn.innerText = "Resync Google Calendar";
           btn.style.color = "blue";
         }
       };
