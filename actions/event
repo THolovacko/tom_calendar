@@ -22,7 +22,7 @@ else
   TomMemcache::set("url_id#{url_id}", event.to_json, 30).freeze
 end
 
-return %(content-type: text/html
+return %(Content-type: text/html
 
 
 <html lang="en">
