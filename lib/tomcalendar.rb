@@ -272,10 +272,6 @@ def create_google_calendar_events(events, google_calendar_id, google_id=nil)
   # @remember: should limit image file size
   # @remember: should allow event to be from 11pm - 12am (maybe auto set to 11:59)
 
-  #events = JSON.parse(ARGV[0])
-  #google_calendar_id = ARGV[1]
-  #google_id = ARGV[2] || events[0]['google_id']
-
   if !google_id || (google_id == '') || (google_id == ' ')
     google_id = events[0]['google_id']
   end

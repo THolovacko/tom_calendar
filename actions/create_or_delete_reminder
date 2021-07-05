@@ -1,8 +1,5 @@
 #! /usr/bin/ruby
 
-# @remember: bug if out of sync dashboard on another device sets a reminder that already is set (duplicate events)
-# @remember: bug setting and deleting reminders
-
 cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
@@ -20,10 +17,13 @@ exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
   event = dynamodb.get_item({ table_name: 'Events', key: {google_id: event_user_id, title: event_title} })&.item
+  event_reminder = dynamodb.get_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })&.item
   if is_creating
+    return StatusCodeStr::OK if event_reminder
     dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event_user_id}-#{event_title}", last_updated: Time.now.to_s, subscriber_id: session_id['google_id']} })
     create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
   else
+    return StatusCodeStr::OK unless event_reminder
     dynamodb.delete_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })
     delete_google_calendar_events([event],google_calendar_id,session_id['google_id'])
   end
