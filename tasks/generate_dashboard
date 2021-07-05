@@ -1562,17 +1562,21 @@ print %(
     }
     function handleEventCardAvatarClick(ev) {
       var container_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
-      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
     }
     function handleEventCardOptionsClick(ev) {
       var container_id = ev.target.id.replace('options_event_card_react_container_','');
-      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
-      var event_title = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
     }
     function handleEventCardSetReminderClick(ev) {
+      // @remember: need to confirm google id will never use '-'
+      var title_index;
       var container_id  = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
-      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
-      var event_title   = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
       var button_text   = document.getElementById(ev.target.parentNode.id).getElementsByClassName('MuiButton-label')[0];
       var is_creating   = button_text.textContent == "Set reminder";
 
@@ -1599,8 +1603,9 @@ print %(
     }
     function handleOptionClick(ev) {
       var container_id  = current_option_container_id;
-      var event_user_id = container_id.substring(0,container_id.lastIndexOf("-"));
-      var event_title   = container_id.substring(container_id.lastIndexOf("-") + 1);
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
       var event_url_id  = event_url_ids[`${event_user_id}-${event_title}`];
 
       var option_txt = ev.currentTarget.innerText;
