@@ -23,6 +23,9 @@ query_str = ENV['QUERY_STRING']
 code      = query_str.match(/code=([^&]*)/)&.to_s&.sub('code=','')
 code      = nil if (code == '') || (code == ' ')
 
+login_redirect = query_str.match(/eid=([^&]*)/)&.to_s&.sub('eid=','')
+login_redrect  = nil if (login_redrect == '') || (login_redrect == ' ')
+
 user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 VH_FACTOR   = IS_DESKTOP ? 1.5 : 1
@@ -60,6 +63,8 @@ print %(Content-type: text/html
   <script>
     var authorization_url  = "https://tomcalendar.com";  // default value
     var authorization_code = #{code ? "\"#{code}\"" : 'null'};
+    var login_redirect_id  = "#{login_redirect || ''}";
+    var on_sign_in_window_location = "https://tomcalendar.com/dashboard";
 
     function init() {
       if ( localStorage.getItem("session_id") ) {
@@ -68,6 +73,23 @@ print %(Content-type: text/html
         expiration_date.setTime(today_time + (31 * 86400000));
         document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
         window.location = "https://tomcalendar.com/dashboard";
+      }
+
+      // save red if query param exists
+      if (login_redirect_id) {
+        localStorage.setItem("login_redirect", `https://tomcalendar.com/event?e=${login_redirect_id}`);
+        localStorage.setItem("login_redirect_timestamp", `${new Date().getTime() / 1000}`);
+      }
+
+      if ( localStorage.getItem("login_redirect") ) {
+        var current_timestamp = new Date().getTime() / 1000;
+        var redirect_timestamp = parseInt(localStorage.getItem("login_redirect_timestamp"));
+        if ( (current_timestamp - redirect_timestamp) < 5 ) {
+          on_sign_in_window_location = localStorage.getItem("login_redirect");
+        } else {
+          localStorage.removeItem('login_redirect');
+          localStorage.removeItem('login_redirect_timestamp');
+        }
       }
 
       gapi.signin2.render('my-signin2', {
@@ -126,7 +148,7 @@ print %(Content-type: text/html
           expiration_date.setTime(today_time + (31 * 86400000));
           localStorage.setItem("session_id", result);
           document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
-          window.location = "https://tomcalendar.com/dashboard";
+          window.location = on_sign_in_window_location;
         }
         else {
           // @remember: handle error

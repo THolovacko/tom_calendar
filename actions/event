@@ -22,6 +22,23 @@ else
   TomMemcache::set("url_id#{url_id}", event.to_json, 30).freeze
 end
 
+is_logged_in = false
+session_id = get_session_id_from_cookies()
+
+if session_id
+  is_logged_in = true
+  current_google_id = session_id['google_id']
+  is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,[event])
+  if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
+    event['is_reminder_set'] = true
+  else
+    event['is_reminder_set'] = false
+  end
+end
+
+user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
+IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
+
 return %(Content-type: text/html
 
 
@@ -40,17 +57,36 @@ return %(Content-type: text/html
       <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
     </div>
     <p style="font-size:5rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
-    <div id="event_date">
-      <i style="display:inline-block;" class="material-icons md-36" id="date_type_icon">date_range</i>
-      <span id="event_date_txt">TBD</span>
+    <div class="event_date_attribute" id="event_days">
+      <i style="display:inline-block;" class="material-icons md-36">date_range</i>
+      <span id="event_days_txt" class="event_date_attribute_txt">TBD</span>
     </div>
-    <div id="event_repeat">
-      <i style="display:inline-block;" class="material-icons md-36" id="date_type_icon">refresh</i>
-      <span id="event_repeat_txt">Does not repeat</span>
+    <div class="event_date_attribute" id="event_times">
+      <i style="display:inline-block;visibility:hidden;" class="material-icons md-36">date_range</i>
+      <span class="event_date_attribute_txt" id="event_times_txt">TBD</span>
     </div>
+    <div class="event_date_attribute" id="event_time_zone">
+      <i style="display:inline-block;visibility:hidden;" class="material-icons md-36">public</i>
+      <span class="event_date_attribute_txt" id="event_time_zone_txt">TBD</span>
+    </div>
+    <div class="event_date_attribute" id="event_repeat">
+      <i style="display:inline-block;" class="material-icons md-36">refresh</i>
+      <span class="event_date_attribute_txt" id="event_repeat_txt">Does not repeat</span>
+    </div>
+    <div class="event_date_attribute" id="event_location">
+      <i style="display:inline-block;" class="material-icons md-36">location_on</i>
+      <span class="event_date_attribute_txt" id="event_location_txt">none</span>
+    </div>
+    <div class="event_date_attribute" id="event_description">
+      <i style="display:inline-block;" class="material-icons md-36">notes</i>
+      <span class="event_date_attribute_txt" id="event_description_txt">none</span>
+    </div>
+    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">SET REMINDER</button>
   </body>
   <script>
     const CURRENT_EVENT = #{event.to_json};
+    const IS_LOGGED_IN  = #{is_logged_in};
+    var is_currently_syncing_event = false;
 
     function init() {
       update_event_txt();
@@ -72,17 +108,21 @@ return %(Content-type: text/html
       return time_zone_str;
     }
     function update_event_txt() {
-      var event_date_txt = document.getElementById('event_date_txt');
+      var event_days_txt      = document.getElementById('event_days_txt');
+      var event_times_txt     = document.getElementById('event_times_txt');
+      var event_time_zone_txt = document.getElementById('event_time_zone_txt');
+      var event_repeat_txt    = document.getElementById('event_repeat_txt');
       var time_zone = `${parseTimeZone(CURRENT_EVENT['time_zone'])} Time`;
 
+      document.getElementById('event_days').style.display = "table";
       if (CURRENT_EVENT['is_general_event']) {
         if (CURRENT_EVENT['date_type']) {
-          event_date_txt.innerText = CURRENT_EVENT["date_type"];
+          event_days_txt.innerText = CURRENT_EVENT["date_type"];
         } else {
-          event_date_txt.innerText = 'TBD';
+          event_days_txt.innerText = 'TBD';
         }
       } else if (!CURRENT_EVENT['start_date']) {
-        event_date_txt.innerText = 'TBD';
+        event_days_txt.innerText = 'TBD';
       }
       else {
         var event_date_time = CURRENT_EVENT["start_date"];
@@ -90,12 +130,72 @@ return %(Content-type: text/html
         if (CURRENT_EVENT['end_date'] && (CURRENT_EVENT['end_date'] != CURRENT_EVENT['start_date'])) {
           event_date_time += ` - ${CURRENT_EVENT['end_date']}`;
         }
+        event_days_txt.innerText = event_date_time;
+
         if (CURRENT_EVENT['start_time'] && CURRENT_EVENT['end_time']) {
-          event_date_time += `\n\n ${CURRENT_EVENT['start_time'].toLowerCase().replace(' ','')} - ${CURRENT_EVENT['end_time'].toLowerCase().replace(' ','')}`;
-          event_date_time += `\n\n ${time_zone}`;
+          document.getElementById('event_times').style.display     = "table";
+          document.getElementById('event_time_zone').style.display = "table";
+          event_times_txt.innerText = `${CURRENT_EVENT['start_time'].toLowerCase().replace(' ','')} - ${CURRENT_EVENT['end_time'].toLowerCase().replace(' ','')}`;
+          event_time_zone_txt.innerText = `${time_zone}`;
         }
 
-        event_date_txt.innerText = event_date_time;
+        if ( CURRENT_EVENT['repeats'] && (CURRENT_EVENT['repeats'] != 'Does not repeat') ) {
+          document.getElementById('event_repeat').style.display = "table";
+
+          var repeat_str = CURRENT_EVENT['repeats'];
+          if (CURRENT_EVENT['repeats_on']) {
+            repeat_str += ` ${CURRENT_EVENT['repeats_on'].charAt(0).toLowerCase() + CURRENT_EVENT['repeats_on'].slice(1)}`;
+          }
+          event_repeat_txt.innerText = repeat_str;
+        }
+
+        if (CURRENT_EVENT['location']) {
+          document.getElementById('event_location').style.display = "table";
+          event_location_txt.innerText = CURRENT_EVENT['location'];
+        }
+
+        if (CURRENT_EVENT['description']) {
+          document.getElementById('event_description').style.display = "table";
+          event_description_txt.innerText = CURRENT_EVENT['description'];
+        }
+
+        if (IS_LOGGED_IN) {
+          if (CURRENT_EVENT['is_reminder_set']) {
+            document.getElementById('set_reminder_btn').innerText = 'REMINDER ON';
+          }
+        }
+      }
+    }
+    function onSetReminder() {
+      var button_text   = document.getElementById('set_reminder_btn');
+      var event_user_id = CURRENT_EVENT['google_id'];
+      var event_title   = CURRENT_EVENT['title'];
+      var is_creating   = button_text.innerText == "SET REMINDER";
+
+      if (IS_LOGGED_IN) {
+        if (!is_currently_syncing_event) {
+          is_currently_syncing_event = true;
+          var http = new XMLHttpRequest();
+          http.open('POST', 'https://tomcalendar.com/create_or_delete_reminder', true);
+          http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+          http.onload = function() {
+            if(http.status == 200) {
+              // @remember: maybe have pending state then set state to finished here
+              // @remember: should allow users to set reminder on and off as quick as they want (maybe queue?)
+              is_currently_syncing_event = false;
+            }
+          };
+          http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
+
+          if (is_creating) {
+            button_text.innerText = "REMINDER ON";
+          } else {
+            button_text.innerText = "SET REMINDER";
+          }
+        }
+      } else {
+        // @current: get redirect back to work
+        window.location = "https://tomcalendar.com?eid=#{url_id}";
       }
     }
   </script>
@@ -135,21 +235,52 @@ return %(Content-type: text/html
       z-index: 3;
       position: relative;
     }
-    #event_date, #event_repeat {
-      display: table;
+    .event_date_attribute {
+      display: none;
       text-align: left;
       font-size: 2.5rem;
       margin-left: 5vw;
-      vertical-align: middle;
+      line-height: 1.5;
+      margin-bottom: 1vh;
     }
-    #event_date_txt, #event_repeat_txt {
-      line-height: 0.7;
+    .event_date_attribute_txt {
       display: table-cell;
       vertical-align: middle;
     }
     .material-icons {
-      font-size: 3.25rem;
+      margin-top: 4px;
+      font-size: 3rem;
       margin-right: 3vw;
+      vertical-align: middle;
+    }
+    .event_attribute_space {
+      width: 100%;
+      display: inline-block;
+      height: 1vh;
+    }
+    #set_reminder_btn {
+      display: inline-block;
+      width: 90vw;
+      height: 5vh;
+      font-size: 2.5rem;
+      outline: none;
+      border-style: solid;
+      border-color: blue;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      text-align: center;
+      margin-top: 2vh;
+      margin-bottom: 4vh;
+      color: #0F82FF;
+    }
+    #set_reminder_btn:hover {
+      background-color: #f1fff1;
+    }
+    #set_reminder_btn:active {
+      background-color: #e5ffe5;
     }
   </style>
 </html>
