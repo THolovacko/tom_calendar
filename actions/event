@@ -36,7 +36,7 @@ if session_id
   end
 end
 
-user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
+user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 
 return %(Content-type: text/html
@@ -81,7 +81,7 @@ return %(Content-type: text/html
       <i style="display:inline-block;" class="material-icons md-36">notes</i>
       <span class="event_date_attribute_txt" id="event_description_txt">none</span>
     </div>
-    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">SET REMINDER</button>
+    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">#{event['is_reminder_set'] ? 'REMINDER SET' : 'SET REMINDER'}</button>
   </body>
   <script>
     const CURRENT_EVENT = #{event.to_json};
@@ -158,19 +158,13 @@ return %(Content-type: text/html
           document.getElementById('event_description').style.display = "table";
           event_description_txt.innerText = CURRENT_EVENT['description'];
         }
-
-        if (IS_LOGGED_IN) {
-          if (CURRENT_EVENT['is_reminder_set']) {
-            document.getElementById('set_reminder_btn').innerText = 'REMINDER ON';
-          }
-        }
       }
     }
     function onSetReminder() {
       var button_text   = document.getElementById('set_reminder_btn');
       var event_user_id = CURRENT_EVENT['google_id'];
       var event_title   = CURRENT_EVENT['title'];
-      var is_creating   = button_text.innerText == "SET REMINDER";
+      var is_creating   = button_text.textContent == "SET REMINDER";
 
       if (IS_LOGGED_IN) {
         if (!is_currently_syncing_event) {
@@ -188,9 +182,9 @@ return %(Content-type: text/html
           http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
 
           if (is_creating) {
-            button_text.innerText = "REMINDER ON";
+            button_text.textContent = "REMINDER ON";
           } else {
-            button_text.innerText = "SET REMINDER";
+            button_text.textContent = "SET REMINDER";
           }
         }
       } else {
@@ -203,7 +197,7 @@ return %(Content-type: text/html
     html {
       text-align: center;
       font-family: 'Roboto', sans-serif;
-      font-size: 16px;
+      font-size: #{IS_DESKTOP ? '11' : '16'}px;
     }
     body {
       background-color: #FEFFFE;
@@ -260,8 +254,8 @@ return %(Content-type: text/html
     }
     #set_reminder_btn {
       display: inline-block;
-      width: 90vw;
-      height: 5vh;
+      width: 80vw;
+      height: 6vh;
       font-size: 2.5rem;
       outline: none;
       border-style: solid;
