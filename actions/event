@@ -81,7 +81,7 @@ return %(Content-type: text/html
       <i style="display:inline-block;" class="material-icons md-36">notes</i>
       <span class="event_date_attribute_txt" id="event_description_txt">none</span>
     </div>
-    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">#{event['is_reminder_set'] ? 'REMINDER SET' : 'SET REMINDER'}</button>
+    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">#{event['is_reminder_set'] ? 'REMINDER ON' : 'SET REMINDER'}</button>
   </body>
   <script>
     const CURRENT_EVENT = #{event.to_json};
