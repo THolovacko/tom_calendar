@@ -11,7 +11,6 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile)
-# @current:     edit and delete don't work on mobile
 # @current:     repeat for edit events is messed up
 
 dashboard_type = ARGV[0]
@@ -1634,7 +1633,7 @@ print %(
         navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${event_url_id}`));
         snackbar_notification_message = `Link copied for ${event_title}`;
         snackbarNotify();
-      } else if (option_txt == 'Edit') {
+      } else if (option_txt.trim() == 'Edit') {
         onCreate();
         document.getElementById("create_form_title_input").style.pointerEvents = 'none';
         is_event_updating = true;
@@ -1661,8 +1660,8 @@ print %(
         }
 
         eventDescriptionTxtResize('event_description_txt');
-      } else if (option_txt == 'Delete') {
-      } else if (option_txt == 'Report') {
+      } else if (option_txt.trim() == 'Delete') {
+      } else if (option_txt.trim() == 'Report') {
         snackbar_notification_message = `${event_title} has been reported`;
         snackbarNotify();
 
