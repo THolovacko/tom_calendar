@@ -182,8 +182,16 @@ function CardOptionsMenu() {
     open: Boolean(anchorEl),
     onClose: handleClose
   }, /*#__PURE__*/React.createElement(MenuItem, {
+    className: "copy_link_option_txt",
     onClick: handleClose
   }, "Copy link"), /*#__PURE__*/React.createElement(MenuItem, {
+    className: "edit_option_txt",
+    onClick: handleClose
+  }, "Edit"), /*#__PURE__*/React.createElement(MenuItem, {
+    className: "delete_option_txt",
+    onClick: handleClose
+  }, "Delete"), /*#__PURE__*/React.createElement(MenuItem, {
+    className: "report_option_txt",
     onClick: handleClose
   }, "Report")));
 }

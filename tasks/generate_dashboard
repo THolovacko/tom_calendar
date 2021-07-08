@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: event card actions (options then user profile)
+# @current: event card actions (first edit and delete then user profile)
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -303,6 +303,7 @@ print %(
     const event_card_img_max_height = '#{40 * VH_FACTOR}vh';
     const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
     var is_currently_syncing_event = false;
+    const current_user_id = JSON.parse(localStorage.getItem("session_id"))['google_id'];
 
     function init() {
       if(is_desktop) {
@@ -1570,6 +1571,17 @@ print %(
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
       var event_title   = container_id.substring(title_index + 1);
+      var card_options_menu = document.getElementById('card-options');
+
+      if (event_user_id != current_user_id) {
+        card_options_menu.getElementsByClassName('edit_option_txt')[0].style.display   = 'none';
+        card_options_menu.getElementsByClassName('delete_option_txt')[0].style.display = 'none';
+        card_options_menu.getElementsByClassName('report_option_txt')[0].style.display = '';
+      } else {
+        card_options_menu.getElementsByClassName('report_option_txt')[0].style.display = 'none';
+        card_options_menu.getElementsByClassName('edit_option_txt')[0].style.display   = '';
+        card_options_menu.getElementsByClassName('delete_option_txt')[0].style.display = '';
+      }
     }
     function handleEventCardSetReminderClick(ev) {
       // @remember: need to confirm google id will never use '-'
@@ -1613,6 +1625,8 @@ print %(
         navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${event_url_id}`));
         snackbar_notification_message = `Link copied for ${event_title}`;
         snackbarNotify();
+      } else if (option_txt == 'Edit') {
+      } else if (option_txt == 'Delete') {
       } else if (option_txt == 'Report') {
         snackbar_notification_message = `${event_title} has been reported`;
         snackbarNotify();
