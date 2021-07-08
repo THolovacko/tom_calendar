@@ -11,6 +11,8 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile)
+# @current:     edit and delete don't work on mobile
+# @current:     repeat for edit events is messed up
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -304,6 +306,8 @@ print %(
     const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
     var is_currently_syncing_event = false;
     const current_user_id = JSON.parse(localStorage.getItem("session_id"))['google_id'];
+    var is_event_updating = false;
+    var feed_events = {};
 
     function init() {
       if(is_desktop) {
@@ -571,6 +575,7 @@ print %(
       sync_end_time = true;
       Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
       Object.keys(timers).forEach(value => clearTimeout(timers[value]));
+      is_event_updating = false;
 
       var create_form_title_input = document.getElementById("create_form_title_input");
       create_form_title_input.blur();
@@ -643,6 +648,7 @@ print %(
 
       user_selected_time_zone = user_time_zone;
       document.getElementById("create_form_title_input").style.borderColor = "";
+      document.getElementById("create_form_title_input").style.pointerEvents = 'auto';
 
       document.getElementById("spinner_react_container").style.display = "none";
 
@@ -760,7 +766,8 @@ print %(
         "location"         : document.getElementById("event_location_txt").value,
         "description"      : document.getElementById("event_description_txt").value,
         "image_extension"  : document.getElementById("event_image_txt").value.split('.').pop(),
-        "is_general_event" : is_general_event
+        "is_general_event" : is_general_event,
+        "is_updating"      : is_event_updating
       }));
     }
     function hideExtraDaysOnDayWheelPickers() {
@@ -1551,6 +1558,8 @@ print %(
           var button_text = event_card_container.getElementsByClassName('MuiButton-label')[0];
           button_text.textContent = "Reminder on";
         }
+
+        feed_events[`${event_cards[i]['google_id']}-${event_cards[i]['title']}`] = event_cards[i];
       }
     }
     function handleEventCardImageClick(img_ev) {
@@ -1626,6 +1635,32 @@ print %(
         snackbar_notification_message = `Link copied for ${event_title}`;
         snackbarNotify();
       } else if (option_txt == 'Edit') {
+        onCreate();
+        document.getElementById("create_form_title_input").style.pointerEvents = 'none';
+        is_event_updating = true;
+        var current_event_card = feed_events[container_id];
+
+        document.getElementById("create_form_title_input").value     = current_event_card['title'];
+        document.getElementById("start_datepicker_txt").value        = current_event_card['start_date'];
+        document.getElementById("start_timepicker_txt").value        = current_event_card['start_time'];
+        document.getElementById("end_datepicker_txt").value          = current_event_card['end_date'];
+        document.getElementById("end_timepicker_txt").value          = current_event_card['end_time'];
+        document.getElementById("date_type_txt").value               = current_event_card['date_type'];
+        document.getElementById("event_repeat_select_txt").value     = current_event_card['repeats'];
+        document.getElementById("event_repeats_on_select_txt").value = current_event_card['repeats_on'];
+        document.getElementById("event_location_txt").value          = current_event_card['location'];
+        document.getElementById("event_description_txt").value       = current_event_card['description'];
+        document.getElementById("event_image_txt").value             = `${current_event_card['title']}.${current_event_card['image_extension']}`;
+        document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
+
+        if (current_event_card['repeats_on']) {
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+        }
+        if (current_event_card['is_general_event']) {
+          handleToggleSwitchChange();
+        }
+
+        eventDescriptionTxtResize('event_description_txt');
       } else if (option_txt == 'Delete') {
       } else if (option_txt == 'Report') {
         snackbar_notification_message = `${event_title} has been reported`;
