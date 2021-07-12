@@ -1,5 +1,7 @@
 #! /usr/bin/ruby
 
+# @test: is file too big for UDP if max description?
+
 url_id = TomEnv::get('QUERY_STRING')
 url_id = url_id.split('=')[1]
 
@@ -35,6 +37,9 @@ if session_id
     event['is_reminder_set'] = false
   end
 end
+
+# @optimize
+event['form_state'] = ''
 
 user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
@@ -188,7 +193,6 @@ return %(Content-type: text/html
           }
         }
       } else {
-        // @current: get redirect back to work
         window.location = "https://tomcalendar.com?eid=#{url_id}";
       }
     }

@@ -644,6 +644,7 @@ print %(
       document.getElementById("event_location_txt").value = "";
       document.getElementById("event_description_txt").value = "";
       document.getElementById("event_image_txt").value = "";
+      document.getElementById("event_image_file").value = "";
 
       user_selected_time_zone = user_time_zone;
       document.getElementById("create_form_title_input").style.borderColor = "";
@@ -716,9 +717,11 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
+      var form_state = { "data_selected_value": data_selected_value, "scroll_tops": scroll_tops };
+      var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
       var http = new XMLHttpRequest();
-      http.open('POST', 'https://tomcalendar.com/create_event', true);
+      http.open('POST', 'https://tomcalendar.com/save_event', true);
       http.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       http.onload = function() {
         if (http.status == 200) {
@@ -753,20 +756,22 @@ print %(
         }
       };
       http.send(JSON.stringify({
-        "title"            : document.getElementById("create_form_title_input").value.trim(),
-        "start_date"       : document.getElementById("start_datepicker_txt").value,
-        "start_time"       : document.getElementById("start_timepicker_txt").value,
-        "end_date"         : document.getElementById("end_datepicker_txt").value,
-        "end_time"         : document.getElementById("end_timepicker_txt").value,
-        "date_type"        : document.getElementById("date_type_txt").value,
-        "time_zone"        : user_selected_time_zone,
-        "repeats"          : document.getElementById("event_repeat_select_txt").value,
-        "repeats_on"       : document.getElementById("event_repeats_on_select_txt").value,
-        "location"         : document.getElementById("event_location_txt").value,
-        "description"      : document.getElementById("event_description_txt").value,
-        "image_extension"  : document.getElementById("event_image_txt").value.split('.').pop(),
-        "is_general_event" : is_general_event,
-        "is_updating"      : is_event_updating
+        "title"             : document.getElementById("create_form_title_input").value.trim(),
+        "start_date"        : document.getElementById("start_datepicker_txt").value,
+        "start_time"        : document.getElementById("start_timepicker_txt").value,
+        "end_date"          : document.getElementById("end_datepicker_txt").value,
+        "end_time"          : document.getElementById("end_timepicker_txt").value,
+        "date_type"         : document.getElementById("date_type_txt").value,
+        "time_zone"         : user_selected_time_zone,
+        "repeats"           : document.getElementById("event_repeat_select_txt").value,
+        "repeats_on"        : document.getElementById("event_repeats_on_select_txt").value,
+        "location"          : document.getElementById("event_location_txt").value,
+        "description"       : document.getElementById("event_description_txt").value,
+        "image_extension"   : document.getElementById("event_image_txt").value.split('.').pop(),
+        "is_general_event"  : is_general_event,
+        "form_state"        : form_state,
+        "is_updating_image" : is_updating_image,
+        "is_updating"       : is_event_updating
       }));
     }
     function hideExtraDaysOnDayWheelPickers() {
@@ -1652,10 +1657,15 @@ print %(
         document.getElementById("event_image_txt").value             = `${current_event_card['title']}.${current_event_card['image_extension']}`;
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
+        // @optimize: this should be calculated on client
+        scroll_tops = current_event_card['form_state']['scroll_tops'];
+        data_selected_value = current_event_card['form_state']['data_selected_value'];
+
         if (current_event_card['repeats_on']) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
         }
         if (current_event_card['is_general_event']) {
+          is_general_event = true;
           handleToggleSwitchChange();
         }
 
