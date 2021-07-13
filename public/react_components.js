@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem, Snackbar, CloseIcon } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem, Snackbar, CloseIcon, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -224,4 +224,42 @@ function SimpleSnackbar() {
     onClose: handleClose,
     message: snackbar_notification_message
   }));
+}
+
+var alert_dialog_notification_message = "This can\u2019t be undone and it will be removed from your profile, the explore feed, and from Tomcalendar search results.";
+var alert_dialog_title = "Delete Event?";
+var alert_ok_text = "OK";
+var alert_cancel_text = "Cancel";
+var alert_dialog_decision = "Cancel";
+var onAlertDialogClose = function() {};
+var alertDialog;
+function AlertDialog() {
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+	alertDialog = handleClickOpen;
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Dialog, {
+    open: open,
+    onClose: handleClose(),
+    "aria-labelledby": "alert-dialog-title",
+    "aria-describedby": "alert-dialog-description"
+  }, /*#__PURE__*/React.createElement(DialogTitle, {
+    id: "alert-dialog-title"
+  }, alert_dialog_title), /*#__PURE__*/React.createElement(DialogContent, null, /*#__PURE__*/React.createElement(DialogContentText, {
+    id: "alert-dialog-description"
+  }, alert_dialog_notification_message)), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
+    onClick: handleClose(),
+    color: "primary"
+  }, alert_cancel_text), /*#__PURE__*/React.createElement(Button, {
+    onClick: handleClose(),
+    color: "primary",
+    autoFocus: true
+  }, alert_ok_text))));
 }

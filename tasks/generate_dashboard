@@ -11,7 +11,6 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile)
-# @current:     repeat for edit events is messed up
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -218,6 +217,7 @@ print %(
     <div id="snackbar_notification_react_container"></div>
     <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
     <div id="spinner_react_container"></div>
+    <div id="alert_dialog_react_container"></div>
   </body>
   <script>
     const is_desktop = ('#{IS_DESKTOP}' == 'true');
@@ -335,6 +335,7 @@ print %(
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(CardOptionsMenu), document.getElementById("card_options_react_container"));
       ReactDOM.render(React.createElement(SimpleSnackbar), document.getElementById("snackbar_notification_react_container"));
+      ReactDOM.render(React.createElement(AlertDialog), document.getElementById("alert_dialog_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
         <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
@@ -497,20 +498,28 @@ print %(
       http.send('');
     }
     function confirmRevoke(code) {
-      if (window.confirm("Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?")) {
-        document.getElementById("background").style.webkitFilter = "blur(100px)";
-        var http = new XMLHttpRequest();
-        http.open('POST', 'https://tomcalendar.com/deactivate_tomcalendar', true);
-        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
-        http.onload = function() {
-          if(http.status == 200) {
-            localStorage.removeItem("session_id");
-            document.cookie = "session_id=;secure; path=/";
-            window.location = "https://tomcalendar.com/";
-          }
-        };
-        http.send(code);
-      }
+      alert_dialog_notification_message = "Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?";
+      alert_dialog_title = "Deactivate Account?";
+      alert_ok_text = "Deactivate";
+      /*
+      onAlertDialogClose = function() {
+        if (alert_dialog_decision == 'OK') {
+          document.getElementById("background").style.webkitFilter = "blur(100px)";
+          var http = new XMLHttpRequest();
+          http.open('POST', 'https://tomcalendar.com/deactivate_tomcalendar', true);
+          http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+          http.onload = function() {
+            if(http.status == 200) {
+              localStorage.removeItem("session_id");
+              document.cookie = "session_id=;secure; path=/";
+              window.location = "https://tomcalendar.com/";
+            }
+          };
+          http.send(code);
+        }
+      };
+      */
+      alertDialog();
     }
     function logOutAllOtherSessions() {
       var all_session_widgets = document.getElementsByClassName("session_widget");
@@ -717,7 +726,8 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
-      var form_state = { "data_selected_value": data_selected_value, "scroll_tops": scroll_tops };
+      //var form_state = { "data_selected_value": data_selected_value, "scroll_tops": scroll_tops };
+      var form_state = { "data_selected_value": data_selected_value };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
       var http = new XMLHttpRequest();
@@ -1658,7 +1668,7 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        scroll_tops = current_event_card['form_state']['scroll_tops'];
+        //scroll_tops = current_event_card['form_state']['scroll_tops'];
         data_selected_value = current_event_card['form_state']['data_selected_value'];
 
         if (current_event_card['repeats_on']) {
@@ -1671,6 +1681,10 @@ print %(
 
         eventDescriptionTxtResize('event_description_txt');
       } else if (option_txt.trim() == 'Delete') {
+        alert_dialog_notification_message = "This can NOT be undone and it will be removed from your profile, the explore feed, and from TomCalendar search results.";
+        alert_dialog_title = "Delete Event?";
+        alert_ok_text = "Delete";
+        alertDialog();
       } else if (option_txt.trim() == 'Report') {
         snackbar_notification_message = `${event_title} has been reported`;
         snackbarNotify();
@@ -2647,6 +2661,15 @@ print %(
     }
     .MuiSnackbar-root {
       pointer-events:none;
+    }
+    .MuiDialog-container p {
+      font-size: #{3.75 * FONT_FACTOR}rem;
+    }
+    .MuiDialog-container h2 {
+      font-size: #{5 * FONT_FACTOR}rem;
+    }
+    .MuiDialog-container button {
+      font-size: #{3.3 * FONT_FACTOR}rem;
     }
   </style>
 </html>
