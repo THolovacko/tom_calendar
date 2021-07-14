@@ -18,7 +18,7 @@ request_input = JSON.parse(TomEnv::get('MESSAGE'))
 event = request_input
 event['title'] = event['title']&.strip
 event['google_id'] = session_id['google_id']
-if event['image_extension'] && (event['image_extension'] != '') && (event['is_updating_image'])
+if event['image_extension'] && (event['image_extension'] != '') && event['is_updating_image']
   event['image_id'] = Digest::SHA256.hexdigest("#{event['google_id']}#{event['title']}")
 end
 
@@ -52,7 +52,7 @@ exponential_backoff do
     return StatusCodeStr::bad_request_error_message('invalid title')
   end
 
-  if event['image_id']
+  if event['is_updating_image']
     aws_client = Aws::S3::Client.new(
       region:               ENV['AWS_REGION'],
       access_key_id:        ENV['AWS_ACCESS_KEY_ID'],
@@ -62,12 +62,18 @@ exponential_backoff do
     bucket = s3.bucket('tomcalendareventimages')
     obj = bucket.object("#{event['image_id']}.#{event['image_extension']}")
     tmp_upload_url = obj.presigned_url(:put)
-  else
+  elsif !event['is_updating_image'] && !event['is_updating']
     tmp_upload_url = ''
     if !event['is_updating']
       event['image_id'] = "default"
       event['image_extension'] = "gif"
     end
+  elsif event['is_updating'] && !event['is_updating_image']
+    tmp_upload_url = ''
+    event['image_id'] = result_item['image_id']
+    event['image_extension'] = result_item['image_extension']
+  else
+    tmp_upload_url = ''
   end
 
   profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
@@ -89,6 +95,8 @@ exponential_backoff do
       event_url_id << c
     end
     event['url_id'] = event_url_id
+  else
+    event['url_id'] = result_item['url_id']
   end
 
   dynamodb.transact_write_items({
