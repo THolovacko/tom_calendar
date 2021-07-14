@@ -3,7 +3,6 @@
 # @remember: should alert user if repeating event starts and ends on same day
 # @remember: if user changes profile picture then all users events
 # @remember: currently can't remove event image after set (can only replace)
-# @current: test save event and copy link after updating
 
 cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
@@ -47,8 +46,8 @@ exponential_backoff do
     key: { google_id: event['google_id'], title: event['title'] }
   }
 
-  result_item = dynamodb.get_item(check_event_params)&.item
-  if (result_item && !event['is_updating'])
+  check_event = dynamodb.get_item(check_event_params)&.item
+  if (check_event && !event['is_updating'])
     return StatusCodeStr::bad_request_error_message('invalid title')
   end
 
@@ -70,8 +69,8 @@ exponential_backoff do
     end
   elsif event['is_updating'] && !event['is_updating_image']
     tmp_upload_url = ''
-    event['image_id'] = result_item['image_id']
-    event['image_extension'] = result_item['image_extension']
+    event['image_id'] = check_event['image_id']
+    event['image_extension'] = check_event['image_extension']
   else
     tmp_upload_url = ''
   end
@@ -96,7 +95,7 @@ exponential_backoff do
     end
     event['url_id'] = event_url_id
   else
-    event['url_id'] = result_item['url_id']
+    event['url_id'] = check_event['url_id']
   end
 
   dynamodb.transact_write_items({
