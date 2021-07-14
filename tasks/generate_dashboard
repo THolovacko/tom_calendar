@@ -1635,7 +1635,7 @@ print %(
       }
     }
     function handleOptionClick(ev) {
-      var container_id  = current_option_container_id;
+      var container_id  = current_option_container_id; // should rename this since it ended up being the event id
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
       var event_title   = container_id.substring(title_index + 1);
@@ -1666,7 +1666,6 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        //scroll_tops = current_event_card['form_state']['scroll_tops'];
         data_selected_value = current_event_card['form_state']['data_selected_value'];
 
         if (current_event_card['repeats_on']) {
@@ -1679,9 +1678,17 @@ print %(
 
         eventDescriptionTxtResize('event_description_txt');
       } else if (option_txt.trim() == 'Delete') {
-        alert_dialog_notification_message = "This can NOT be undone and it will be removed from your profile, the explore feed, and from TomCalendar search results.";
+        alert_dialog_notification_message = "This can NOT be undone and the event will be removed from your profile, the explore feed, and from TomCalendar search results.";
         alert_dialog_title = "Delete Event?";
         alert_ok_text = "Delete";
+        alertDialogCallback = function() {
+          if (alert_dialog_decision == 'OK') {
+            var http = new XMLHttpRequest();
+            http.open('POST', 'https://tomcalendar.com/delete_event', true);
+            http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+            http.send(JSON.stringify(current_event_card));
+          }
+        };
         alertDialog();
       } else if (option_txt.trim() == 'Report') {
         snackbar_notification_message = `${event_title} has been reported`;

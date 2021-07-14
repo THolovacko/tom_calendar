@@ -1,0 +1,48 @@
+#! /usr/bin/ruby
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+session_id    = JSON.parse(cookie_session_id)
+deleted_event = JSON.parse(TomEnv::get('MESSAGE'))
+cache_result  = TomMemcache::get("deleted_event#{deleted_event_id}").freeze
+if cache_result
+  return StatusCodeStr::OK
+end
+
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+  dynamodb.transact_write_items({
+    transact_items: [
+      { delete: { table_name: 'Events', key: {google_id: deleted_event["google_id"], title: deleted_event["title"]} } },
+      { delete: { table_name: 'EventReminders', key: {subscriber_id: "#{session_id['google_id']}", event_id: "#{deleted_event['google_id']}-#{deleted_event['title']}"} } },
+      { delete: { table_name: 'EventURLIDs', key: url_id: deleted_event['url_id'] } } 
+    ].compact
+  })
+
+  unless !deleted_event['image_id'] || (deleted_event['image_id'] == 'default')
+    aws_client = Aws::S3::Client.new(
+      region:               ENV['AWS_REGION'],
+      access_key_id:        ENV['AWS_ACCESS_KEY_ID'],
+      secret_access_key:    ENV['AWS_SECRET_ACCESS_KEY']
+    )
+    s3 = Aws::S3::Resource.new(client: aws_client)
+    bucket = s3.bucket('tomcalendareventimages')
+    obj = bucket.object("#{deleted_event['image_id']}.#{deleted_event['image_extension']}")
+    obj.delete()
+  end
+
+  google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
+  delete_google_calendar_events([deleted_event],google_calendar_id,session_id['google_id'])
+
+
+  # @remember: delete event reminders and each user's google calendar event
+end
+
+TomMemcache::set("deleted_event#{deleted_event_id}", 'OK', 3).freeze
+return StatusCodeStr::OK
