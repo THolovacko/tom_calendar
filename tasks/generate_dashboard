@@ -11,6 +11,7 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile)
+# @current:   fix edit event form bugs
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -724,7 +725,6 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
-      //var form_state = { "data_selected_value": data_selected_value, "scroll_tops": scroll_tops };
       var form_state = { "data_selected_value": data_selected_value };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
@@ -915,10 +915,6 @@ print %(
       if (timers[id] != -1) {
         clearTimeout(timers[id]);
       }
-
-      //data_selected_value["end_hour_wheel"]   = undefined;
-      //data_selected_value["end_minute_wheel"] = undefined;
-      //data_selected_value["end_period_wheel"] = undefined;
 
       timers[id] = window.setTimeout(function(){
         var time_wheel = document.getElementById(id);
