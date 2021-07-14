@@ -501,8 +501,7 @@ print %(
       alert_dialog_notification_message = "Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?";
       alert_dialog_title = "Deactivate Account?";
       alert_ok_text = "Deactivate";
-      /*
-      onAlertDialogClose = function() {
+      alertDialogCallback = function() {
         if (alert_dialog_decision == 'OK') {
           document.getElementById("background").style.webkitFilter = "blur(100px)";
           var http = new XMLHttpRequest();
@@ -518,7 +517,6 @@ print %(
           http.send(code);
         }
       };
-      */
       alertDialog();
     }
     function logOutAllOtherSessions() {
