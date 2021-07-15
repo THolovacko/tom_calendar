@@ -277,6 +277,25 @@ print %(
       'sq_wheel'           : 0,
       'sq_year_wheel'      : 0
     }
+    var wheel_indexes = {
+      'start_month_wheel'  : '0',
+      'start_year_wheel'   : '0',
+      'start_day_wheel'    : '0',
+      'start_hour_wheel'   : '0',
+      'start_minute_wheel' : '0',
+      'start_period_wheel' : '0',
+      'end_month_wheel'    : '0',
+      'end_year_wheel'     : '0',
+      'end_day_wheel'      : '0',
+      'end_hour_wheel'     : '0',
+      'end_minute_wheel'   : '0',
+      'end_period_wheel'   : '0',
+      'repeat_n_wheel'     : '0',
+      'time_span_wheel'    : '0',
+      'repeat_month_wheel' : '0',
+      'sq_wheel'           : '0',
+      'sq_year_wheel'      : '0'
+    }
     var sync_end_date = true;
     var sync_end_time = true;
     var timers = {
@@ -349,7 +368,7 @@ print %(
       xhr.open('GET', 'https://tomcalendar.com/get_promoted_events', true);
       xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       xhr.onload = function() {
-        if(xhr.status == 200) {
+        if (xhr.status == 200) {
           var event_cards = JSON.parse(xhr.responseText);
           insertEventCardsToFeed('explore_event_feed', event_cards);
         }
@@ -581,6 +600,7 @@ print %(
       sync_end_date = true;
       sync_end_time = true;
       Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
+      Object.keys(wheel_indexes).forEach(value => wheel_indexes[value] = '0');
       Object.keys(timers).forEach(value => clearTimeout(timers[value]));
       is_event_updating = false;
 
@@ -725,7 +745,8 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
-      var form_state = { "data_selected_value": data_selected_value };
+      var form_state = { "wheel_indexes": wheel_indexes };
+      //var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
       var http = new XMLHttpRequest();
@@ -820,6 +841,7 @@ print %(
       timers[id] = window.setTimeout(function() {
         var date_wheel = document.getElementById(id);
         var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
         if (index < all_date_wheel_elements.length) {
           data_selected_value[id] = all_date_wheel_elements[index].innerText;
@@ -919,6 +941,7 @@ print %(
       timers[id] = window.setTimeout(function(){
         var time_wheel = document.getElementById(id);
         var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
         data_selected_value[id] = all_time_wheel_elements[index].innerText;
         var offset_time_str = updateCreateFormTime(id);
@@ -1105,6 +1128,7 @@ print %(
         var repeat_n_wheel = document.getElementById(id);
 
         var index = Math.round(repeat_n_wheel.scrollTop / repeat_n_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_repeat_n_wheel_elements = repeat_n_wheel.getElementsByTagName("li");
         if (index < all_repeat_n_wheel_elements.length) {
           data_selected_value[id] = all_repeat_n_wheel_elements[index].innerText;
@@ -1158,6 +1182,7 @@ print %(
       timers[id] = window.setTimeout(function(){
         var time_span_wheel = document.getElementById(id);
         var index = Math.round(time_span_wheel.scrollTop / time_span_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_time_span_wheel_elements = time_span_wheel.getElementsByTagName("li");
         if (index < all_time_span_wheel_elements.length) {
           data_selected_value[id] = all_time_span_wheel_elements[index].innerText;
@@ -1403,6 +1428,7 @@ print %(
         var repeat_month_wheel = document.getElementById(id);
 
         var index = Math.round(repeat_month_wheel.scrollTop / repeat_month_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_repeat_month_wheel_elements = repeat_month_wheel.getElementsByTagName("li");
         if (index < all_repeat_month_wheel_elements.length) {
           data_selected_value[id] = all_repeat_month_wheel_elements[index].innerText;
@@ -1472,6 +1498,7 @@ print %(
         var sq_wheel = document.getElementById(id);
 
         var index = Math.round(sq_wheel.scrollTop / sq_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
         var all_sq_wheel_wheel_elements = sq_wheel.getElementsByTagName("li");
         if (index < all_sq_wheel_wheel_elements.length) {
           data_selected_value[id] = all_sq_wheel_wheel_elements[index].innerText;
@@ -1662,7 +1689,21 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        data_selected_value = current_event_card['form_state']['data_selected_value'];
+        //data_selected_value = current_event_card['form_state']['data_selected_value'];
+        wheel_indexes = current_event_card['form_state']['wheel_indexes'];
+
+        // set scroll tops based on saved indexes
+        Object.keys(wheel_indexes).forEach(function(value) {
+          var wheel = document.getElementById(value);
+          var index = parseInt(wheel_indexes[value]);
+          wheel.scrollTop = index * wheel.childNodes[0].offsetHeight; // not working because elemnt is hidden
+          console.log(wheel.scrollTop);
+          var all_wheel_elements = wheel.getElementsByTagName("li");
+          if (index < all_wheel_elements.length) {
+            data_selected_value[value] = all_wheel_elements[index].innerText;
+            //console.log(`${value}: ${data_selected_value[value]}`);
+          }
+        });
 
         if (current_event_card['repeats_on']) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
