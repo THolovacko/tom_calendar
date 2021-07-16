@@ -745,8 +745,8 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
-      var form_state = { "wheel_indexes": wheel_indexes };
-      //var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
+      //var form_state = { "wheel_indexes": wheel_indexes };
+      var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
       var http = new XMLHttpRequest();
@@ -779,7 +779,6 @@ print %(
           } else {
             // @remember: handle unkown error
             //document.getElementById("create_form_title_input").style.borderColor = "red";
-            console.log(error_message.toLowerCase());
           }
           document.getElementById("spinner_react_container").style.display = "none";
         }
@@ -883,12 +882,22 @@ print %(
       }
       
       // update wheel scrollTops
-      document.getElementById("start_month_wheel").scrollTop = scroll_tops["start_month_wheel"];
-      document.getElementById("start_day_wheel").scrollTop   = scroll_tops["start_day_wheel"];
-      document.getElementById("start_year_wheel").scrollTop  = scroll_tops["start_year_wheel"];
-      document.getElementById("end_month_wheel").scrollTop   = scroll_tops["end_month_wheel"];
-      document.getElementById("end_day_wheel").scrollTop     = scroll_tops["end_day_wheel"];
-      document.getElementById("end_year_wheel").scrollTop    = scroll_tops["end_year_wheel"];
+      if (is_event_updating) {
+        updateWheelScrollTopFromIndex("start_month_wheel");
+        updateWheelScrollTopFromIndex("start_year_wheel");
+        updateWheelScrollTopFromIndex("end_month_wheel");
+        updateWheelScrollTopFromIndex("end_year_wheel");
+        hideExtraDaysOnDayWheelPickers();
+        updateWheelScrollTopFromIndex("start_day_wheel");
+        updateWheelScrollTopFromIndex("end_day_wheel");
+      } else {
+        document.getElementById("start_month_wheel").scrollTop = scroll_tops["start_month_wheel"];
+        document.getElementById("start_day_wheel").scrollTop   = scroll_tops["start_day_wheel"];
+        document.getElementById("start_year_wheel").scrollTop  = scroll_tops["start_year_wheel"];
+        document.getElementById("end_month_wheel").scrollTop   = scroll_tops["end_month_wheel"];
+        document.getElementById("end_day_wheel").scrollTop     = scroll_tops["end_day_wheel"];
+        document.getElementById("end_year_wheel").scrollTop    = scroll_tops["end_year_wheel"];
+      }
 
       // sync start and end date until user edits end date
       if (start_or_end_str === "end") {
@@ -1001,6 +1010,15 @@ print %(
       document.getElementById("end_hour_wheel").scrollTop     = scroll_tops["end_hour_wheel"];
       document.getElementById("end_minute_wheel").scrollTop   = scroll_tops["end_minute_wheel"];
       document.getElementById("end_period_wheel").scrollTop   = scroll_tops["end_period_wheel"];
+
+      if (is_event_updating) {
+        updateWheelScrollTopFromIndex("start_hour_wheel");
+        updateWheelScrollTopFromIndex("start_minute_wheel");
+        updateWheelScrollTopFromIndex("start_period_wheel");
+        updateWheelScrollTopFromIndex("end_hour_wheel");
+        updateWheelScrollTopFromIndex("end_minute_wheel");
+        updateWheelScrollTopFromIndex("end_period_wheel");
+      }
 
       // sync start and end date until user edits end date
       if (start_or_end_str === "end") {
@@ -1115,6 +1133,11 @@ print %(
         repeat_wheel_picker.style.display = "inline-block";
         document.getElementById("repeat_n_wheel").scrollTop = scroll_tops['repeat_n_wheel'];
         document.getElementById("time_span_wheel").scrollTop = scroll_tops['time_span_wheel'];
+
+        if (is_event_updating) {
+          updateWheelScrollTopFromIndex("repeat_n_wheel");
+          updateWheelScrollTopFromIndex("time_span_wheel");
+        }
       } else {
         repeat_wheel_picker.style.display = "none";
       }
@@ -1377,6 +1400,10 @@ print %(
         if (repeat_month_wheel_picker.style.display != "inline-block") {
           repeat_month_wheel_picker.style.display = "inline-block";
           document.getElementById("repeat_month_wheel").scrollTop = scroll_tops['repeat_month_wheel'];
+          if (is_event_updating) {
+            updateCreateFormRepeat();
+            updateWheelScrollTopFromIndex("repeat_month_wheel");
+          }
         } else {
           repeat_month_wheel_picker.style.display = "none";
         }
@@ -1517,6 +1544,11 @@ print %(
         sq_picker.style.display = "inline-block";
         document.getElementById('sq_wheel').scrollTop = scroll_tops['sq_wheel'];
         document.getElementById('sq_year_wheel').scrollTop = scroll_tops['sq_year_wheel'];
+
+        if (is_event_updating) {
+          updateWheelScrollTopFromIndex("sq_wheel");
+          updateWheelScrollTopFromIndex("sq_year_wheel");
+        }
       }
       else {
        sq_picker.style.display = "none";
@@ -1689,21 +1721,8 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        //data_selected_value = current_event_card['form_state']['data_selected_value'];
-        wheel_indexes = current_event_card['form_state']['wheel_indexes'];
-
-        // set scroll tops based on saved indexes
-        Object.keys(wheel_indexes).forEach(function(value) {
-          var wheel = document.getElementById(value);
-          var index = parseInt(wheel_indexes[value]);
-          wheel.scrollTop = index * wheel.childNodes[0].offsetHeight; // not working because elemnt is hidden
-          console.log(wheel.scrollTop);
-          var all_wheel_elements = wheel.getElementsByTagName("li");
-          if (index < all_wheel_elements.length) {
-            data_selected_value[value] = all_wheel_elements[index].innerText;
-            //console.log(`${value}: ${data_selected_value[value]}`);
-          }
-        });
+        data_selected_value = Object.create(current_event_card['form_state']['data_selected_value']);
+        wheel_indexes = Object.create(current_event_card['form_state']['wheel_indexes']);
 
         if (current_event_card['repeats_on']) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
@@ -1735,6 +1754,17 @@ print %(
         http.open('POST', 'https://tomcalendar.com/report_event', true);
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.send(container_id);
+      }
+    }
+    function updateWheelScrollTopFromIndex(id) {
+      var wheel = document.getElementById(id);
+      var index = parseInt(wheel_indexes[id]);
+      wheel.scrollTop = (index - 1) * wheel.childNodes[0].offsetHeight;
+      var all_wheel_elements = wheel.getElementsByTagName("li");
+      if (index < all_wheel_elements.length) {
+        if ( (index >= 0) && (index < all_wheel_elements.length) ) {
+          data_selected_value[id] = all_wheel_elements[index].innerText;
+        }
       }
     }
   </script>

@@ -3,6 +3,7 @@
 # @remember: should alert user if repeating event starts and ends on same day
 # @remember: if user changes profile picture then all users events
 # @remember: currently can't remove event image after set (can only replace)
+# @current: if updating then delete old google calendar event before creating new one
 
 cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
