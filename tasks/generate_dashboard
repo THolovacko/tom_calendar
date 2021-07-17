@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: event card actions (first edit and delete then user profile)
+# @current: event card actions (first edit and delete then user profile) (right now testing edit)
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -744,7 +744,6 @@ print %(
       // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
-      //var form_state = { "wheel_indexes": wheel_indexes };
       var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
 
@@ -1732,7 +1731,13 @@ print %(
         document.getElementById("create_form_title_input").style.pointerEvents = 'none';
         is_event_updating = true;
         var current_event_card = feed_events[container_id];
-
+        data_selected_value = Object.create(current_event_card['form_state']['data_selected_value']);
+        if (!data_selected_value['repeat_n_wheel']) {
+          data_selected_value['repeat_n_wheel'] = '0';
+        }
+        if (!data_selected_value['time_span_wheel']) {
+          data_selected_value['time_span_wheel'] = 'days';
+        }
         document.getElementById("create_form_title_input").value     = current_event_card['title'];
         document.getElementById("start_datepicker_txt").value        = current_event_card['start_date'];
         document.getElementById("start_timepicker_txt").value        = current_event_card['start_time'];
@@ -1747,8 +1752,14 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        data_selected_value = Object.create(current_event_card['form_state']['data_selected_value']);
         wheel_indexes = Object.create(current_event_card['form_state']['wheel_indexes']);
+
+        if (wheel_indexes['end_month_wheel'] || wheel_indexes['end_day_wheel'] || wheel_indexes['end_year_wheel']) {
+          sync_end_date = false;
+        }
+        if (wheel_indexes['end_hour_wheel'] || wheel_indexes['end_minute_wheel_wheel']) {
+          sync_end_time = false;
+        }
 
         if (current_event_card['repeats_on']) {
           document.getElementById("event_repeats_on_select").style.display = "inline-block";
