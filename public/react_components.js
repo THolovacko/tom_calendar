@@ -70,6 +70,7 @@ class ToggleSwitch extends React.Component {
   render() {
     return /*#__PURE__*/React.createElement(Switch, {
       disableRipple: true,
+      defaultChecked: is_general_event,
       onChange: handleToggleSwitchChange,
       color: "primary"
     });

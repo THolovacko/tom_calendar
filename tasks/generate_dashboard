@@ -11,7 +11,6 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile)
-# @current:   fix edit event form bugs
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -666,6 +665,7 @@ print %(
       sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
       sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
 
+      is_general_event = false;
       ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
 
@@ -680,7 +680,6 @@ print %(
 
       document.getElementById("spinner_react_container").style.display = "none";
 
-      is_general_event = false;
       document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
       document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
 
@@ -1756,6 +1755,8 @@ print %(
         }
         if (current_event_card['is_general_event']) {
           is_general_event = true;
+          ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
+          ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
           handleToggleSwitchChange();
         }
 
