@@ -276,25 +276,7 @@ print %(
       'sq_wheel'           : 0,
       'sq_year_wheel'      : 0
     }
-    var wheel_indexes = {
-      'start_month_wheel'  : '0',
-      'start_year_wheel'   : '0',
-      'start_day_wheel'    : '0',
-      'start_hour_wheel'   : '0',
-      'start_minute_wheel' : '0',
-      'start_period_wheel' : '0',
-      'end_month_wheel'    : '0',
-      'end_year_wheel'     : '0',
-      'end_day_wheel'      : '0',
-      'end_hour_wheel'     : '0',
-      'end_minute_wheel'   : '0',
-      'end_period_wheel'   : '0',
-      'repeat_n_wheel'     : '0',
-      'time_span_wheel'    : '0',
-      'repeat_month_wheel' : '0',
-      'sq_wheel'           : '0',
-      'sq_year_wheel'      : '0'
-    }
+    var wheel_indexes = {}
     var sync_end_date = true;
     var sync_end_time = true;
     var timers = {
@@ -599,7 +581,7 @@ print %(
       sync_end_date = true;
       sync_end_time = true;
       Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
-      Object.keys(wheel_indexes).forEach(value => wheel_indexes[value] = '0');
+      wheel_indexes = {};
       Object.keys(timers).forEach(value => clearTimeout(timers[value]));
       is_event_updating = false;
 
@@ -884,19 +866,21 @@ print %(
         updateWheelScrollTopFromIndex("start_month_wheel");
         updateWheelScrollTopFromIndex("start_year_wheel");
 
-        if (!wheel_indexes["end_month_wheel"] && wheel_indexes["start_month_wheel"]) {
+        if (sync_end_date) {
           wheel_indexes["end_month_wheel"] = wheel_indexes["start_month_wheel"];
-        }
-        if (!wheel_indexes["end_year_wheel"] && wheel_indexes["start_year_wheel"]) {
-          wheel_indexes["end_year_wheel"] = wheel_indexes["start_year_wheel"];
+          wheel_indexes["end_year_wheel"]  = wheel_indexes["start_year_wheel"];
         }
 
         updateWheelScrollTopFromIndex("end_month_wheel");
         updateWheelScrollTopFromIndex("end_year_wheel");
         hideExtraDaysOnDayWheelPickers();
         updateWheelScrollTopFromIndex("start_day_wheel");
-        if (!wheel_indexes["end_day_wheel"] && wheel_indexes["start_day_wheel"]) {
-          wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
+        if (sync_end_date) {
+          if (data_selected_value["start_day_wheel"] && (data_selected_value["start_day_wheel"] != 'TBD')) {
+            wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
+          } else {
+            wheel_indexes["end_day_wheel"] = '0';
+          }
         }
         updateWheelScrollTopFromIndex("end_day_wheel");
       } else {
@@ -1024,22 +1008,28 @@ print %(
         updateWheelScrollTopFromIndex("start_hour_wheel");
         updateWheelScrollTopFromIndex("start_minute_wheel");
         updateWheelScrollTopFromIndex("start_period_wheel");
-        if (!wheel_indexes["end_hour_wheel"] && wheel_indexes["start_hour_wheel"]) {
-          wheel_indexes["end_hour_wheel"] = (parseInt(wheel_indexes["start_hour_wheel"]) + 1).toString();
-        }
-        if (!wheel_indexes["end_minute_wheel"] && wheel_indexes["start_minute_wheel"]) {
-          wheel_indexes["end_minute_wheel"] = wheel_indexes["start_minute_wheel"];
-        }
-        if (!wheel_indexes["end_period_wheel"] && wheel_indexes["start_period_wheel"]) {
-          var start_hour = parseInt(wheel_indexes["start_hour_wheel"]);
-          if (start_hour != 11) {
-            wheel_indexes["end_period_wheel"] = wheel_indexes["start_period_wheel"];
-          } else {
-            if (wheel_indexes["start_period_wheel"] == '2') {
-              wheel_indexes["end_period_wheel"] = '3';
+        if (sync_end_time) {
+          if (data_selected_value["start_hour_wheel"] && (data_selected_value["start_hour_wheel"] != 'TBD')) {
+            var start_hour = parseInt(data_selected_value["start_hour_wheel"]);
+            if (start_hour != 12) {
+              wheel_indexes["end_hour_wheel"] = (parseInt(wheel_indexes["start_hour_wheel"]) + 1).toString();
             } else {
-              wheel_indexes["end_period_wheel"] = '2';
+              wheel_indexes["end_hour_wheel"] = '2';
             }
+            wheel_indexes["end_minute_wheel"] = wheel_indexes["start_minute_wheel"];
+            if (start_hour != 11) {
+              wheel_indexes["end_period_wheel"] = wheel_indexes["start_period_wheel"];
+            } else {
+              if (wheel_indexes["start_period_wheel"] == '2') {
+                wheel_indexes["end_period_wheel"] = '3';
+              } else {
+                wheel_indexes["end_period_wheel"] = '2';
+              }
+            }
+          } else {
+            wheel_indexes["end_hour_wheel"] = '0';
+            wheel_indexes["end_minute_wheel"] = '0';
+            wheel_indexes["end_period_wheel"] = '0';
           }
         }
         updateWheelScrollTopFromIndex("end_hour_wheel");
@@ -1195,11 +1185,11 @@ print %(
 
           if( day_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "day";
-          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
+          } else if ( week_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "week";
-          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
+          } else if ( month_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "month";
-          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
+          } else if ( year_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "year";
           }
         } else {
@@ -1769,6 +1759,42 @@ print %(
           ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
           ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
           handleToggleSwitchChange();
+        }
+
+        const day_regex   = new RegExp('day');
+        const week_regex  = new RegExp('week');
+        const month_regex = new RegExp('month');
+        const year_regex  = new RegExp('year');
+        if ( parseInt(data_selected_value['repeat_n_wheel']) == 1 ) {
+          document.getElementById("time_span_days").innerText = "day";
+          document.getElementById("time_span_weeks").innerText = "week";
+          document.getElementById("time_span_months").innerText = "month";
+          document.getElementById("time_span_years").innerText = "year";
+
+          if( day_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "day";
+          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "week";
+          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "month";
+          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "year";
+          }
+        } else {
+          document.getElementById("time_span_days").innerText = "days";
+          document.getElementById("time_span_weeks").innerText = "weeks";
+          document.getElementById("time_span_months").innerText = "months";
+          document.getElementById("time_span_years").innerText = "years";
+
+          if ( day_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "days";
+          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "weeks";
+          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "months";
+          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "years";
+          }
         }
 
         eventDescriptionTxtResize('event_description_txt');
