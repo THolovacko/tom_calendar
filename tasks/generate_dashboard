@@ -1721,7 +1721,7 @@ print %(
         document.getElementById("create_form_title_input").style.pointerEvents = 'none';
         is_event_updating = true;
         var current_event_card = feed_events[container_id];
-        data_selected_value = Object.create(current_event_card['form_state']['data_selected_value']);
+        data_selected_value = JSON.parse(JSON.stringify(current_event_card['form_state']['data_selected_value']));
         if (!data_selected_value['repeat_n_wheel']) {
           data_selected_value['repeat_n_wheel'] = '0';
         }
@@ -1742,7 +1742,7 @@ print %(
         document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
 
         // @optimize: this should be calculated on client
-        wheel_indexes = Object.create(current_event_card['form_state']['wheel_indexes']);
+        wheel_indexes = JSON.parse(JSON.stringify(current_event_card['form_state']['wheel_indexes']));
 
         if (wheel_indexes['end_month_wheel'] || wheel_indexes['end_day_wheel'] || wheel_indexes['end_year_wheel']) {
           sync_end_date = false;
@@ -1771,6 +1771,7 @@ print %(
           document.getElementById("time_span_months").innerText = "month";
           document.getElementById("time_span_years").innerText = "year";
 
+          /*
           if( day_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "day";
           } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
@@ -1780,12 +1781,14 @@ print %(
           } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "year";
           }
+          */
         } else {
           document.getElementById("time_span_days").innerText = "days";
           document.getElementById("time_span_weeks").innerText = "weeks";
           document.getElementById("time_span_months").innerText = "months";
           document.getElementById("time_span_years").innerText = "years";
 
+          /*
           if ( day_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "days";
           } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
@@ -1795,6 +1798,7 @@ print %(
           } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
             data_selected_value['time_span_wheel'] = "years";
           }
+          */
         }
 
         eventDescriptionTxtResize('event_description_txt');
