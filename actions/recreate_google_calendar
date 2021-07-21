@@ -88,6 +88,7 @@ begin
     last_evaluated_key = nil
   end
 
+  # @current: need to handle tasks more efficiently
   #create_google_calendar_events(subscribed_events,google_calendar_id,session_id['google_id']) unless subscribed_events.empty?
   `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' >/dev/null &` unless subscribed_events.empty?
 rescue Exception => e

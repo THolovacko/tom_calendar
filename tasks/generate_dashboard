@@ -11,6 +11,7 @@
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: event card actions (first edit and delete then user profile) (right now testing edit)
+#               timezon getting reset, remove unecessary data before send
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -869,12 +870,15 @@ print %(
         if (sync_end_date) {
           wheel_indexes["end_month_wheel"] = wheel_indexes["start_month_wheel"];
           wheel_indexes["end_year_wheel"]  = wheel_indexes["start_year_wheel"];
+          wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
         }
 
         updateWheelScrollTopFromIndex("end_month_wheel");
         updateWheelScrollTopFromIndex("end_year_wheel");
         hideExtraDaysOnDayWheelPickers();
         updateWheelScrollTopFromIndex("start_day_wheel");
+        updateWheelScrollTopFromIndex("end_day_wheel");
+        /*
         if (sync_end_date) {
           if (data_selected_value["start_day_wheel"] && (data_selected_value["start_day_wheel"] != 'TBD')) {
             wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
@@ -883,6 +887,7 @@ print %(
           }
         }
         updateWheelScrollTopFromIndex("end_day_wheel");
+        */
       } else {
         document.getElementById("start_month_wheel").scrollTop = scroll_tops["start_month_wheel"];
         document.getElementById("start_day_wheel").scrollTop   = scroll_tops["start_day_wheel"];
@@ -1770,35 +1775,11 @@ print %(
           document.getElementById("time_span_weeks").innerText = "week";
           document.getElementById("time_span_months").innerText = "month";
           document.getElementById("time_span_years").innerText = "year";
-
-          /*
-          if( day_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "day";
-          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "week";
-          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "month";
-          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "year";
-          }
-          */
         } else {
           document.getElementById("time_span_days").innerText = "days";
           document.getElementById("time_span_weeks").innerText = "weeks";
           document.getElementById("time_span_months").innerText = "months";
           document.getElementById("time_span_years").innerText = "years";
-
-          /*
-          if ( day_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "days";
-          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "weeks";
-          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "months";
-          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
-            data_selected_value['time_span_wheel'] = "years";
-          }
-          */
         }
 
         eventDescriptionTxtResize('event_description_txt');
@@ -1808,10 +1789,10 @@ print %(
         alert_ok_text = "Delete";
         alertDialogCallback = function() {
           if (alert_dialog_decision == 'OK') {
-            var http = new XMLHttpRequest();
-            http.open('POST', 'https://tomcalendar.com/delete_event', true);
-            http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
-            http.send(JSON.stringify(current_event_card));
+            var http2 = new XMLHttpRequest();
+            http2.open('POST', 'https://tomcalendar.com/delete_event', true);
+            http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+            http2.send(JSON.stringify({ google_id: event_user_id, title: event_title }));
           }
         };
         alertDialog();

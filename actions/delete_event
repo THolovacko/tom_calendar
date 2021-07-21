@@ -7,9 +7,9 @@ unless cookie_session_id
   return StatusCodeStr::BAD_REQUEST
 end
 
-session_id    = JSON.parse(cookie_session_id)
-deleted_event = JSON.parse(TomEnv::get('MESSAGE'))
-cache_result  = TomMemcache::get("deleted_event#{deleted_event_id}").freeze
+session_id   = JSON.parse(cookie_session_id)
+event_id     = JSON.parse(TomEnv::get('MESSAGE'))
+cache_result = TomMemcache::get("deleted_event#{event_id}").freeze
 if cache_result
   return StatusCodeStr::OK
 end
@@ -17,11 +17,12 @@ end
 exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
+  deleted_event = dynamodb.get_item({ table_name: 'Events', key: event_id })&.item
   dynamodb.transact_write_items({
     transact_items: [
       { delete: { table_name: 'Events', key: {google_id: deleted_event["google_id"], title: deleted_event["title"]} } },
       { delete: { table_name: 'EventReminders', key: {subscriber_id: "#{session_id['google_id']}", event_id: "#{deleted_event['google_id']}-#{deleted_event['title']}"} } },
-      { delete: { table_name: 'EventURLIDs', key: url_id: deleted_event['url_id'] } } 
+      { delete: { table_name: 'EventURLIDs', key: {url_id: deleted_event['url_id']} } }
     ].compact
   })
 
@@ -40,9 +41,8 @@ exponential_backoff do
   google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
   delete_google_calendar_events([deleted_event],google_calendar_id,session_id['google_id'])
 
-
-  # @remember: delete event reminders and each user's google calendar event
+  # @current: @remember: delete event reminders and each user's google calendar event
 end
 
-TomMemcache::set("deleted_event#{deleted_event_id}", 'OK', 3).freeze
+TomMemcache::set("deleted_event#{event_id}", 'OK', 3).freeze
 return StatusCodeStr::OK

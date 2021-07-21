@@ -109,6 +109,7 @@ unless google_calendar
       last_evaluated_key = nil
     end
 
+    # @current: need to handle tasks more efficiently
     `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' '#{google_id}' >/dev/null &` unless subscribed_events.empty?
   rescue Exception => e
     if db_attempts < 3
