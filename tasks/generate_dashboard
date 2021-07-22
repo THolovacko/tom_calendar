@@ -774,6 +774,12 @@ print %(
           document.getElementById("spinner_react_container").style.display = "none";
         }
       };
+      const day_regex  = new RegExp('day');
+      const year_regex = new RegExp('year');
+      var repeats_on_txt = document.getElementById("event_repeats_on_select_txt").value;
+      if ( day_regex.test(document.getElementById("event_repeat_select_txt").value) || year_regex.test(document.getElementById("event_repeat_select_txt").value) ) {
+        repeats_on_txt = '';
+      }
       http.send(JSON.stringify({
         "title"             : document.getElementById("create_form_title_input").value.trim(),
         "start_date"        : document.getElementById("start_datepicker_txt").value,
@@ -783,7 +789,7 @@ print %(
         "date_type"         : document.getElementById("date_type_txt").value,
         "time_zone"         : user_selected_time_zone,
         "repeats"           : document.getElementById("event_repeat_select_txt").value,
-        "repeats_on"        : document.getElementById("event_repeats_on_select_txt").value,
+        "repeats_on"        : repeats_on_txt,
         "location"          : document.getElementById("event_location_txt").value,
         "description"       : document.getElementById("event_description_txt").value,
         "image_extension"   : document.getElementById("event_image_txt").value.split('.').pop(),
