@@ -1,26 +1,6 @@
-#! /usr/bin/ruby
+Content-type: text/html
 
-# @remember: figure out how to scale radius?
-# @remember: need to speed up body onload
-# @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
-# @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
-# @test:     user agent detection on several platforms
-# @remember: maybe force garbage collection in app server
-# @remember: only allow valid values for create event input
-# @remember: event cards should auto convert datetime to user's local timezone
-# @remember: make dashboard loading screen
-# @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: event card actions (user profile)
 
-dashboard_type = ARGV[0]
-IS_DESKTOP = dashboard_type == 'desktop'
-
-VW_FACTOR   = IS_DESKTOP ? 0.25 : 1
-VH_FACTOR   = IS_DESKTOP ? 1 : 1
-FONT_FACTOR = IS_DESKTOP ? 1.1 : 1
-
-print "Content-type: text/html\n\n".freeze
-print %(
 <html lang="en">
   <title>Dashboard</title>
   <head>
@@ -30,24 +10,24 @@ print %(
     <script src="https://tomcalendar.com/public/react.production.min.js" crossorigin></script>
     <script src="https://tomcalendar.com/public/react-dom.production.min.js"></script>
     <script src="https://tomcalendar.com/public/material-ui.production.min.js"></script>
-    <script src="https://tomcalendar.com/public/react_components.js?force_reload=#{rand(1000)}"></script>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places"></script>
+    <script src="https://tomcalendar.com/public/react_components.js?force_reload=734"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAlCci0H-Fl6CthrGcqgaFRRibRWm-7xJc&libraries=places"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body onload="onNavIconSelect('explore'); init();">
     <div id="background">
       <div id="navbar">
-        <i class="material-icons md-36 nav select" id="explore" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">explore</i>
+        <i class="material-icons md-36 nav select" id="explore" onmousedown="onNavIconSelect(this.id)">explore</i>
         <div class="navbar_space"></div>
-        <i class="material-icons md-36 nav select" id="search" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">search</i>
-        <i class="material-icons md-36 nav create" id="create" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreate()">create</i>
-        <i class="material-icons md-36 nav select" id="profile" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">person</i>
+        <i class="material-icons md-36 nav select" id="search" onmousedown="onNavIconSelect(this.id)">search</i>
+        <i class="material-icons md-36 nav create" id="create" onmousedown="onCreate()">create</i>
+        <i class="material-icons md-36 nav select" id="profile" onmousedown="onNavIconSelect(this.id)">person</i>
         <div class="navbar_space"></div>
-        <i class="material-icons md-36 nav select" id="settings" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">settings</i>
+        <i class="material-icons md-36 nav select" id="settings" onmousedown="onNavIconSelect(this.id)">settings</i>
       </div>
       <div class="page", id="explore_page">
         <div class="event_feed" id="explore_event_feed">
-          <div id="event_card_react_container_explore_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
+          <div id="event_card_react_container_explore_0" style="margin-top:7.25vh;"></div>
         </div>
       </div>
       <div class="page", id="search_page">
@@ -57,29 +37,29 @@ print %(
         <h1>profile</h1>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
+        <h1 style="text-align:left;font-size:13.200000000000001rem;margin-left:1.5vw;margin-top:6vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
-        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
-        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
-        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:blue;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
-        <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
+        <div class="settings_btn" onmousedown="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" onmousedown="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:blue;" onmousedown="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
+        <button id="log_out_btn" onclick="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
         <div class="sessions_page_header">
-          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <i class="material-icons md-36 settings_navigate_before" onmousedown="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
           <div class="settings_page_title">Sessions</div>
         </div>
-        <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
+        <div style="border-bottom-style:solid;margin-top:4vh; border-width:thin; border-color:#E8E8EB;"></div>
         <div id="sessions_page_session_list"></div>
       </div>
       <div class="page", id="deactivate_page">
         <div class="sessions_page_header">
-          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <i class="material-icons md-36 settings_navigate_before" onmousedown="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
           <div class="settings_page_title">Deactivate account</div> 
         </div>
-        <div style="text-align:left;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{2 * VH_FACTOR}vh;">
-          <h2 style="font-size:#{4 * FONT_FACTOR}rem;">This action is permanent</h2>
-          <ul style="font-size:#{4 * FONT_FACTOR}rem;">
+        <div style="text-align:left;margin-left:1.5vw;margin-top:2vh;">
+          <h2 style="font-size:4.4rem;">This action is permanent</h2>
+          <ul style="font-size:4.4rem;">
             <li>You CAN NOT restore your TomCalendar account after deactivation.</li>
             <li>Some account information may still be available in search engines, such as Google or Bing.</li>
             <li>All Tomcalendar events in your Google Calendar will be deleted.</li>
@@ -87,112 +67,112 @@ print %(
         </div>
       </div>
     </div>
-    <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
+    <div id="popup_close_layer" onmousedown="onCreateClose();"></div>
     <div id="create_form">
-      <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
-      <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
+      <i class="material-icons md-36 create_close" id="create_close" onmousedown="onCreateClose()">close</i>
+      <button id="save_event_btn" onmousedown="saveEvent()">Save</button>
       <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title" maxlength="100"></div>
       <div id="date_type_toggle">
         <i class="material-icons md-36" id="date_type_icon">date_range</i>
         <input type="text" id="date_type_description_txt" value="Approximation" readonly>
         <div id="create_event_switch_react_container"></div>
       </div>
-      <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
-      <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType()"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
-      <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
+      <div id="start_date" onmousedown="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
+      <div id="date_type" onmousedown="toggleDateType()"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
+      <div id="start_time" onmousedown="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
       <div class="seasonal_quarterly_picker create_form_wheel" id="seasonal_quarterly_picker">
         <div class="sq_wheel_select_box_cover_top"></div>
         <div class="sq_wheel_select_box"></div>
         <div class="sq_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="sq_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="sq_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>
         <ul class="sq_wheel" id="sq_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li><li>Spring</li><li>Summer</li><li>Fall</li><li>Winter</li><li>Q1</li><li>Q2</li><li>Q3</li><li>Q4</li><li></li></ul>
-        #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="sq_year_wheel_desktop_cover" id="sq_year_wheel_desktop_cover"></div>
         <ul class="sq_year_wheel" id="sq_year_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="date_wheel_picker create_form_wheel" id="start_datepicker">
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="month_wheel_desktop_cover" id="start_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="month_wheel_desktop_cover" id="start_month_wheel_desktop_cover"></div>
         <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
-        #{ %(<div class="day_wheel_desktop_cover" id="start_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="day_wheel_desktop_cover" id="start_day_wheel_desktop_cover"></div>
         <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
-        #{ %(<div class="year_wheel_desktop_cover" id="start_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="year_wheel_desktop_cover" id="start_year_wheel_desktop_cover"></div>
         <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="time_wheel_picker create_form_wheel" id="start_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="hour_wheel_desktop_cover" id="start_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="hour_wheel_desktop_cover" id="start_hour_wheel_desktop_cover"></div>
         <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
-        #{ %(<div class="minute_wheel_desktop_cover" id="start_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="minute_wheel_desktop_cover" id="start_minute_wheel_desktop_cover"></div>
         <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
-        #{ %(<div class="period_wheel_desktop_cover" id="start_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="period_wheel_desktop_cover" id="start_period_wheel_desktop_cover"></div>
         <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
       </div>
-      <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
-      <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
-      <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('end')"><input type="text" id="end_timepicker_txt" placeholder="Add end time  " readonly></div><!-- extra space character in placeholder is for txt alignment -->
+      <div style="width:100%;height:0vh;display:inline-block;"></div>
+      <div id="end_date" onmousedown="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
+      <div id="end_time" onmousedown="toggleTime('end')"><input type="text" id="end_timepicker_txt" placeholder="Add end time  " readonly></div><!-- extra space character in placeholder is for txt alignment -->
       <div class="date_wheel_picker create_form_wheel" id="end_datepicker">
         <div class="date_wheel_select_box_cover_top"></div>
         <div class="date_wheel_select_box"></div>
         <div class="date_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="month_wheel_desktop_cover" id="end_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="month_wheel_desktop_cover" id="end_month_wheel_desktop_cover"></div>
         <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
-        #{ %(<div class="day_wheel_desktop_cover" id="end_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="day_wheel_desktop_cover" id="end_day_wheel_desktop_cover"></div>
         <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
-        #{ %(<div class="year_wheel_desktop_cover" id="end_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="year_wheel_desktop_cover" id="end_year_wheel_desktop_cover"></div>
         <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
       </div>
       <div class="time_wheel_picker create_form_wheel" id="end_timepicker">
         <div class="time_wheel_select_box_cover_top"></div>
         <div class="time_wheel_select_box"></div>
         <div class="time_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="hour_wheel_desktop_cover" id="end_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="hour_wheel_desktop_cover" id="end_hour_wheel_desktop_cover"></div>
         <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
-        #{ %(<div class="minute_wheel_desktop_cover" id="end_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="minute_wheel_desktop_cover" id="end_minute_wheel_desktop_cover"></div>
         <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
-        #{ %(<div class="period_wheel_desktop_cover" id="end_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="period_wheel_desktop_cover" id="end_period_wheel_desktop_cover"></div>
         <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
       </div>
       <div style="width:100%;height:0vh;display:inline-block;"></div>
       <div id="time_zone">
         <i class="material-icons md-36" id="time_zone_icon">public</i>
-        <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZones()">
+        <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly onmousedown="onTimeZones()">
       </div>
       <div id="event_repeat_select">
         <i class="material-icons md-36" id="event_repeat_select_icon">refresh</i>
-        <input type="text" id="event_repeat_select_txt" value="Does not repeat" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatSelect()">
+        <input type="text" id="event_repeat_select_txt" value="Does not repeat" readonly onmousedown="onEventRepeatSelect()">
       </div>
       <div class="repeat_wheel_picker create_form_wheel" id="repeat_wheel_picker">
         <div class="repeat_wheel_select_box_cover_top"></div>
         <div class="repeat_wheel_select_box"></div>
         <div class="repeat_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="repeat_n_wheel_desktop_cover" id="repeat_n_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="repeat_n_wheel_desktop_cover" id="repeat_n_wheel_desktop_cover"></div>
         <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
-        #{ %(<div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>
         <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
         <div style="width:100%;height:0vh;display:inline-block;"></div>
       </div>
       <div id="event_repeats_on_select">
-        <input type="text" id="event_repeats_on_select_txt" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatsOnSelect()"> 
+        <input type="text" id="event_repeats_on_select_txt" readonly onmousedown="onEventRepeatsOnSelect()"> 
       </div>
       <div style="width:100%;height:0vh;display:inline-block;"></div>
       <div id="repeat_on_select_checkbox" style="text-align:center;width:100%;" value="null">
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_sunday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_monday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">M</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_tuesday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">T</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_wednesday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">W</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_thursday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">T</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_friday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">F</div>
-        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_saturday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_sunday" onmousedown="onRepeatOnSelectCheckbox(this.id)">S</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_monday" onmousedown="onRepeatOnSelectCheckbox(this.id)">M</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_tuesday" onmousedown="onRepeatOnSelectCheckbox(this.id)">T</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_wednesday" onmousedown="onRepeatOnSelectCheckbox(this.id)">W</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_thursday" onmousedown="onRepeatOnSelectCheckbox(this.id)">T</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_friday" onmousedown="onRepeatOnSelectCheckbox(this.id)">F</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_saturday" onmousedown="onRepeatOnSelectCheckbox(this.id)">S</div>
       </div>
       <div class="repeat_month_wheel_picker create_form_wheel" id="repeat_month_wheel_picker">
         <div class="repeat_month_wheel_select_box_cover_top"></div>
         <div class="repeat_month_wheel_select_box"></div>
         <div class="repeat_month_wheel_select_box_cover_bottom"></div>
-        #{ %(<div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>
         <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li id="repeat_month_wheel_on_last_weekday" style="display:none;">On the last current weekday</li><li id="repeat_month_wheel_on_last_day" style="display:none;">On the last day</li><li></li></ul>
       </div>
       <div id="event_divider"></div>
@@ -208,7 +188,7 @@ print %(
       <div id="event_divider"></div>
       <div id="event_image">
         <i class="material-icons md-36" id="event_image_icon">image</i>
-        <input type="text" id="event_image_txt" placeholder="Add image" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventAddImage()">
+        <input type="text" id="event_image_txt" placeholder="Add image" readonly onmousedown="onEventAddImage()">
         <input type="file" id="event_image_file" accept=".jpg,.jpeg,.jfif,.pjpeg,.pjp,.png,.gif" hidden/>
       </div>
       <div id="event_divider"></div>
@@ -220,7 +200,7 @@ print %(
     <div id="alert_dialog_react_container"></div>
   </body>
   <script>
-    const is_desktop = ('#{IS_DESKTOP}' == 'true');
+    const is_desktop = ('true' == 'true');
     var current_settings_page = "settings";
     var months = {
       'January'   : '00',
@@ -302,8 +282,8 @@ print %(
     var user_selected_time_zone = user_time_zone;
     var is_general_event = false;
     var can_google_calendar_sync = true;
-    const event_card_img_max_height = '#{40 * VH_FACTOR}vh';
-    const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
+    const event_card_img_max_height = '40vh';
+    const event_card_img_expand_height = '100vh';
     var is_currently_syncing_event = false;
     const current_user_id = JSON.parse(localStorage.getItem("session_id"))['google_id'];
     var is_event_updating = false;
@@ -339,8 +319,8 @@ print %(
       ReactDOM.render(React.createElement(AlertDialog), document.getElementById("alert_dialog_react_container"));
       ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
       document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
-        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
-          <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
+        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:7.5vh;width:80%;background-color:#FEFFFE;border-radius: 25px 25px 0px 0px;">
+          <i class="material-icons md-36 time_zones_close" id="time_zones_close" onmousedown="onTimeZonesClose()">keyboard_backspace</i>
           <p id="time_zones_title">Time zone</p>
         </div>
       `);
@@ -410,9 +390,9 @@ print %(
           sessions_page_session_list.insertAdjacentHTML("beforeend", `
             <div class="session_widget" id="active_session_widget">
               <i class="material-icons md-36 session_icon">${session_icon_type}</i>
-              <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+              <div style="display:inline-block;width:0.5vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
-              <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
+              <div style="display:inline-block;width:0.25vw">&middot</div>
               <span class="session_last_updated" style="color: green;">Active now</span>
             </div>
           `);
@@ -426,22 +406,22 @@ print %(
             sessions_page_session_list.insertAdjacentHTML("beforeend", `
               <div class="session_widget" id=${sessions[i]['device_id']}>
                 <i class="material-icons md-36 session_icon">${session_icon_type}</i>
-                <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+                <div style="display:inline-block;width:0.5vw"></div>
                 <span class="session_device_type">${sessions[i]['device_type']}</span>
-                <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
+                <div style="display:inline-block;width:0.25vw">&middot</div>
                 <span class="session_last_updated">${sessions[i]['last_active']}</span>
-                <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutSession('${sessions[i]['device_id']}');">Log out</div>
+                <div class="session_log_out" onmousedown="logOutSession('${sessions[i]['device_id']}');">Log out</div>
               </div>
             `);
           }
 
           sessions_page_session_list.insertAdjacentHTML("beforeend", `
-            <div style="margin-top:#{4 * VH_FACTOR}vh;"></div>
-            <div id="all_sessions_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutAllOtherSessions();">Log out all other sessions</div>
+            <div style="margin-top:4vh;"></div>
+            <div id="all_sessions_log_out" onmousedown="logOutAllOtherSessions();">Log out all other sessions</div>
           `);
 
           deactivate_page.insertAdjacentHTML("beforeend", `
-            <div id="deactivate_btn" style="margin-top:#{2 * VH_FACTOR}vh;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="confirmRevoke('${result['deactivation_code']}');">Deactivate my account</div>
+            <div id="deactivate_btn" style="margin-top:2vh;" onmousedown="confirmRevoke('${result['deactivation_code']}');">Deactivate my account</div>
           `);
         }
       }
@@ -1900,16 +1880,16 @@ print %(
       transition: filter 5s;
     }
     .navbar_space {
-      width: #{12 * VW_FACTOR}vw;
+      width: 3.0vw;
       display: inline-block;
     }
     .event_feed {
       position: fixed;
       overflow-y: scroll;
-      width: #{( IS_DESKTOP ? '32' : '100' )}%;
+      width: 32%;
       height: 100%;
       top: 0;
-      left: #{( IS_DESKTOP ? '34%' : '0' )};
+      left: 34%;
       bottom: 0;
       right: 0;
       text-align: center;
@@ -1920,12 +1900,12 @@ print %(
       display: none;
       position: fixed;
       overflow-y: scroll;
-      width: #{( IS_DESKTOP ? '80' : '100' )}%;
-      height: #{( IS_DESKTOP ? '80' : '100' )}%;
-      margin-top: #{( IS_DESKTOP ? '5' : '0' )}%;
-      margin-left: #{( IS_DESKTOP ? '10' : '0' )}%;
+      width: 80%;
+      height: 80%;
+      margin-top: 5%;
+      margin-left: 10%;
       text-align: center;
-      border-radius: #{( IS_DESKTOP ? '25' : '0' )}px;
+      border-radius: 25px;
       border-color: #FEFFFE;
       background-color: #FEFFFE;
       top: 0;
@@ -1951,7 +1931,7 @@ print %(
       z-index: 2;
     }
     .spinner_circle { /* from react component */
-      margin-top: #{40 * VH_FACTOR}vh;
+      margin-top: 40vh;
       /*color: yellow;*/
     }
     .page {
@@ -1960,15 +1940,15 @@ print %(
       border: none;
       left: 0;
       right: 0;
-      margin-top: #{7 * VH_FACTOR}vh;
+      margin-top: 7vh;
     }
     .material-icons {
       cursor: default;
     }
     .material-icons.nav {
-      margin-top: #{1.5 * VH_FACTOR}vh;
-      margin-bottom: #{0.75 * VH_FACTOR}vh;
-      font-size: #{7 * FONT_FACTOR}rem;
+      margin-top: 1.5vh;
+      margin-bottom: 0.75vh;
+      font-size: 7.700000000000001rem;
       color: #000000;
       text-align: center;
       transition: color .175s;
@@ -1983,12 +1963,12 @@ print %(
       background-color: rgba(254, 255, 254, 1);
       border-style: solid;
       border-color: #4285F4;
-      border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
-      border-radius: #{0.5 * VH_FACTOR}vh; 
-      padding-right:  #{3 * VW_FACTOR}vw;
-      margin-right:   #{9 * VW_FACTOR}vw;
-      padding-left:   #{3 * VW_FACTOR}vw;
-      margin-left:    #{9 * VW_FACTOR}vw;
+      border-width: 3px;
+      border-radius: 0.5vh; 
+      padding-right:  0.75vw;
+      margin-right:   2.25vw;
+      padding-left:   0.75vw;
+      margin-left:    2.25vw;
       cursor: pointer;
       transition: background-color .175s;
       transition-timing-function: ease-out;
@@ -1998,11 +1978,11 @@ print %(
     }
     .material-icons.create_close, .material-icons.time_zones_close {
       float: left;
-      margin-left: #{IS_DESKTOP ? (2 * VW_FACTOR) : (4 * VW_FACTOR)}vw;
-      margin-top: #{IS_DESKTOP ? (2 * VH_FACTOR) : (1.8 * VH_FACTOR)}vh;
+      margin-left: 0.5vw;
+      margin-top: 2vh;
       cursor: pointer;
       border-radius: 50px;
-      font-size: #{6.25 * FONT_FACTOR}rem;
+      font-size: 6.875000000000001rem;
       color: #585C61;
       padding: 6px;
     }
@@ -2016,7 +1996,7 @@ print %(
       margin-right: 2px;
     }
     .material-icons.public, .material-icons.refresh {
-      font-size: #{7 * FONT_FACTOR}rem;
+      font-size: 7.700000000000001rem;
     }
     .search_bar {
       border: solid;
@@ -2063,8 +2043,8 @@ print %(
     #log_out_btn {
       display: inline-block;
       width: 100%;
-      height: #{5.25 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      height: 5.25vh;
+      font-size: 4.4rem;
       font-weight: bold;
       outline: none;
       border-top-style: solid;
@@ -2079,7 +2059,7 @@ print %(
       transition: background-color .175s;
       transition-timing-function: ease-out;
       text-align: center;
-      margin-top: #{4 * VH_FACTOR}vh;
+      margin-top: 4vh;
       color: #0F82FF;
     }
     #log_out_btn:hover {
@@ -2098,9 +2078,9 @@ print %(
       border-bottom-color: #ECEEF0;
       border-radius: 0;
       width: 100%;
-      height: #{6 * VH_FACTOR}vh;
-      font-size: #{6 * FONT_FACTOR}rem;
-      margin-top: #{1 * VH_FACTOR}vh;
+      height: 6vh;
+      font-size: 6.6000000000000005rem;
+      margin-top: 1vh;
       color: #26272A;
       background-color: #FEFFFE;
       text-align: center;
@@ -2115,28 +2095,28 @@ print %(
     #start_date {
       display: inline-block;
       float: left;
-      margin-top: #{1.25 * VH_FACTOR}vh;
-      margin-left: #{14 * VW_FACTOR}vw;
+      margin-top: 1.25vh;
+      margin-left: 3.5vw;
       z-index: 2;
     }
     #date_type {
       display: none;
       float: left;
-      margin-top: #{1.25 * VH_FACTOR}vh;
-      margin-left: #{14 * VW_FACTOR}vw;
+      margin-top: 1.25vh;
+      margin-left: 3.5vw;
       z-index: 2;
     }
     #end_date {
       display: inline-block;
       float: left;
-      margin-left: #{14 * VW_FACTOR}vw;
+      margin-left: 3.5vw;
       z-index: 2;
-      margin-top: #{1.25 * VH_FACTOR}vh
+      margin-top: 1.25vh
     }
     #event_location, #event_description, #event_image {
-      min-height: #{4 * VH_FACTOR}vh;
+      min-height: 4vh;
       width: 100%;
-      margin-top: #{2 * VH_FACTOR}vh;
+      margin-top: 2vh;
     }
     #event_divider {
       border-top-style: hidden;
@@ -2149,15 +2129,15 @@ print %(
       width: 100%;
       display: inline-block;
       height: 1px;
-      margin-top: #{1.25 * VH_FACTOR}vh;
+      margin-top: 1.25vh;
     }
     #start_date input[type=text], #end_date input[type=text], #date_type input[type=text] {
       border: none;
-      width: #{38 * VW_FACTOR}vw;
-      height: #{4 * VH_FACTOR}vh;
+      width: 9.5vw;
+      height: 4vh;
       background-color: #FEFFFE;
       color: #292A2D;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: 4.4rem;
       float: left;
       cursor: pointer;
     }
@@ -2171,7 +2151,7 @@ print %(
       display: inline-block;
       float: right;
       right: 0;
-      margin-top: #{1.25 * VH_FACTOR}vh;
+      margin-top: 1.25vh;
       z-index: 2;
     }
     #end_time {
@@ -2179,33 +2159,33 @@ print %(
       float: right;
       right: 0;
       z-index: 2;
-      margin-top: #{1.25 * VH_FACTOR}vh
+      margin-top: 1.25vh
     }
     #start_time input[type=text], #end_time input[type=text] {
       border: none;
-      width: #{38 * VW_FACTOR}vw;
-      height: #{4 * VH_FACTOR}vh;
+      width: 9.5vw;
+      height: 4vh;
       background-color: #FEFFFE;
       color: #292A2D;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: 4.4rem;
       text-align: right;
       margin-right: 4vw;
       cursor: pointer;
     }
     .sessions_page_header {
       width: 100%;
-      height: #{6 * VH_FACTOR}vh;
-      margin-top: #{0.75 * VH_FACTOR}vh;
+      height: 6vh;
+      margin-top: 0.75vh;
     }
     .settings_btn {
       display: inline-block;
-      width: #{100 - (6 * VW_FACTOR)}vw;
-      height: #{5.25 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      width: 98.5vw;
+      height: 5.25vh;
+      font-size: 4.4rem;
       outline: none;
       text-align: left;
-      line-height: #{5.25 * VH_FACTOR}vh;
-      padding-left: #{6 * VW_FACTOR}vw;
+      line-height: 5.25vh;
+      padding-left: 1.5vw;
       border-right-style: hidden;
       border-left-style: hidden;
       border-top-style: hidden;
@@ -2226,19 +2206,19 @@ print %(
       background-color: #e5ffe5;
     }
     .settings_next {
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: 4.4rem;
       float: right;
-      line-height: #{5.75 * VH_FACTOR}vh;
+      line-height: 5.75vh;
       vertical-align: middle;
-      margin-right: #{4 * VW_FACTOR}vw;
+      margin-right: 1.0vw;
       color: #616161;
       cursor: pointer;
     }
     .settings_navigate_before {
       float:left;
-      margin-left: #{4 * VW_FACTOR}vw;
-      line-height: #{6 * VH_FACTOR}vh;
-      font-size: #{8 * FONT_FACTOR}rem;
+      margin-left: 1.0vw;
+      line-height: 6vh;
+      font-size: 8.8rem;
       color: #0F82FF;
       cursor: pointer;
       vertical-align: middle;
@@ -2246,21 +2226,21 @@ print %(
     }
     .settings_page_title {
       text-align: center;
-      font-size: #{8 * FONT_FACTOR}rem;
-      line-height: #{6 * VH_FACTOR}vh;
+      font-size: 8.8rem;
+      line-height: 6vh;
       float:left;
       vertical-align: middle;
-      margin-left: #{7 * VW_FACTOR}vw;
+      margin-left: 1.75vw;
     }
     .session_widget {
       display: inline-block;
-      width: #{100 - (6 * VW_FACTOR)}vw;
-      height: #{7 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      width: 98.5vw;
+      height: 7vh;
+      font-size: 4.4rem;
       outline: none;
       text-align: left;
-      line-height: #{7 * VH_FACTOR}vh;
-      padding-left: #{6 * VW_FACTOR}vw;
+      line-height: 7vh;
+      padding-left: 1.5vw;
       border-right-style: hidden;
       border-left-style: hidden;
       border-top-style: hidden;
@@ -2272,30 +2252,30 @@ print %(
       color: black;
     }
     .material-icons.session_icon {
-      font-size: #{10 * FONT_FACTOR}rem;
+      font-size: 11.0rem;
       vertical-align: middle;
     }
     .session_device_type {
-      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-size: 3.8500000000000005rem;
     }
     .session_last_updated {
-      font-size: #{3 * FONT_FACTOR}rem;
+      font-size: 3.3000000000000003rem;
       color: #757575;
     }
     .session_log_out {
       display: inline-block;
-      font-size: #{3.75 * FONT_FACTOR}rem;
+      font-size: 4.125rem;
       color: red;
       float: right;
-      padding-right: #{8 * VW_FACTOR}vw;
-      padding-left: #{4 * VW_FACTOR}vw;
+      padding-right: 2.0vw;
+      padding-left: 1.0vw;
       cursor: pointer;
     }
     #all_sessions_log_out {
       display: inline-block;
       width: 100%;
-      height: #{5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      height: 5vh;
+      font-size: 4.4rem;
       outline: none;
       border-top-style: solid;
       border-right-style: hidden;
@@ -2309,7 +2289,7 @@ print %(
       transition: background-color .175s;
       transition-timing-function: ease-out;
       text-align: center;
-      line-height: #{5 * VH_FACTOR}vh;
+      line-height: 5vh;
       color: #0F82FF;
     }
     #all_sessions_log_out:hover {
@@ -2320,12 +2300,12 @@ print %(
     }
     #deactivate_btn {
       display: inline-block;
-      height: #{5 * VH_FACTOR}vh;
-      font-size: #{4.25 * FONT_FACTOR}rem;
+      height: 5vh;
+      font-size: 4.675000000000001rem;
       outline: none;
       cursor: pointer;
       text-align: center;
-      line-height: #{5 * VH_FACTOR}vh;
+      line-height: 5vh;
       color: #0F82FF;
     }
     #save_event_btn {
@@ -2335,14 +2315,14 @@ print %(
       background-color: #1A73E8;
       color: white;
       border: none;
-      border-radius: #{0.5 * VH_FACTOR}vh;
-      height: #{4 * VH_FACTOR}vh;
-      line-height: #{3.5 * VH_FACTOR}vh;
-      width: #{15 * VW_FACTOR}vw;
-      font-size: #{3.75 * FONT_FACTOR}rem;
+      border-radius: 0.5vh;
+      height: 4vh;
+      line-height: 3.5vh;
+      width: 3.75vw;
+      font-size: 4.125rem;
       text-align: center;
-      margin-right: #{5.25 * VW_FACTOR}vw;
-      margin-top: #{2 * VH_FACTOR}vh;
+      margin-right: 1.3125vw;
+      margin-top: 2vh;
       cursor: pointer;
       outline: none;
       font-weight: 425;
@@ -2352,7 +2332,7 @@ print %(
     }
     .date_wheel_picker, .time_wheel_picker, .repeat_wheel_picker, .repeat_month_wheel_picker, .seasonal_quarterly_picker {
       display: none;
-      height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
+      height: 18vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
       width: 100%;
     }
     .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel, .repeat_n_wheel, .time_span_wheel, .repeat_month_wheel, .sq_wheel, .sq_year_wheel {
@@ -2368,24 +2348,24 @@ print %(
       display: none;
     }
     .month_wheel {
-      width: #{20 * VW_FACTOR}vw;
+      width: 5.0vw;
       text-align: right;
     }
     .sq_wheel {
-      width: #{20 * VW_FACTOR}vw;
+      width: 5.0vw;
       text-align: right;
-      margin-right: #{8 * VW_FACTOR}vw;
+      margin-right: 2.0vw;
     }
     .repeat_month_wheel {
-      width: #{60 * VW_FACTOR}vw;
+      width: 15.0vw;
       text-align: left;
-      margin-left: #{13.5 * VW_FACTOR}vw;
+      margin-left: 3.375vw;
     }
     .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover, .sq_year_wheel_desktop_cover, .sq_wheel_desktop_cover {
       display: inline-block;
       position: absolute;
-      height: #{18 * VH_FACTOR}vh;
-      width: #{20 * VW_FACTOR}vw;
+      height: 18vh;
+      width: 5.0vw;
       background-color: yellow;
       z-index: 2;
       opacity: 0;
@@ -2393,8 +2373,8 @@ print %(
     .hour_wheel_desktop_cover, .minute_wheel_desktop_cover, .period_wheel_desktop_cover, .day_wheel_desktop_cover {
       display: inline-block;
       position: absolute;
-      height: #{18 * VH_FACTOR}vh;
-      width: #{10 * VW_FACTOR}vw;
+      height: 18vh;
+      width: 2.5vw;
       background-color: yellow;
       z-index: 2;
       opacity: 0;
@@ -2402,8 +2382,8 @@ print %(
     .repeat_n_wheel_desktop_cover {
       display: inline-block;
       position: absolute;
-      height: #{18 * VH_FACTOR}vh;
-      width: #{24 * VW_FACTOR}vw;
+      height: 18vh;
+      width: 6.0vw;
       background-color: yellow;
       z-index: 2;
       opacity: 0;
@@ -2411,56 +2391,56 @@ print %(
     .repeat_month_wheel_desktop_cover {
       display: inline-block;
       position: absolute;
-      height: #{18 * VH_FACTOR}vh;
-      width: #{60 * VW_FACTOR}vw;
-      margin-left: #{13.5 * VW_FACTOR}vw;
+      height: 18vh;
+      width: 15.0vw;
+      margin-left: 3.375vw;
       background-color: yellow;
       z-index: 2;
       opacity: 0;
     }
     .day_wheel, .day_wheel_desktop_cover {
-      width: #{10 * VW_FACTOR}vw;
-      margin-left: #{4 * VW_FACTOR}vw;
-      margin-right: #{4 * VW_FACTOR}vw;
+      width: 2.5vw;
+      margin-left: 1.0vw;
+      margin-right: 1.0vw;
     }
     .year_wheel, .sq_year_wheel {
-      width: #{20 * VW_FACTOR}vw;
+      width: 5.0vw;
       text-align: left;
     }
     .hour_wheel, .minute_wheel, .period_wheel {
-      width: #{10 * VW_FACTOR}vw;
+      width: 2.5vw;
     }
     .hour_wheel {
       text-align: right;
     }
     .minute_wheel, .minute_wheel_desktop_cover {
-      margin-left: #{4 * VW_FACTOR}vw;
-      margin-right: #{4 * VW_FACTOR}vw;
+      margin-left: 1.0vw;
+      margin-right: 1.0vw;
     }
     .period_wheel {
       text-align: left;
     }
     .repeat_n_wheel {
-      width: #{24 * VW_FACTOR}vw;
+      width: 6.0vw;
     }
     .time_span_wheel {
-      width: #{20 * VW_FACTOR}vw;
+      width: 5.0vw;
       text-align: left;
     }
     .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li, .time_span_wheel li, .repeat_n_wheel li, .repeat_month_wheel li, .sq_wheel li, .sq_year_wheel li {
       list-style-type: none;
-      padding-top: #{1.5 * VH_FACTOR}vh;
-      padding-bottom: #{1.5 * VH_FACTOR}vh;
-      font-size: #{3.75 * FONT_FACTOR}rem;
+      padding-top: 1.5vh;
+      padding-bottom: 1.5vh;
+      font-size: 4.125rem;
       scroll-snap-align: start;
-      height: #{3 * VH_FACTOR}vh;
-      line-height: #{3 * VH_FACTOR}vh;
+      height: 3vh;
+      line-height: 3vh;
       vertical-align: middle;
       color: #505154;
     }
     .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box, .repeat_month_wheel_select_box, .sq_wheel_select_box {
       width: 95%;
-      height: #{6 * VH_FACTOR}vh;
+      height: 6vh;
       background-color: rgba(238, 238, 239, 1);
       position: absolute;
       z-index: -1;
@@ -2468,11 +2448,11 @@ print %(
       right: 0;
       left: 0;
       margin: auto;
-      margin-top: #{6 * VH_FACTOR}vh;
+      margin-top: 6vh;
     }
     .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top, .repeat_wheel_select_box_cover_top, .repeat_month_wheel_select_box_cover_top, .sq_wheel_select_box_cover_top {
       width: 100%;
-      height: #{6 * VH_FACTOR}vh;
+      height: 6vh;
       position: absolute;
       right: 0;
       left: 0;
@@ -2482,62 +2462,62 @@ print %(
     }
     .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom, .repeat_month_wheel_select_box_cover_bottom, .sq_wheel_select_box_cover_bottom {
       width: 100%;
-      height: #{6 * VH_FACTOR}vh;
+      height: 6vh;
       position: absolute;
       right: 0;
       left: 0;
       margin: auto;
-      margin-top: #{12 * VH_FACTOR}vh;
+      margin-top: 12vh;
       background-color: rgba(254, 255, 254, .5);
       pointer-events:none;
     }
     #time_zone, #event_repeat_select {
-      height: #{4 * VH_FACTOR}vh;
+      height: 4vh;
       width: 100%;
-      margin-top: #{1.25 * VH_FACTOR}vh
+      margin-top: 1.25vh
     }
     #date_type_toggle {
-      height: #{4 * VH_FACTOR}vh;
+      height: 4vh;
       width: 100%;
-      margin-top: #{15 * VH_FACTOR}vh;
+      margin-top: 15vh;
       cursor: default;
     }
     #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon, #description_icon, #event_image_icon {
       display: inline-block;
       float: left;
-      height: #{4 * VH_FACTOR}vh;
-      width: #{4 * VW_FACTOR}vw;
-      margin-left: #{5 * VW_FACTOR}vw;
-      margin-right: #{5 * VW_FACTOR}vw;
-      line-height: #{4 * VH_FACTOR}vh;
+      height: 4vh;
+      width: 1.0vw;
+      margin-left: 1.25vw;
+      margin-right: 1.25vw;
+      line-height: 4vh;
       color: #595D62;
     }
     #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text], #event_description_txt, #event_image input[type=text] {
       border: none;
-      width: #{80 * VW_FACTOR}vw;
-      height: #{4 * VH_FACTOR}vh;
+      width: 20.0vw;
+      height: 4vh;
       background-color: #FEFFFE;
       color: #292A2D;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: 4.4rem;
       float: left;
       outline: none;
-      line-height: #{4 * VH_FACTOR}vh;
+      line-height: 4vh;
       cursor: pointer;
     }
     #event_location input[type=text] {
       width: 85%;  /* override */
     }
     #event_description_txt {
-      height: #{3.75 * VH_FACTOR}vh;
-      line-height: #{2.5 * VH_FACTOR}vh;  /* override */
+      height: 3.75vh;
+      line-height: 2.5vh;  /* override */
       resize: none;
       overflow:hidden;
       width: 85%;  /* override */
-      margin-top: #{0.5 * VH_FACTOR}vh;
+      margin-top: 0.5vh;
     }
     #date_type_toggle input[type=text], #date_type_txt input[type=text] {
       cursor: default;
-      width: #{64 * VW_FACTOR}vw;
+      width: 16.0vw;
     }
     #time_zones_react_container {
       /* also defined with create_form */
@@ -2548,10 +2528,10 @@ print %(
       display: none;
     }
     #time_zones_react_container .MuiList-root {
-      margin-top: #{8 * VH_FACTOR}vh;
+      margin-top: 8vh;
     }
     #time_zones_react_container .material-icons {
-      font-size: #{7 * FONT_FACTOR}rem;
+      font-size: 7.700000000000001rem;
       color: #595D62;
     }
     #time_zones_react_container .MuiAvatar-colorDefault {
@@ -2559,19 +2539,19 @@ print %(
       color: #595D62;
     }
     #time_zones_react_container .MuiTypography-root {
-      font-size: #{3.5 * FONT_FACTOR}rem;
+      font-size: 3.8500000000000005rem;
     }
     #time_zones_title {
       float: left;
-      font-size: #{5 * FONT_FACTOR}rem;
-      margin-top: #{2.75 * VH_FACTOR}vh;
-      margin-left: #{3 * VW_FACTOR}vw;
+      font-size: 5.5rem;
+      margin-top: 2.75vh;
+      margin-left: 0.75vw;
     }
     #event_repeats_on_select {
       display: none;
       float: left;
-      margin-top: #{1 * VH_FACTOR}vh;
-      margin-left: #{14 * VW_FACTOR}vw;
+      margin-top: 1vh;
+      margin-left: 3.5vw;
       z-index: 2;
     }
     #repeat_on_select_checkbox {
@@ -2585,16 +2565,16 @@ print %(
       color: #585C61;
       border-color: #EEEEEE;
       background-color: #EEEEEE;
-      width: #{6 * VW_FACTOR}vw;
-      height: #{3 * VH_FACTOR}vh;
-      font-size: #{3 * FONT_FACTOR}rem;
-      line-height: #{3 * VH_FACTOR}vh;
+      width: 1.5vw;
+      height: 3vh;
+      font-size: 3.3000000000000003rem;
+      line-height: 3vh;
       border-width: thin;
       display: inline-block;
       vertical-align: middle;
       cursor: pointer;
-      margin-top: #{2 * VH_FACTOR}vh;
-      margin-left: #{2 * VW_FACTOR}vw;
+      margin-top: 2vh;
+      margin-left: 0.5vw;
     }
     #create_event_switch_react_container {
       display: inline-block;
@@ -2602,13 +2582,13 @@ print %(
       right: 0;
       z-index: 2;
       margin-right: 4vw;
-      height: #{ IS_DESKTOP ? '30px' : "#{4 * VH_FACTOR}vh"};
-      border-radius: #{2 * VH_FACTOR}vh;
-      #{ IS_DESKTOP ? 'transform: scale(0.9, 0.9)' : 'transform: scale(0.8, 0.8)'};
+      height: 30px;
+      border-radius: 2vh;
+      transform: scale(0.9, 0.9);
     }
     #create_event_switch_react_container .MuiSwitch-root {
-      height: #{ IS_DESKTOP ? '38px' : "#{4.5 * VH_FACTOR}vh"};
-      border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
+      height: 38px;
+      border-radius: 2vh;
       background-color: #E1E1E2;
       transition: background-color .15s;
     }
@@ -2662,42 +2642,42 @@ print %(
       margin-right: 2.25%;
       margin-left: 2.25%;
       margin-bottom: 2.25%;
-      padding-bottom: #{1.25 * VH_FACTOR}vh;
+      padding-bottom: 1.25vh;
     }
     .event_card_react_container .MuiAvatar-root {
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: 4.4rem;
       background-color: #F44336;
       cursor: pointer;
     }
     .event_card_react_container .MuiCardHeader-root {
-      height: #{2.75 * VH_FACTOR}vh;
+      height: 2.75vh;
       cursor: default;
     }
     .event_card_react_container .MuiCardHeader-title {
-      //margin-top: #{0.5 * VW_FACTOR}vh;
+      //margin-top: 0.125vh;
     }
     .event_card_react_container .MuiCardHeader-avatar {
-      margin-right: #{2 * VW_FACTOR}vw;
-      //margin-bottom: #{2 * VH_FACTOR}vh;
+      margin-right: 0.5vw;
+      //margin-bottom: 2vh;
       //height: 10px;
       //width: 10px;
     }
     .event_card_react_container .MuiCardHeader-avatar img {
     }
     .event_card_react_container .MuiTypography-root {
-      height: #{2.75 * VH_FACTOR}vh;
-      font-size: #{3.2 * FONT_FACTOR}rem;
-      line-height: #{2.75 * VH_FACTOR}vh;
+      height: 2.75vh;
+      font-size: 3.5200000000000005rem;
+      line-height: 2.75vh;
       vertical-align: middle;
       text-align: left;
       font-family: 'Roboto', sans-serif;
-      padding-bottom: #{0 * VH_FACTOR}vh;
+      padding-bottom: 0vh;
     }
     .event_card_react_container .material-icons {
-      font-size: #{3 * FONT_FACTOR}rem;
+      font-size: 3.3000000000000003rem;
       vertical-align: top;
       transform: scale(1.75, 1.75);
-      margin-right: #{1 * VW_FACTOR}vw;
+      margin-right: 0.25vw;
       cursor: pointer;
       border-radius: 50px;
       color: #585C61;
@@ -2707,40 +2687,40 @@ print %(
       background-color: #EEEEEE;
     }
     .event_card_react_container .MuiTypography-h6 {
-      line-height: #{2.5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      line-height: 2.5vh;
+      font-size: 4.4rem;
       font-family: 'Roboto', sans-serif;
       vertical-align: middle;
-      padding-bottom: #{0 * VH_FACTOR}vh;
-      margin-bottom: #{0 * VH_FACTOR}vh;
-      margin-top: #{0.25 * VH_FACTOR}vh;
+      padding-bottom: 0vh;
+      margin-bottom: 0vh;
+      margin-top: 0.25vh;
       cursor: default;
       //transform: scale(1.025, 1.025);
     }
     .event_card_react_container .MuiCardContent-root {
-      padding-top: #{1 * VH_FACTOR}vh;
-      padding-right: #{0 * VW_FACTOR}vw;
-      height: #{2.5 * VH_FACTOR}vh;
-      padding-bottom: #{1.25 * VH_FACTOR}vh;
+      padding-top: 1vh;
+      padding-right: 0.0vw;
+      height: 2.5vh;
+      padding-bottom: 1.25vh;
     }
     .event_card_react_container .MuiCardActions-root {
-      padding-top: #{0 * VH_FACTOR}vh;
-      padding-bottom: #{0 * VH_FACTOR}vh;
-      margin-bottom: #{0 * VH_FACTOR}vh;
+      padding-top: 0vh;
+      padding-bottom: 0vh;
+      margin-bottom: 0vh;
     }
     .event_card_react_container .MuiButtonBase-root {
-      line-height: #{2.5 * VH_FACTOR}vh;
-      font-size: #{3.5 * FONT_FACTOR}rem;
+      line-height: 2.5vh;
+      font-size: 3.8500000000000005rem;
       vertical-align: middle;
-      padding-top: #{0 * VH_FACTOR}vh;
-      padding-bottom: #{0 * VH_FACTOR}vh;
-      margin-bottom: #{0 * VH_FACTOR}vh;
-      margin-top: #{0.25 * VH_FACTOR}vh;
+      padding-top: 0vh;
+      padding-bottom: 0vh;
+      margin-bottom: 0vh;
+      margin-top: 0.25vh;
     }
     .event_card_react_container .MuiCardActionArea-root {
-      padding-top: #{0 * VH_FACTOR}vh;
-      padding-bottom: #{0 * VH_FACTOR}vh;
-      margin-bottom: #{0 * VH_FACTOR}vh;
+      padding-top: 0vh;
+      padding-bottom: 0vh;
+      margin-bottom: 0vh;
       cursor: default;
     }
     .MuiTouchRipple-root {
@@ -2751,7 +2731,7 @@ print %(
     }
     .event_card_react_container img {
       cursor: pointer;
-      max-height: #{40 * VH_FACTOR}vh;
+      max-height: 40vh;
       transition-property: max-height;
       transition-timing-function: linear;
       transition-delay: 0s;
@@ -2760,15 +2740,15 @@ print %(
     .event_card_react_container .MuiCardActionArea-root p {
       margin: 0;
       padding: 0;
-      font-size: #{3.2 * FONT_FACTOR}rem;
+      font-size: 3.5200000000000005rem;
       vertical-align: middle;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
-      margin-left: #{3.5 * VW_FACTOR}vw;
+      margin-left: 0.875vw;
       cursor: default;
-      font-size: #{2.75 * FONT_FACTOR}rem;
+      font-size: 3.0250000000000004rem;
       vertical-align: middle;
-      padding-top: #{0.25 * VH_FACTOR}vh;
+      padding-top: 0.25vh;
       border-radius: 0px;
       color: black;
     }
@@ -2784,33 +2764,32 @@ print %(
       height: 4px;
     }
     .MuiMenu-paper {
-      margin-top: #{IS_DESKTOP ? 5 * VH_FACTOR : 6.5 * VH_FACTOR}vh;
-      margin-left: -#{IS_DESKTOP ? 24 * VW_FACTOR : 0}vw;
-      width: #{32 * VW_FACTOR}vw;
+      margin-top: 5vh;
+      margin-left: -6.0vw;
+      width: 8.0vw;
     }
     .MuiMenuItem-root {
-      height: #{4 * VH_FACTOR}vh;
-      font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 4 * FONT_FACTOR}rem;
+      height: 4vh;
+      font-size: 3.575rem;
     }
     .MuiMenuItem-root:hover {
       color: yellow;
       background-color: green;
     }
     .MuiSnackbarContent-message {
-      font-size: #{3.75 * FONT_FACTOR}rem;
+      font-size: 4.125rem;
     }
     .MuiSnackbar-root {
       pointer-events:none;
     }
     .MuiDialog-container p {
-      font-size: #{3.75 * FONT_FACTOR}rem;
+      font-size: 4.125rem;
     }
     .MuiDialog-container h2 {
-      font-size: #{5 * FONT_FACTOR}rem;
+      font-size: 5.5rem;
     }
     .MuiDialog-container button {
-      font-size: #{3.3 * FONT_FACTOR}rem;
+      font-size: 3.63rem;
     }
   </style>
 </html>
-).freeze

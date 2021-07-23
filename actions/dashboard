@@ -21,6 +21,6 @@ end
 user_agent_str = ENV['HTTP_USER_AGENT']&.downcase.freeze || ''.freeze
 IS_DESKTOP = !( /phone|android/.match(user_agent_str) )
 
-html_file = IS_DESKTOP ? '/var/www/cgi-bin/tom_calendar/lib/generated_desktop_dashboard.html'.freeze : '/var/www/cgi-bin/tom_calendar/lib/generated_mobile_dashboard.html'.freeze
+html_file = IS_DESKTOP ? '/var/www/cgi-bin/tom_calendar/html/generated_desktop_dashboard.html'.freeze : '/var/www/cgi-bin/tom_calendar/html/generated_mobile_dashboard.html'.freeze
 
 print File.read(html_file)

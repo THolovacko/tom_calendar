@@ -1,0 +1,3 @@
+#! /usr/bin/ruby
+
+event_id = $background_task_params[:event_id]

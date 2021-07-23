@@ -460,8 +460,7 @@ class BackgroundTask
 end
 
 $background_task_queue  = Queue.new
-# @current: make sure this is thread safe
-$background_task_params = {}
+$background_task_params = {}  # thread safe as long as single worker thread and only used in tasks
 
 def queue_background_task(task_name,param_hash)
   $background_task_queue << BackgroundTask.new(task_name,param_hash)
@@ -473,7 +472,7 @@ def background_task_worker_thread()
     $background_task_params = background_task.params
 
     begin
-      exec_ruby_vm_code("#{ENV['ROOT_DIR_PATH']}/tasks/#{background_task.name}.rvmbin")
+      exec_ruby_vm_code("#{ENV['ROOT_DIR_PATH']}/background_tasks/#{background_task.name}.rvmbin")
     rescue StandardError => e
       puts("Background Task: #{background_task.name} -> #{e.full_message}")
     end
