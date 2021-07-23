@@ -1,3 +1,42 @@
 #! /usr/bin/ruby
 
 event_id = $background_task_params[:event_id]
+
+dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+begin
+  # get all event reminders with given event_id
+  last_evaluated_key ||= nil
+  db_attempts ||= 0
+
+  reminders_params = {
+    table_name: 'EventReminders',
+    key_condition_expression: "#eid = :event_id",
+    expression_attribute_names: { "#eid" => "event_id" },
+    expression_attribute_values: { ":event_id" => event_id },
+    limit: 500,
+    exclusive_start_key: last_evaluated_key
+  }
+
+  query_result = dynamodb.query(reminders_params)
+  query_result.items.each do |reminder|
+    # use each subscriber id to delete their google calendar event
+    #delete_google_calendar_events([event],google_calendar_id,session_id['google_id'])
+  end
+
+  if query_result.last_evaluated_key != last_evaluated_key
+    last_evaluated_key = query_result.last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
+
+rescue Exception => e
+  if db_attempts < 3
+    db_attempts = db_attempts + 1
+    sleep 1
+    retry
+  else
+    raise "Failed to delete event reminders for #{event_id}"
+  end
+end
+
+# delete all the event reminders
