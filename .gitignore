@@ -8,6 +8,6 @@
 *.swo
 *.rvmbin
 *.tomexe
-/lib/generated*html
-lib/generated_desktop_dashboard.html
-lib/generated_mobile_dashboard.html
+/html/generated*html
+html/generated_desktop_dashboard.html
+html/generated_mobile_dashboard.html
