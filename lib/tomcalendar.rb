@@ -460,6 +460,7 @@ class BackgroundTask
 end
 
 $background_task_queue  = Queue.new
+# @current: make sure this is thread safe
 $background_task_params = {}
 
 def queue_background_task(task_name,param_hash)
