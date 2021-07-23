@@ -4,7 +4,7 @@
 #include <iostream>
 #include "tomcalendar_app_server.h"
 
-// @remeber: memcache and app-server size are limited by UDP (65,535 bytes)
+// @remember: memcache and app-server size are limited by UDP (65,535 bytes)
 
 extern char **environ;
 
@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   uint64_t server_port = SERVER_PORT_MIN + server_id;
   tom_socket client_socket(SERVER_IP_ADDRESS, server_port, false);
 
-  /* get message body */
+  /* start building message body */
   const std::string signature = std::to_string(microseconds_since_epoch);
   std::string message_body = signature;
   message_body += "signature";

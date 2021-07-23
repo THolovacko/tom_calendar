@@ -1,7 +1,5 @@
 #! /usr/bin/ruby
 
-# @remember: need a server(s) dedicated to backround tasks
-
 require_relative '../tomcalendar.rb'
 require 'socket'
 require 'thread'
@@ -15,9 +13,9 @@ class TomRequest
   attr_accessor :message, :remote_host, :remote_port
 
   def initialize(message, remote_host, remote_port)
-    @message       = message
-    @remote_host   = remote_host
-    @remote_port   = remote_port
+    @message     = message
+    @remote_host = remote_host
+    @remote_port = remote_port
   end
 end
 

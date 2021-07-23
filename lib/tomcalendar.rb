@@ -449,3 +449,37 @@ def delete_google_calendar_events(events, google_calendar_id, google_id=nil)
     end
   end
 end
+
+class BackgroundTask
+  attr_accessor :name, :params
+
+  def initialize(name, params)
+    @name   = name
+    @params = params
+  end
+end
+
+$background_task_queue  = Queue.new
+$background_task_params = {}
+
+def queue_background_task(task_name,param_hash)
+  $background_task_queue << BackgroundTask.new(task_name,param_hash)
+end
+
+def background_task_worker_thread()
+  while true do
+    background_task = $background_task_queue.pop()
+    $background_task_params = background_task.params
+
+    begin
+      exec_ruby_vm_code("#{ENV['ROOT_DIR_PATH']}/tasks/#{background_task.name}.rvmbin")
+    rescue StandardError => e
+      puts("Background Task: #{background_task.name} -> #{e.full_message}")
+    end
+  end
+end
+
+
+
+# init background task thread
+Thread.new { background_task_worker_thread() }

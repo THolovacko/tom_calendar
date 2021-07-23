@@ -110,7 +110,8 @@ unless google_calendar
     end
 
     # @current: need to handle tasks more efficiently
-    `#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' '#{google_id}' >/dev/null &` unless subscribed_events.empty?
+    #`#{ENV['ROOT_DIR_PATH']}/tasks/create_google_calendar_events '#{subscribed_events.to_json}' '#{google_calendar_id}' '#{google_id}' >/dev/null &` unless subscribed_events.empty?
+    queue_background_task('create_google_calendar_events', { events: subscribed_events.to_json, google_calendar_id: google_calendar_id, google_id: google_id })
   rescue Exception => e
     if db_attempts < 3
       db_attempts = db_attempts + 1
