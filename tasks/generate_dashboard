@@ -780,6 +780,10 @@ print %(
       if ( day_regex.test(document.getElementById("event_repeat_select_txt").value) || year_regex.test(document.getElementById("event_repeat_select_txt").value) ) {
         repeats_on_txt = '';
       }
+      if (document.getElementById("event_repeat_select_txt").value == 'Does not repeat') {
+        repeats_on_txt = '';
+        //delete data_selected_value[''];
+      }
       http.send(JSON.stringify({
         "title"             : document.getElementById("create_form_title_input").value.trim(),
         "start_date"        : document.getElementById("start_datepicker_txt").value,
