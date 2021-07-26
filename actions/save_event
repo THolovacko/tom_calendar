@@ -108,8 +108,7 @@ exponential_backoff do
 
   delete_google_calendar_events([event],google_calendar_id,session_id['google_id']) if event['is_updating']
   create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
-  # @current: @remember: need to update google calendar events for all subscribers
-  queue_background_task('update_all_event_subscribed_reminders', {event_id: "#{deleted_event['google_id']}-#{deleted_event['title']}"})
+  queue_background_task('update_all_event_subscribed_reminders', {event: event}) if event['is_updating']
   upload_url = tmp_upload_url
 end
 

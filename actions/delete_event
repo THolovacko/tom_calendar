@@ -40,9 +40,7 @@ exponential_backoff do
 
   google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
   delete_google_calendar_events([deleted_event],google_calendar_id,session_id['google_id'])
-
-  # @current: @remember: delete event reminders and each user's google calendar event
-  queue_background_task('delete_all_event_subscribed_reminders', {event_id: "#{deleted_event['google_id']}-#{deleted_event['title']}"})
+  queue_background_task('delete_all_event_subscribed_reminders', {event: deleted_event})
 end
 
 TomMemcache::set("deleted_event#{event_id}", 'OK', 3).freeze

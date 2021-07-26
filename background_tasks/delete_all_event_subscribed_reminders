@@ -1,42 +1,31 @@
 #! /usr/bin/ruby
 
-event_id = $background_task_params[:event_id]
+event = $background_task_params[:event]
+event_id = "#{event['google_id']}-#{event['title']}"
 
-dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-begin
-  # get all event reminders with given event_id
-  last_evaluated_key ||= nil
-  db_attempts ||= 0
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
 
   reminders_params = {
     table_name: 'EventReminders',
+    index_name: "event_id-last_updated-index",
     key_condition_expression: "#eid = :event_id",
     expression_attribute_names: { "#eid" => "event_id" },
     expression_attribute_values: { ":event_id" => event_id },
-    limit: 500,
-    exclusive_start_key: last_evaluated_key
+    limit: 500
   }
-
-  query_result = dynamodb.query(reminders_params)
-  query_result.items.each do |reminder|
-    # use each subscriber id to delete their google calendar event
-    #delete_google_calendar_events([event],google_calendar_id,session_id['google_id'])
-  end
-
-  if query_result.last_evaluated_key != last_evaluated_key
-    last_evaluated_key = query_result.last_evaluated_key
-  else
-    last_evaluated_key = nil
-  end
-
-rescue Exception => e
-  if db_attempts < 3
-    db_attempts = db_attempts + 1
-    sleep 1
-    retry
-  else
-    raise "Failed to delete event reminders for #{event_id}"
+  check_for_reminders = true
+  
+  # get all event reminders with given event_id
+  while check_for_reminders
+    query_result = dynamodb.query(reminders_params)
+    query_result.items.each do |reminder|
+      # delete each google calendar event and reminder
+      subscriber_google_id = reminder['subscriber_id']
+      subscriber_google_calendar_id = ( dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: { google_id: subscriber_google_id } })&.item || {} )['google_calendar_id']
+      delete_google_calendar_events([event],subscriber_google_calendar_id,subscriber_google_id) if subscriber_google_calendar_id && subscriber_google_id
+      dynamodb.delete_item({ table_name: 'EventReminders', key: {subscriber_id: subscriber_google_id, event_id: event_id} }) if subscriber_google_calendar_id && subscriber_google_id
+    end
+    check_for_reminders = false unless query_result.items.size > 0
   end
 end
-
-# delete all the event reminders
