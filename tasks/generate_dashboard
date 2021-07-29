@@ -54,7 +54,11 @@ print %(
         <h1>search</h1>
       </div>
       <div class="page", id="profile_page">
-        <h1>profile</h1>
+        <div id="user_profile_image" align="center"></div>
+        <div id="user_header_img">
+          <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
+        </div>
+        <p id="user_profile_name_txt" style="font-size:8rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">Username</p>
       </div>
       <div class="page", id="settings_page">
         <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
@@ -308,6 +312,7 @@ print %(
     const current_user_id = JSON.parse(localStorage.getItem("session_id"))['google_id'];
     var is_event_updating = false;
     var feed_events = {};
+    var user_profile = {};
 
     function init() {
       if(is_desktop) {
@@ -355,9 +360,6 @@ print %(
         }
       };
       xhr.send();
-
-      //ReactDOM.render(React.createElement(EventCard,{user_avatar: 'T', user_name: 'tom.holovacko', title: 'Artfest test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/ea91a128b3b8d462cb28eccdee5e2a92cc38d65bc88486895c56b9db1dde9d13.jpg', datetime: 'Aug 7th, 2021'}), document.getElementById("event_card_react_container_0"));
-      //ReactDOM.render(React.createElement(EventCard,{user_avatar: '3', user_name: 'tholovacko3', title: 'test', image: 'https://tomcalendareventimages.s3.us-east-2.amazonaws.com/920abab0e8fcafd6a225d3168e4ed4ba9c796b9450c55c7912e4dc81a0ac2a10.jpeg', datetime: 'May 10th, 2021'}), document.getElementById("event_card_react_container_1"));
 
       var http = new XMLHttpRequest();
       http.open('POST', 'https://tomcalendar.com/validate_tokens_and_load_initial_content', true);
@@ -446,6 +448,21 @@ print %(
         }
       }
       request.send('');
+
+      var http2 = new XMLHttpRequest();
+      http2.open('GET', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          user_profile = JSON.parse(http2.responseText);
+          document.getElementById('user_profile_image').style.backgroundImage = `url(${user_profile['picture']})`;
+          document.getElementById('user_header_img_src').src = `url(${user_profile['picture']})`;
+          document.getElementById('user_header_img_src').style.backgroundImage = `url(${user_profile['picture']})`;
+          document.getElementById('user_profile_name_txt').innerText = user_profile['name'];
+          document.getElementById('user_header_img').style.backgroundImage = `url(${user_profile['picture']})`;
+        }
+      };
+      http2.send();
 
       // initialize wheel pickers
       var start_year_wheel = document.getElementById("start_year_wheel");
@@ -2814,6 +2831,35 @@ print %(
     }
     .MuiDialog-container button {
       font-size: #{3.3 * FONT_FACTOR}rem;
+    }
+    #user_profile_image::before {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-filter: blur(25px);
+      z-index: -1;
+      content: "";
+      display: block;
+      width: 100vw;
+      height: 32vh;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+    #user_profile_image {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      -webkit-filter: blur(12px);
+    }
+    #user_header_img {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      display: inline-block;
+      margin-top: -10vh;
+      z-index: 1;
+      position: relative;
     }
   </style>
 </html>

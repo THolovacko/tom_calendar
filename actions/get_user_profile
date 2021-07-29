@@ -1,0 +1,22 @@
+#! /usr/bin/ruby
+
+session_id = get_session_id_from_cookies()
+current_google_id = session_id['google_id']
+
+cache_result = TomMemcache::get("userprofile#{current_google_id}").freeze
+
+if cache_result
+  user_profile = JSON.parse(cache_result)
+  return "Content-type: application/json\n\n#{user_profile.to_json.freeze}"
+end
+
+result = nil
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  result   = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: current_google_id} })&.item
+end
+
+TomMemcache::set("userprofile#{current_google_id}", result.to_json, 300)
+
+result_to_json = result.to_json.freeze
+return "Content-type: application/json\n\n#{result_to_json}"
