@@ -1,0 +1,28 @@
+    Alpha Todo
+------------------
+User Profile
+  regular user profile
+  popup when click on icon
+  update all needed local events when event edited or deleted
+Search
+Explore Feed
+? Push notifications
+? Search engine metadata
+Make more pretty
+Update @ reminders
+
+
+* Submit to google verification
+* Make pitch deck and full presentation
+
+
+    Beta Todo
+----------------
+Automate testing
+New frontend for website + similar iPhone and Android apps
+Simplify and document API
+Security analysis
+Email notifications when error occurs (overall more activity logging)
+User Analytics
+Replace UDP backend communication
+Handle all @ reminders
