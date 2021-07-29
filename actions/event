@@ -205,7 +205,8 @@ return %(Content-type: text/html
     }
     body {
       background-color: #FEFFFE;
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: scroll;
     }
     #event_image::before {
       background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");

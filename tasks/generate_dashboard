@@ -58,7 +58,8 @@ print %(
         <div id="user_header_img">
           <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
         </div>
-        <p id="user_profile_name_txt" style="font-size:8rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">Username</p>
+        <div id="user_profile_border"></div>
+        <p id="user_profile_name_txt">Username</p>
       </div>
       <div class="page", id="settings_page">
         <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
@@ -2841,14 +2842,14 @@ print %(
       content: "";
       display: block;
       width: 100vw;
-      height: 32vh;
+      height: 22vh;
+      //height: 32vh;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     }
     #user_profile_image {
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
-      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
       -webkit-filter: blur(12px);
     }
     #user_header_img {
@@ -2857,9 +2858,28 @@ print %(
       background-size: cover;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
       display: inline-block;
-      margin-top: -10vh;
+      margin-top: -8vh;
       z-index: 1;
       position: relative;
+      border-radius: #{0.5 * VH_FACTOR}vh; 
+    }
+    #user_profile_name_txt {
+      font-size: 8rem;
+      font-weight: 500;
+      word-break: break-all;
+      margin-top: 5vh;
+      margin-bottom: 3vh;
+      padding-top: 0;
+    }
+    #user_profile_border {
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: hidden;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      margin-top: -2.5vh;
     }
   </style>
 </html>
