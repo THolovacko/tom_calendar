@@ -18,6 +18,7 @@ Update @ reminders
 
     Beta Todo
 ----------------
+Automate deployment
 Automate testing
 New frontend for website + similar iPhone and Android apps
 Simplify and document API
