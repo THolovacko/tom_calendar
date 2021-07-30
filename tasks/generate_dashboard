@@ -60,6 +60,9 @@ print %(
         </div>
         <div id="user_profile_border"></div>
         <p id="user_profile_name_txt">Username</p>
+        <div class="event_feed" id="user_profile_event_feed">
+          <div id="event_card_react_container_user_profile_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
+        </div>
       </div>
       <div class="page", id="settings_page">
         <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
@@ -361,6 +364,18 @@ print %(
         }
       };
       xhr.send();
+
+      // @current: this where I be
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('GET', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_cards = JSON.parse(up_xhr.responseText);
+          insertEventCardsToFeed('user_profile_event_feed', user_event_cards);
+        }
+      };
+      up_xhr.send();
 
       var http = new XMLHttpRequest();
       http.open('POST', 'https://tomcalendar.com/validate_tokens_and_load_initial_content', true);
@@ -2843,7 +2858,6 @@ print %(
       display: block;
       width: 100vw;
       height: 22vh;
-      //height: 32vh;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     }
     #user_profile_image {
@@ -2880,6 +2894,9 @@ print %(
       border-color: #E8E8EB;
       border-radius: 0;
       margin-top: -2.5vh;
+    }
+    #user_profile_event_feed {
+      margin-top: 30.65vh;
     }
   </style>
 </html>
