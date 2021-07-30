@@ -54,14 +54,14 @@ print %(
         <h1>search</h1>
       </div>
       <div class="page", id="profile_page">
-        <div id="user_profile_image" align="center"></div>
-        <div id="user_header_img">
-          <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
-        </div>
-        <div id="user_profile_border"></div>
-        <p id="user_profile_name_txt">Username</p>
         <div class="event_feed" id="user_profile_event_feed">
-          <div id="event_card_react_container_user_profile_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
+          <div id="user_profile_image" align="center"></div>
+          <div id="user_header_img">
+            <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
+          </div>
+          <div id="user_profile_border"></div>
+          <p id="user_profile_name_txt">Username</p>
+          <div id="event_card_react_container_user_profile_0" style="margin-top:#{3 * VH_FACTOR}vh;"></div>
         </div>
       </div>
       <div class="page", id="settings_page">
@@ -317,6 +317,7 @@ print %(
     var is_event_updating = false;
     var feed_events = {};
     var user_profile = {};
+    var current_user_event_last_evaluated_key = '';
 
     function init() {
       if(is_desktop) {
@@ -365,17 +366,18 @@ print %(
       };
       xhr.send();
 
-      // @current: this where I be
       var up_xhr = new XMLHttpRequest();
-      up_xhr.open('GET', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
       up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       up_xhr.onload = function() {
         if (up_xhr.status == 200) {
-          var user_event_cards = JSON.parse(up_xhr.responseText);
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
           insertEventCardsToFeed('user_profile_event_feed', user_event_cards);
         }
       };
-      up_xhr.send();
+      up_xhr.send('');
 
       var http = new XMLHttpRequest();
       http.open('POST', 'https://tomcalendar.com/validate_tokens_and_load_initial_content', true);
@@ -1651,8 +1653,8 @@ print %(
     function insertEventCardsToFeed(feed_id, event_cards) {
       var event_feed = document.getElementById(feed_id);
       for (i=0; i < event_cards.length; ++i) {
-        event_feed.insertAdjacentHTML("beforeend", `<div class="event_card_react_container" id="event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
-        var event_card_container = document.getElementById(`event_card_react_container_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
+        event_feed.insertAdjacentHTML("beforeend", `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        var event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
         var event_card_avatar = event_cards[i]['creator_picture'];
         var event_card_user_name = event_cards[i]['creator_email'].replace('@gmail.com', '');
@@ -1712,11 +1714,13 @@ print %(
     }
     function handleEventCardAvatarClick(ev) {
       var container_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
+      container_id = container_id.substring(4);
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
     }
     function handleEventCardOptionsClick(ev) {
       var container_id = ev.target.id.replace('options_event_card_react_container_','');
+      container_id = container_id.substring(4);
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
       var event_title   = container_id.substring(title_index + 1);
@@ -1736,6 +1740,7 @@ print %(
       // @remember: need to confirm google id will never use '-'
       var title_index;
       var container_id  = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
+      container_id = container_id.substring(4);
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
       var event_title   = container_id.substring(title_index + 1);
       var button_text   = document.getElementById(ev.target.parentNode.id).getElementsByClassName('MuiButton-label')[0];
@@ -1764,6 +1769,7 @@ print %(
     }
     function handleOptionClick(ev) {
       var container_id  = current_option_container_id; // should rename this since it ended up being the event id
+      container_id = container_id.substring(4);
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
       var event_title   = container_id.substring(title_index + 1);
@@ -2894,9 +2900,6 @@ print %(
       border-color: #E8E8EB;
       border-radius: 0;
       margin-top: -2.5vh;
-    }
-    #user_profile_event_feed {
-      margin-top: 30.65vh;
     }
   </style>
 </html>
