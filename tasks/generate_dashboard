@@ -54,7 +54,7 @@ print %(
         <h1>search</h1>
       </div>
       <div class="page", id="profile_page">
-        <div class="event_feed" id="user_profile_event_feed">
+        <div class="event_feed" id="user_profile_event_feed" onscroll="onFeedScroll(this.id)">
           <div id="user_profile_image" align="center"></div>
           <div id="user_header_img">
             <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
@@ -304,6 +304,9 @@ print %(
       'time_span_wheel'    : -1,
       'sq_wheel'           : -1,
       'sq_year_wheel'      : -1
+    }
+    var load_feed = {
+      'user_profile_event_feed' : true
     }
     var event_url_ids = {};
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1875,6 +1878,32 @@ print %(
       if (index < all_wheel_elements.length) {
         if ( (index >= 0) && (index < all_wheel_elements.length) ) {
           data_selected_value[id] = all_wheel_elements[index].innerText;
+        }
+      }
+    }
+    function onFeedScroll(id) {
+      var wheel = document.getElementById(id);
+      var scroll_amount = (wheel.scrollTop / wheel.scrollHeight) * 10;
+      if ( (scroll_amount >= 7) && load_feed[id] ) {
+        load_feed[id] = false;
+        if (id == 'user_profile_event_feed') {
+          var up_xhr = new XMLHttpRequest();
+          up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+          up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          up_xhr.onload = function() {
+            if (up_xhr.status == 200) {
+              var user_event_response = JSON.parse(up_xhr.responseText);
+              var user_event_cards = user_event_response['events'];
+              insertEventCardsToFeed('user_profile_event_feed', user_event_cards);
+              if (user_event_response['last_evaluated_key']) {
+                current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          up_xhr.send(JSON.stringify(current_user_event_last_evaluated_key));
         }
       }
     }
