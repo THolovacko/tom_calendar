@@ -1,9 +1,8 @@
     Alpha Todo
 ------------------
 User Profile
-  regular user profile
   popup when click on icon
-  update all needed local events when event edited or deleted
+  test all
 Search
 Explore Feed
 ? Push notifications

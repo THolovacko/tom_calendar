@@ -306,7 +306,8 @@ print %(
       'sq_year_wheel'      : -1
     }
     var load_feed = {
-      'user_profile_event_feed' : true
+      'user_profile_event_feed' : true,
+      'explore_event_feed'      : true
     }
     var event_url_ids = {};
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -777,6 +778,7 @@ print %(
       }
       var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
       var is_updating_image = document.getElementById("event_image_file").files.length > 0;
+      var current_title = document.getElementById("create_form_title_input").value.trim();
 
       var http = new XMLHttpRequest();
       http.open('POST', 'https://tomcalendar.com/save_event', true);
@@ -788,11 +790,56 @@ print %(
             var image_file = document.getElementById("event_image_file").files[0];
             var xhr = new XMLHttpRequest();
             xhr.open("PUT", upload_url);
-            xhr.onload = onCreateClose;
+            xhr.onload = function() {
+              var current_event_card = null;
+              var http_current_event = new XMLHttpRequest();
+              http_current_event.open('POST', 'https://tomcalendar.com/get_events', true);
+              http_current_event.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+              http_current_event.onload = function() {
+                if (http_current_event.status == 200) {
+                  current_event_card = JSON.parse(http_current_event.responseText)[0];
+                }
+
+                if (is_event_updating) {
+                  Object.keys(load_feed).forEach(function(feed){
+                    var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                    if (current_event_card_container) {
+                      ReactDOM.unmountComponentAtNode(current_event_card_container);
+                      insertEventCardsToFeed(feed,[current_event_card]);
+                    }
+                  });
+                } else {
+                  insertEventCardsToFeed('user_profile_event_feed',[current_event_card]);
+                }
+                onCreateClose();
+              };
+              http_current_event.send(JSON.stringify([`${current_user_id}-${current_title}`]));
+            };
             xhr.send(image_file);
-          }
-          else {
-            onCreateClose();
+          } else {
+            var current_event_card = null;
+            var http_current_event = new XMLHttpRequest();
+            http_current_event.open('POST', 'https://tomcalendar.com/get_events', true);
+            http_current_event.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            http_current_event.onload = function() {
+              if (http_current_event.status == 200) {
+                current_event_card = JSON.parse(http_current_event.responseText)[0];
+              }
+
+              if (is_event_updating) {
+                Object.keys(load_feed).forEach(function(feed){
+                  var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                  if (current_event_card_container) {
+                    ReactDOM.unmountComponentAtNode(current_event_card_container);
+                    insertEventCardsToFeed(feed,[current_event_card]);
+                  }
+                });
+              } else {
+                insertEventCardsToFeed('user_profile_event_feed',[current_event_card]);
+              }
+              onCreateClose();
+            };
+            http_current_event.send(JSON.stringify([`${current_user_id}-${current_title}`]));
           }
         } else {
           const title_error_regex = /title/;
@@ -1653,10 +1700,11 @@ print %(
     function calculate_image_url(image_id, image_extension) {
       return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
     }
-    function insertEventCardsToFeed(feed_id, event_cards) {
+    function insertEventCardsToFeed(feed_id, event_cards, insert_at_top=false) {
       var event_feed = document.getElementById(feed_id);
       for (i=0; i < event_cards.length; ++i) {
-        event_feed.insertAdjacentHTML("beforeend", `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        var position = insert_at_top ? "afterbegin" : "beforeend";
+        event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
         var event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
         var event_card_avatar = event_cards[i]['creator_picture'];
@@ -1855,6 +1903,17 @@ print %(
           if (alert_dialog_decision == 'OK') {
             var http2 = new XMLHttpRequest();
             http2.open('POST', 'https://tomcalendar.com/delete_event', true);
+            http2.onload = function() {
+              var current_event_card = feed_events[container_id];
+              Object.keys(load_feed).forEach(function(feed){
+                var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                if (current_event_card_container) {
+                  ReactDOM.unmountComponentAtNode(current_event_card_container);
+                  current_event_card_container.remove();
+                }
+              });
+              delete feed_events[container_id];
+            };
             http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
             http2.send(JSON.stringify({ google_id: event_user_id, title: event_title }));
           }

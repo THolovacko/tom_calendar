@@ -1,0 +1,35 @@
+#! /usr/bin/ruby
+
+session_id = get_session_id_from_cookies()
+current_google_id = session_id['google_id']
+
+events = nil
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
+  request_input = TomEnv::get('MESSAGE')
+  request_input.strip!
+  if !request_input || (request_input == '')
+    return StatusCodeStr::json([])
+  end
+  event_keys = JSON.parse(request_input)
+  event_keys = event_keys.map {|event_key_str| event_id = event_key_str.split('-',2); {google_id: event_id[0], title: event_id[1]} }
+
+  # @remember: this should probably be paginated, for now mainly used for single events
+  batch_events_result = dynamodb.batch_get_item({
+    request_items: {
+      "Events" => {
+        keys: event_keys,
+      },
+    },
+  })
+
+  events = batch_events_result.responses["Events"]
+end
+
+is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,events)
+events.each do |event|
+  event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
+end
+
+result_to_json = events.to_json.freeze
+return "Content-type: application/json\n\n#{result_to_json}"
