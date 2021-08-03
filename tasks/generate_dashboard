@@ -99,7 +99,19 @@ print %(
     <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
     <div id="other_user_profile">
       <i class="material-icons md-36 create_close" id="other_user_profile_create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
-      <object id="other_user_profile_content" type="text/html" width="100%" height="100%" style="overflow:auto;"></object>
+      <!-- might use this for events later <object id="other_user_profile_content" type="text/html" width="100%" height="100%" style="overflow:auto;"></object> -->
+      <div id="other_user_profile_content">
+        <div class="event_feed" id="other_user_profile_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="other_user_profile_image" align="center"></div>
+          <div id="other_user_header_img">
+            <img id="other_user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
+          </div>
+          <div id="other_user_profile_border"></div>
+          <p id="other_user_profile_name_txt">Username</p>
+          <div id="other_event_card_react_container_user_profile_0" style="margin-top:#{3 * VH_FACTOR}vh;"></div>
+          <p id="other_user_profile_no_post_txt">No posts yet</p>
+        </div>
+      </div>
     </div>
     <div id="create_form">
       <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
@@ -2971,7 +2983,7 @@ print %(
     .MuiDialog-container button {
       font-size: #{3.3 * FONT_FACTOR}rem;
     }
-    #user_profile_image::before {
+    #user_profile_image::before, #other_user_profile_image::before {
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
@@ -2983,13 +2995,13 @@ print %(
       height: 22vh;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     }
-    #user_profile_image {
+    #user_profile_image, #other_user_profile_image {
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
       -webkit-filter: blur(12px);
     }
-    #user_header_img {
+    #user_header_img, #other_user_header_img {
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
@@ -3000,7 +3012,7 @@ print %(
       position: relative;
       border-radius: #{0.5 * VH_FACTOR}vh; 
     }
-    #user_profile_name_txt {
+    #user_profile_name_txt, #other_user_profile_name_txt {
       font-size: 8rem;
       font-weight: 500;
       word-break: break-all;
@@ -3008,7 +3020,7 @@ print %(
       margin-bottom: 3vh;
       padding-top: 0;
     }
-    #user_profile_border {
+    #user_profile_border, #other_user_profile_border {
       border-top-style: solid;
       border-right-style: hidden;
       border-left-style: hidden;
@@ -3018,13 +3030,15 @@ print %(
       border-radius: 0;
       margin-top: -2.5vh;
     }
-    #user_profile_no_post_txt {
+    #user_profile_no_post_txt, #other_user_profile_no_post_txt {
       margin-top: 12vh;
       font-size: 6rem;
       font-weight: 500;
     }
     #other_user_profile_create_close {
       position: fixed;
+    }
+    #other_user_profile_event_feed {
     }
   </style>
 </html>
