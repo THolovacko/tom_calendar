@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: event card actions (user profile)
+# @current: event card actions (test all)
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -323,8 +323,9 @@ print %(
       'sq_year_wheel'      : -1
     }
     var load_feed = {
-      'user_profile_event_feed' : true,
-      'explore_event_feed'      : true
+      'user_profile_event_feed'       : true,
+      'other_user_profile_event_feed' : true,
+      'explore_event_feed'            : true
     }
     var event_url_ids = {};
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -338,7 +339,9 @@ print %(
     var is_event_updating = false;
     var feed_events = {};
     var user_profile = {};
+    var other_user_profile = {};
     var current_user_event_last_evaluated_key = '';
+    var other_current_user_event_last_evaluated_key = '';
 
     function init() {
       if(is_desktop) {
@@ -492,7 +495,7 @@ print %(
       request.send('');
 
       var http2 = new XMLHttpRequest();
-      http2.open('GET', 'https://tomcalendar.com/get_user_profile', true);
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
       http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http2.onload = function() {
         if (http2.status == 200) {
@@ -504,7 +507,7 @@ print %(
           document.getElementById('user_header_img').style.backgroundImage = `url(${user_profile['picture']})`;
         }
       };
-      http2.send();
+      http2.send('');
 
       // initialize wheel pickers
       var start_year_wheel = document.getElementById("start_year_wheel");
@@ -730,6 +733,18 @@ print %(
       document.getElementById("end_timepicker_txt").style.color = "";
 
       document.getElementById("other_user_profile").style.display = "none";
+
+      other_user_profile = {};
+      other_current_user_event_last_evaluated_key = '';
+      load_feed['other_user_profile_event_feed'] = true;
+
+      var other_event_card_containers = document.querySelectorAll(`[id^=event_card_react_container_${'other_user_profile_event_feed'.substring(0,3)}_]`);
+      other_event_card_containers.forEach(function(other_event_card_container) {
+        if (other_event_card_container) {
+          ReactDOM.unmountComponentAtNode(other_event_card_container);
+          other_event_card_container.remove();
+        }
+      });
     }
     function unactivateAllNavIcons() {
       var all_nav_icons = document.getElementsByClassName("material-icons nav select");
@@ -1791,8 +1806,36 @@ print %(
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
 
-      var profile_popup_content = document.getElementById("other_user_profile_content");
-      profile_popup_content.data = `https://tomcalendar.com/user?u=${event_user_id}`;
+      var http2 = new XMLHttpRequest();
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          other_user_profile = JSON.parse(http2.responseText);
+          document.getElementById('other_user_profile_image').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').src = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
+          document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+        }
+      };
+      http2.send(event_user_id);
+
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          if (user_event_cards.length > 0) {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "none";
+            other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+          }
+        }
+      };
+      up_xhr.send(JSON.stringify( {user_id: event_user_id, last_evaluated_key: ''} ));
 
       var profile_popup = document.getElementById("other_user_profile");
       var popup_close_layer = document.getElementById("popup_close_layer");
@@ -1837,6 +1880,16 @@ print %(
             // @remember: maybe have pending state then set state to finished here
             // @remember: should allow users to set reminder on and off as quick as they want (maybe queue?)
             is_currently_syncing_event = false;
+
+            Object.keys(load_feed).forEach(function(feed){
+              var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${event_user_id}-${event_title}`);
+              if (current_event_card_container) {
+                var sr_current_event_card = feed_events[`${event_user_id}-${event_title}`];
+                sr_current_event_card['is_reminder_set'] = is_creating;
+                ReactDOM.unmountComponentAtNode(current_event_card_container);
+                insertEventCardsToFeed(feed,[sr_current_event_card]);
+              }
+            });
           }
         };
         http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
@@ -2000,7 +2053,25 @@ print %(
               }
             }
           };
-          up_xhr.send(JSON.stringify(current_user_event_last_evaluated_key));
+          up_xhr.send(JSON.stringify( {user_id: '', last_evaluated_key: current_user_event_last_evaluated_key} ));
+        } else if (id == 'other_user_profile_event_feed') {
+          var oup_xhr = new XMLHttpRequest();
+          oup_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+          oup_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          oup_xhr.onload = function() {
+            if (oup_xhr.status == 200) {
+              var user_event_response = JSON.parse(oup_xhr.responseText);
+              var user_event_cards = user_event_response['events'];
+              insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+              if (user_event_response['last_evaluated_key']) {
+                current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          oup_xhr.send(JSON.stringify( {user_id: other_user_profile['google_id'], last_evaluated_key: other_current_user_event_last_evaluated_key} ));
         }
       }
     }
@@ -2105,6 +2176,10 @@ print %(
       bottom: 0;
       right: 0;
       z-index: 2;
+    }
+    #other_user_profile {
+      width: #{IS_DESKTOP ? 50 : 100}%;
+      margin-left: #{( IS_DESKTOP ? '25' : '0' )}%;
     }
     #popup_close_layer, #spinner_react_container {
       display: none;
@@ -3037,8 +3112,17 @@ print %(
     }
     #other_user_profile_create_close {
       position: fixed;
+      left: #{IS_DESKTOP ? (103 * VW_FACTOR) : (0 * VW_FACTOR)}vw;
+      z-index: 1;
+      background-color: #EEEEEE;
+    }
+    #other_user_profile_create_close:hover {
+      background-color: white;
     }
     #other_user_profile_event_feed {
+      position: relative;
+      width: 100%;
+      left: 0;
     }
   </style>
 </html>

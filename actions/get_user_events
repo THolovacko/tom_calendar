@@ -1,13 +1,18 @@
 #! /usr/bin/ruby
 
 session_id = get_session_id_from_cookies()
-current_google_id = session_id['google_id']
 request_input = TomEnv::get('MESSAGE')
 request_input.strip!
 if (request_input == '') || (request_input == ' ')
+  current_google_id  = session_id['google_id']
   last_evaluated_key = nil
 else
-  last_evaluated_key = JSON.parse(request_input)
+  request_input = JSON.parse(request_input)
+  current_google_id  = request_input['user_id']
+  last_evaluated_key = request_input['last_evaluated_key']
+
+  current_google_id = session_id['google_id'] unless current_google_id || (current_google_id.&strip != '')
+  last_evaluated_key = nil if last_evaluated_key.to_s.strip == ''
 end
 
 user_events = []
@@ -33,7 +38,7 @@ exponential_backoff do
 
 end
 
-is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,user_events)
+is_reminder_set_hash = generate_is_reminder_set_hash(session_id['google_id'],user_events)
 user_events.each do |event|
   event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
 end

@@ -1,7 +1,12 @@
 #! /usr/bin/ruby
 
 session_id = get_session_id_from_cookies()
-current_google_id = session_id['google_id']
+request_input = TomEnv::get('MESSAGE')
+if request_input.strip == ''
+  current_google_id = session_id['google_id']
+else
+  current_google_id = request_input.strip
+end
 
 cache_result = TomMemcache::get("userprofile#{current_google_id}").freeze
 

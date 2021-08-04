@@ -1,7 +1,6 @@
     Alpha Todo
 ------------------
 User Profile
-  popup when click on icon
   test all
 Search
 Explore Feed
