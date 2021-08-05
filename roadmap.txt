@@ -1,7 +1,5 @@
     Alpha Todo
 ------------------
-User Profile
-  test all
 Search
 Explore Feed
 ? Push notifications

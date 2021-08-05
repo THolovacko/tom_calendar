@@ -11,7 +11,7 @@ else
   current_google_id  = request_input['user_id']
   last_evaluated_key = request_input['last_evaluated_key']
 
-  current_google_id = session_id['google_id'] unless current_google_id || (current_google_id.&strip != '')
+  current_google_id  = session_id['google_id'] if current_google_id.nil? || (current_google_id&.strip == '')
   last_evaluated_key = nil if last_evaluated_key.to_s.strip == ''
 end
 
@@ -35,7 +35,6 @@ exponential_backoff do
   else
     last_evaluated_key = nil
   end
-
 end
 
 is_reminder_set_hash = generate_is_reminder_set_hash(session_id['google_id'],user_events)
