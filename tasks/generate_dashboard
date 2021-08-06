@@ -51,8 +51,19 @@ print %(
         </div>
       </div>
       <div class="page", id="search_page">
-        <input id="search" autocomplete="off" placeholder="Search Tomcalendar">
-        <div id="search_results"></div>
+        <input type="text" id="search_input" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar">
+        <ul id="search_results">
+          <li><a href="#">asdasd</a></li>
+          <li><a href="#">ggggg</a></li>
+          <li><a href="#">avlksmdf</a></li>
+          <li><a href="#">bbbbb</a></li>
+          <li><a href="#">3354</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">gds</a></li>
+          <li><a href="#">zaw</a></li>
+          <li><a href="#">zzzzz</a></li>
+          <li><a href="#">nsdfsdf</a></li>
+        </ul>
       </div>
       <div class="page", id="profile_page">
         <div class="event_feed" id="user_profile_event_feed" onscroll="onFeedScroll(this.id)">
@@ -2078,6 +2089,23 @@ print %(
         }
       }
     }
+    function onSearchKeyUp(id) {
+      var input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById(id);
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("search_results");
+      li = ul.getElementsByTagName('li');
+
+      for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName("a")[0];
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = "";
+        } else {
+          li[i].style.display = "none";
+        }
+      }
+    }
   </script>
   <style>
     html {
@@ -3085,6 +3113,45 @@ print %(
       position: relative;
       width: 100%;
       left: 0;
+    }
+    #search_input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 95%;
+      border-radius: 25px;
+      font-size: 16px;
+      padding: 7px 10px 7px 13px;
+      border: 1px solid #F5F6F8;
+      margin-bottom: 12px;
+      outline: none;
+      background-color: #F0F2F5;
+      color: #404041;
+    }
+    ::placeholder {
+      color: #6F7175;
+    }
+    ::-ms-input-placeholder {
+      color: #6F7175;
+    }
+    #search_results {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    #search_results li a {
+      border: 1px solid #ddd;
+      margin-top: -1px;
+      background-color: #f6f6f6;
+      padding: 12px;
+      text-decoration: none;
+      font-size: 18px;
+      color: black;
+      display: block; 
+      text-align: left;
+    }
+    #search_results li a:hover:not(.header) {
+      background-color: #eee;
     }
   </style>
 </html>
