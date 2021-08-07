@@ -51,6 +51,7 @@ print %(
         </div>
       </div>
       <div class="page", id="search_page">
+        <div id="search_tabs_react_container"></div>
         <input type="text" id="search_input" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar">
         <ul id="search_results">
           <li><a href="#">asdasd</a></li>
@@ -379,6 +380,7 @@ print %(
       }
 
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
+      ReactDOM.render(React.createElement(SearchTabs), document.getElementById("search_tabs_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(CardOptionsMenu), document.getElementById("card_options_react_container"));
       ReactDOM.render(React.createElement(SimpleSnackbar), document.getElementById("snackbar_notification_react_container"));
@@ -3124,6 +3126,7 @@ print %(
       padding: 7px 10px 7px 13px;
       border: 1px solid #F5F6F8;
       margin-bottom: 12px;
+      margin-top: 12px;
       outline: none;
       background-color: #F0F2F5;
       color: #404041;
@@ -3152,6 +3155,14 @@ print %(
     }
     #search_results li a:hover:not(.header) {
       background-color: #eee;
+    }
+    .MuiTab-wrapper {
+      font-size: 3.7rem;
+      //padding-left: 15.25vw;
+      //padding-right: 15.25vw;
+    }
+    .MuiTabs-flexContainer {
+      box-shadow: none;
     }
   </style>
 </html>

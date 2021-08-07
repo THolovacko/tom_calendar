@@ -7,7 +7,7 @@
 
 'use strict';
 
-const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem, Snackbar, CloseIcon, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } = MaterialUI;  // MaterialUI components
+const { Button, List, ListItem, ListItemAvatar, Avatar, ListItemText, Icon, FormControl, FormLabel, FormGroup, FormControlLabel, Checkbox, Switch, TextField, CircularProgress, Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, CardHeader, IconButton, Menu, MenuItem, Snackbar, CloseIcon, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Paper, Tabs, Tab } = MaterialUI;  // MaterialUI components
 
 class TomTest extends React.Component {
   constructor(props) {
@@ -273,4 +273,26 @@ function AlertDialog() {
     id: "ok_btn",
     autoFocus: true
   }, alert_ok_text))));
+}
+
+function SearchTabs() {
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  return /*#__PURE__*/React.createElement(Paper, null, /*#__PURE__*/React.createElement(Tabs, {
+    value: value,
+    onChange: handleChange,
+    indicatorColor: "primary",
+    textColor: "primary",
+    variant: "fullWidth",
+    selectionFollowsFocus: true,
+    centered: true 
+  }, /*#__PURE__*/React.createElement(Tab, {
+    label: "Events"
+  }), /*#__PURE__*/React.createElement(Tab, {
+    label: "People"
+  })));
 }
