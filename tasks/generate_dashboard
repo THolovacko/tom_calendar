@@ -51,19 +51,17 @@ print %(
         </div>
       </div>
       <div class="page", id="search_page">
-        <div id="search_tabs_react_container"></div>
         <input type="text" id="search_input" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar">
         <ul id="search_results">
-          <li><a href="#">asdasd</a></li>
-          <li><a href="#">ggggg</a></li>
-          <li><a href="#">avlksmdf</a></li>
-          <li><a href="#">bbbbb</a></li>
-          <li><a href="#">3354</a></li>
-          <li><a href="#">3</a></li>
-          <li><a href="#">gds</a></li>
-          <li><a href="#">zaw</a></li>
-          <li><a href="#">zzzzz</a></li>
-          <li><a href="#">nsdfsdf</a></li>
+          <li><a href="#"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon"></span>ggggg</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>avlksmdf</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>bbbbb</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>3354</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>3</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>gds</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>zaw</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>zzzzz</a></li>
+          <li><a href="#"><i class="material-icons md-36">search</i>nsdfsdf</a></li>
         </ul>
       </div>
       <div class="page", id="profile_page">
@@ -380,7 +378,6 @@ print %(
       }
 
       ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
-      ReactDOM.render(React.createElement(SearchTabs), document.getElementById("search_tabs_react_container"));
       ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
       ReactDOM.render(React.createElement(CardOptionsMenu), document.getElementById("card_options_react_container"));
       ReactDOM.render(React.createElement(SimpleSnackbar), document.getElementById("snackbar_notification_react_container"));
@@ -3120,13 +3117,13 @@ print %(
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      width: 95%;
+      width: 93%;
       border-radius: 25px;
-      font-size: 16px;
-      padding: 7px 10px 7px 13px;
+      font-size: 17px;
+      padding: 7px 10px 7px 15px;
       border: 1px solid #F5F6F8;
-      margin-bottom: 12px;
-      margin-top: 12px;
+      margin-bottom: 8px;
+      margin-top: 6px;
       outline: none;
       background-color: #F0F2F5;
       color: #404041;
@@ -3143,26 +3140,35 @@ print %(
       margin: 0;
     }
     #search_results li a {
-      border: 1px solid #ddd;
-      margin-top: -1px;
-      background-color: #f6f6f6;
       padding: 12px;
       text-decoration: none;
-      font-size: 18px;
-      color: black;
-      display: block; 
+      font-size: 16px;
+      display: flex;
+      align-items: center;
       text-align: left;
+      vertical-align: middle;
+      background-color: #FEFFFE;
+      color: #151515;
+    }
+    #search_results li a i {
+      color: #828589;
+      transform: scale(1.25, 1.25);
+      margin-left: 14px;
+      margin-right: 14px;
     }
     #search_results li a:hover:not(.header) {
-      background-color: #eee;
+      background-color: #EEEEEE;
     }
-    .MuiTab-wrapper {
-      font-size: 3.7rem;
-      //padding-left: 15.25vw;
-      //padding-right: 15.25vw;
-    }
-    .MuiTabs-flexContainer {
-      box-shadow: none;
+    .search_result_icon {
+      background: url('https://lh3.googleusercontent.com/a-/AOh14GjmBR_Pnw-IVaP1cKuR5XO_WI4SRE_z-Cu4l6XGmA=s96-c');
+      background-repeat: no-repeat;
+      height: 38px;
+      width: 38px;
+      border-radius: 50px;
+      background-size: cover;
+      align: center;
+      margin-left: 8px;
+      margin-right: 8px;
     }
   </style>
 </html>
