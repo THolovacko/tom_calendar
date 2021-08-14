@@ -5,6 +5,7 @@
 # @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
 
 session_id = {}
+google_profile_params = nil
 exponential_backoff do
   # create google tokens (store credentials) and  create session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
@@ -41,5 +42,8 @@ exponential_backoff do
     ]
   })
 end
+
+# @optimize: user object doesn't need all data for autocomplete
+Autocomplete::add_user(google_profile_params[:item])
 
 return "Content-type: application/json\n\n#{session_id.to_json}"

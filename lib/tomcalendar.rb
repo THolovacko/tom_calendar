@@ -479,7 +479,33 @@ def background_task_worker_thread()
   end
 end
 
+class Autocomplete
+  # @remember: currently each server ip needs to be added to access policy
+  @endpoint = ENV['ELASTICSEARCH_ENDPOINT'].freeze
+
+  def self.add_user(user)
+    user.transform_keys!(&:to_s)
+    `curl -XPUT --header 'Content-Type: application/json' #{@endpoint}/users/_doc/#{user['google_id']} -d '#{user.to_json}'`
+  end
+  def self.add_event(event)
+    event.transform_keys!(&:to_s)
+    `curl -XPUT --header 'Content-Type: application/json' #{@endpoint}/events/_doc/#{event['google_id']}-#{event['title']} -d '#{event.to_json}'`
+  end
+  def self.delete_user(user)
+    user.transform_keys!(&:to_s)
+    `curl -X DELETE '#{@endpoint}/users/_doc/#{user["google_id"]}'`
+  end
+  def self.delete_event(event)
+    event.transform_keys!(&:to_s)
+    `curl -X DELETE '#{@endpoint}/events/_doc/#{event["google_id"]}-#{event["title"]}'`
+  end
+  def self.query_users(query)
+  end
+  def self.query_events(query)
+  end
+end
 
 
-# init background task thread
+
+# init background task thread (KEEP LAST LINE IN FILE)
 Thread.new { background_task_worker_thread() }

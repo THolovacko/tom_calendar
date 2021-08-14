@@ -34,6 +34,7 @@
   * SESSION_HASH_LEFT_PADDING (arbitrary sized random string)
   * SESSION_HASH_RIGHT_PADDING (arbitrary sized random string)
   * GOOGLE_MAPS_API_KEY
+  * ELASTICSEARCH_ENDPOINT
 * create tables in DynamoDB (will list tables later)
 
 # Deployment Requirements
