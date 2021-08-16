@@ -10,6 +10,7 @@ require 'aws-sdk-s3'
 require 'time'
 require 'tzinfo'
 require 'uri'
+require 'cgi'
 
 def exponential_backoff(&block)
   retries = 0
@@ -485,19 +486,23 @@ class Autocomplete
 
   def self.add_user(user)
     user.transform_keys!(&:to_s)
-    `curl -XPUT --header 'Content-Type: application/json' #{@endpoint}/users/_doc/#{user['google_id']} -d '#{user.to_json}'`
+    encoded_endpoint = "#{@endpoint}/users/_doc/#{CGI.escape(user['google_id'])}"
+    `curl -XPUT --header 'Content-Type: application/json' '#{encoded_endpoint}' -d '#{user.to_json}'`
   end
   def self.add_event(event)
     event.transform_keys!(&:to_s)
-    `curl -XPUT --header 'Content-Type: application/json' #{@endpoint}/events/_doc/#{event['google_id']}-#{event['title']} -d '#{event.to_json}'`
+    encoded_endpoint = "#{@endpoint}/events/_doc/#{CGI.escape(event['google_id'])}-#{CGI.escape(event['title'])}"
+    `curl -XPUT --header 'Content-Type: application/json' '#{encoded_endpoint}' -d '#{event.to_json}'`
   end
   def self.delete_user(user)
     user.transform_keys!(&:to_s)
-    `curl -X DELETE '#{@endpoint}/users/_doc/#{user["google_id"]}'`
+    encoded_endpoint = "#{@endpoint}/users/_doc/#{CGI.escape(user["google_id"])}"
+    `curl -X DELETE '#{encoded_endpoint}'`
   end
   def self.delete_event(event)
     event.transform_keys!(&:to_s)
-    `curl -X DELETE '#{@endpoint}/events/_doc/#{event["google_id"]}-#{event["title"]}'`
+    encoded_endpoint = "#{@endpoint}/events/_doc/#{CGI.escape(event["google_id"])}-#{CGI.escape(event["title"])}"
+    `curl -X DELETE '#{encoded_endpoint}'`
   end
   def self.search_users(username,from_index=0)
     JSON.parse(`curl -X POST --header 'Content-Type: application/json' #{@endpoint}/users/_search -d '{"size":"10", "from":"#{from_index}", "query":{"multi_match":{"fields":["email^2","name"],"fuzziness":"AUTO","query":"#{username}"}}}'`)["hits"]["hits"]

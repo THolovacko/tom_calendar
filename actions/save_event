@@ -111,7 +111,8 @@ exponential_backoff do
   queue_background_task('update_all_event_subscribed_reminders', {event: event}) if event['is_updating']
   upload_url = tmp_upload_url
 
-  Autocomplete::add_event(event)
+  auto_complete_params = event.slice('google_id','title','description')
+  queue_background_task('autocomplete_add_event', {auto_complete_params: auto_complete_params})
 end
 
 return StatusCodeStr::INTERNAL_SERVER_ERROR unless upload_url

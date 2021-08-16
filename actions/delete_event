@@ -42,7 +42,8 @@ exponential_backoff do
   delete_google_calendar_events([deleted_event],google_calendar_id,session_id['google_id'])
   queue_background_task('delete_all_event_subscribed_reminders', {event: deleted_event})
 
-  Autocomplete::delete_event(deleted_event)
+  auto_complete_params = deleted_event
+  queue_background_task('autocomplete_delete_event', {auto_complete_params: auto_complete_params})
 end
 
 TomMemcache::set("deleted_event#{event_id}", 'OK', 3).freeze

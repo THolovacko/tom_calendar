@@ -1,0 +1,5 @@
+#! /usr/bin/ruby
+
+auto_complete_params = $background_task_params[:auto_complete_params]
+
+Autocomplete::delete_user(auto_complete_params)

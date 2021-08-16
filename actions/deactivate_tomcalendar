@@ -110,7 +110,8 @@ exponential_backoff do
 
   google_authorizer.revoke_authorization(google_id)
 
-  Autocomplete::delete_user({ google_id: google_id })
+  auto_complete_params = { google_id: google_id }
+  queue_background_task('autocomplete_delete_user', {auto_complete_params: auto_complete_params})
 end
 
 TomMemcache::set("deactivate_tc#{cookie_session_id}", 'OK', 5).freeze

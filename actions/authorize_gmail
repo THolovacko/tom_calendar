@@ -43,7 +43,7 @@ exponential_backoff do
   })
 end
 
-# @optimize: user object doesn't need all data for autocomplete
-Autocomplete::add_user(google_profile_params[:item])
+auto_complete_params = google_profile_params[:item].slice(:google_id,:email,:name,:picture)
+queue_background_task('autocomplete_add_user', {auto_complete_params: auto_complete_params})
 
 return "Content-type: application/json\n\n#{session_id.to_json}"
