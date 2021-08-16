@@ -499,9 +499,11 @@ class Autocomplete
     event.transform_keys!(&:to_s)
     `curl -X DELETE '#{@endpoint}/events/_doc/#{event["google_id"]}-#{event["title"]}'`
   end
-  def self.query_users(query)
+  def self.search_users(username,from_index=0)
+    JSON.parse(`curl -X POST --header 'Content-Type: application/json' #{@endpoint}/users/_search -d '{"size":"10", "from":"#{from_index}", "query":{"multi_match":{"fields":["email^2","name"],"fuzziness":"AUTO","query":"#{username}"}}}'`)["hits"]["hits"]
   end
-  def self.query_events(query)
+  def self.search_events(event_title)
+    JSON.parse(`curl -X POST --header 'Content-Type: application/json' #{@endpoint}/events/_search -d '{"size":"10", "from":"0", "query":{"multi_match":{"fields":["title^2","description"],"fuzziness":"AUTO","query":"#{event_title}"}}}'`)["hits"]["hits"]
   end
 end
 
