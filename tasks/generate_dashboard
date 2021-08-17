@@ -2082,6 +2082,8 @@ print %(
       }
     }
     function onSearchKeyUp(id) {
+      // @current: test more data and implement paginated scroll
+
       var input, filter, ul, li, a, i, txtValue;
       input = document.getElementById(id);
       filter = input.value.toUpperCase();
