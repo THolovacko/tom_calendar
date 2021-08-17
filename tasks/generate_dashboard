@@ -346,7 +346,6 @@ print %(
     var autocomplete_event_results = {};
     var autocomplete_user_results  = {};
     var autocomplete_queries = {};
-    var search_results = [];
 
     function init() {
       if(is_desktop) {
@@ -2092,28 +2091,32 @@ print %(
         return;
       }
 
+      const is_event_regex = new RegExp('event');
+
       if ( !autocomplete_queries[input.value.trim()] || ( ((Date.now() / 1000) - autocomplete_queries[input.value.trim()]) > 60 ) ) {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://tomcalendar.com/search_autocomplete', true);
         xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         xhr.onload = function() {
           if (xhr.status == 200) {
-            search_results = JSON.parse(xhr.responseText);
+            var search_results = JSON.parse(xhr.responseText);
             var search_bar_list = document.getElementById("search_results");
 
             // @remember: don't need duplicate event titles for autocomplete only for users
             search_results.forEach(function(search_result){
               if (search_result['title']) { // if event result
-                if (!autocomplete_event_results[`${search_result['google_id']}-${search_result['title']}`]) {
+                if (!autocomplete_event_results[search_result['title']]) {
                   search_bar_list.insertAdjacentHTML("beforeend", `
-                    <li><a href="#"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
+                    <li id="event_${search_result['title']}"><a href="#"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
                   `);
-                  autocomplete_event_results[`${search_result['google_id']}-${search_result['title']}`] = search_result;
+                  autocomplete_event_results[search_result['title']] = search_result;
+                } else {
+                  autocomplete_event_results[search_result['title']]['description'] += ` ${search_result['description']}`
                 }
               } else {  // if user result
                 if (!autocomplete_user_results[search_result['google_id']]) {
                   search_bar_list.insertAdjacentHTML("beforeend", `
-                    <li><a href="#"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                    <li id="user_${search_result['google_id']}"><a href="#"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
                   `);
                   autocomplete_user_results[search_result['google_id']] = search_result;
                 }
@@ -2129,27 +2132,25 @@ print %(
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
               li[i].style.display = "";
             } else {
-              li[i].style.display = "none";
-              search_results.forEach(function(search_result){
-                var keywords;
-                if (search_result['title']) { // if event result
-                  keywords = `${search_result['title']} ${search_result['description']}`;
-                } else {  // if user result
-                  keywords = `${search_result['name']} ${search_result['email']}`;
-                }
+              var keywords;
+              if (is_event_regex.test(li[i].id)) {
+                keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
+              } else {
+                keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
+              }
 
-                if (keywords.toUpperCase().indexOf(filter) > -1) {
-                  li[i].style.display = "";
-                } else {
-                  li[i].style.display = "none";
-                }
-              });
+              if (keywords.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+              } else {
+                li[i].style.display = "none";
+              }
             }
           }
         };
         xhr.send(JSON.stringify( {user_start_from: '0', query_input_str: input.value.trim()} ));
         autocomplete_queries[input.value.trim()] = Date.now() / 1000;
       } else {
+        // copy and pasted from above
         li = ul.getElementsByTagName('li');
         for (i = 0; i < li.length; i++) {
           a = li[i].getElementsByTagName("a")[0];
@@ -2158,21 +2159,18 @@ print %(
           if (txtValue.toUpperCase().indexOf(filter) > -1) {
             li[i].style.display = "";
           } else {
-            li[i].style.display = "none";
-            search_results.forEach(function(search_result){
-              var keywords;
-              if (search_result['title']) { // if event result
-                keywords = `${search_result['title']} ${search_result['description']}`;
-              } else {  // if user result
-                keywords = `${search_result['name']} ${search_result['email']}`;
-              }
+            var keywords;
+            if (is_event_regex.test(li[i].id)) {
+              keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
+            } else {
+              keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
+            }
 
-              if (keywords.toUpperCase().indexOf(filter) > -1) {
-                li[i].style.display = "";
-              } else {
-                li[i].style.display = "none";
-              }
-            });
+            if (keywords.toUpperCase().indexOf(filter) > -1) {
+              li[i].style.display = "";
+            } else {
+              li[i].style.display = "none";
+            }
           }
         }
       }
