@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: search
+# @current: search : result onclick and default searches
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -2084,8 +2084,6 @@ print %(
       }
     }
     function onSearchKeyUp(id) {
-      // @current: test more data and implement paginated scroll
-
       var input, filter, ul, li, a, i, txtValue;
       input = document.getElementById(id);
       filter = input.value.toUpperCase();
