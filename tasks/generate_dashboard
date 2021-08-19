@@ -53,6 +53,9 @@ print %(
       <div class="page", id="search_page">
         <input type="text" id="search_input" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar">
         <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
+        <div class="event_feed" style="display:none;" id="search_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="event_card_react_container_search_0" style="margin-top:#{14 * VH_FACTOR}vh;"></div>
+        </div>
       </div>
       <div class="page", id="profile_page">
         <div class="event_feed" id="user_profile_event_feed" onscroll="onFeedScroll(this.id)">
@@ -327,6 +330,7 @@ print %(
       'user_profile_event_feed'       : true,
       'other_user_profile_event_feed' : true,
       'explore_event_feed'            : true,
+      'search_event_feed'             : true,
       'search_results'                : true
     }
     var event_url_ids = {};
@@ -343,6 +347,8 @@ print %(
     var user_profile = {};
     var other_user_profile = {};
     var current_user_event_last_evaluated_key = '';
+    var current_search_event_last_evaluated_key = '';
+    var current_search_event_title = '';
     var other_current_user_event_last_evaluated_key = '';
     var autocomplete_event_results = {};
     var autocomplete_user_results  = {};
@@ -2080,7 +2086,26 @@ print %(
             }
           };
           oup_xhr.send(JSON.stringify( {user_id: other_user_profile['google_id'], last_evaluated_key: other_current_user_event_last_evaluated_key} ));
+        } else if (id == 'search_event_feed') {
+          var s_xhr = new XMLHttpRequest();
+          s_xhr.open('POST', 'https://tomcalendar.com/search_events', true);
+          s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          s_xhr.onload = function() {
+            if (s_xhr.status == 200) {
+              var search_event_response = JSON.parse(s_xhr.responseText);
+              var search_event_cards = search_event_response['events'];
+              insertEventCardsToFeed('search_event_feed', search_event_cards);
+              if (search_event_response['last_evaluated_key']) {
+                current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: current_search_event_last_evaluated_key} ));
         }
+
       }
     }
     function onSearchKeyUp(id) {
@@ -2088,6 +2113,20 @@ print %(
       input = document.getElementById(id);
       filter = input.value.toUpperCase();
       ul = document.getElementById("search_results");
+
+      if (document.getElementById("search_event_feed").style.display != 'none') {
+        document.getElementById("search_event_feed").style.display = "none";
+        document.getElementById("search_results").style.display    = "";
+        load_feed['search_event_feed'] = true;
+        current_search_event_last_evaluated_key = '';
+        var search_event_card_containers = document.querySelectorAll(`[id^=event_card_react_container_${'search_event_feed'.substring(0,3)}_]`);
+        search_event_card_containers.forEach(function(search_event_card_container) {
+          if (search_event_card_container) {
+            ReactDOM.unmountComponentAtNode(search_event_card_container);
+            search_event_card_container.remove();
+          }
+        });
+      }
 
       if (!input.value || input.value.trim() == '') {
         return;
@@ -2115,7 +2154,7 @@ print %(
               if (search_result['title']) { // if event result
                 if (!autocomplete_event_results[search_result['title']]) {
                   search_bar_list.insertAdjacentHTML("beforeend", `
-                    <li id="event_${search_result['title']}"><a href="#"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
+                    <li id="event_${search_result['title']}"><a onclick="onEventSearchResultClick('${search_result['title']}')"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
                   `);
                   autocomplete_event_results[search_result['title']] = search_result;
                 } else {
@@ -2124,7 +2163,7 @@ print %(
               } else {  // if user result
                 if (!autocomplete_user_results[search_result['google_id']]) {
                   search_bar_list.insertAdjacentHTML("beforeend", `
-                    <li id="user_${search_result['google_id']}"><a href="#"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                    <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
                   `);
                   autocomplete_user_results[search_result['google_id']] = search_result;
                 }
@@ -2210,7 +2249,7 @@ print %(
                   search_results.forEach(function(search_result) {
                     if (!autocomplete_user_results[search_result['google_id']]) {
                       search_bar_list.insertAdjacentHTML("beforeend", `
-                        <li id="user_${search_result['google_id']}"><a href="#"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                        <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
                       `);
                       autocomplete_user_results[search_result['google_id']] = search_result;
                     }
@@ -2230,6 +2269,63 @@ print %(
           autocomplete_queries[`${input.value.trim()}${search_user_start_from[input.value.trim()]}`] = Date.now() / 1000;
         }
       }
+    }
+    function onUserSearchResultClick(user_id) {
+      var http2 = new XMLHttpRequest();
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          other_user_profile = JSON.parse(http2.responseText);
+          document.getElementById('other_user_profile_image').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').src = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
+          document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+        }
+      };
+      http2.send(user_id);
+
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          if (user_event_cards.length > 0) {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "none";
+            other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+          }
+        }
+      };
+      up_xhr.send(JSON.stringify( {user_id: user_id, last_evaluated_key: ''} ));
+
+      var profile_popup = document.getElementById("other_user_profile");
+      var popup_close_layer = document.getElementById("popup_close_layer");
+      popup_close_layer.style.display = "block";
+      profile_popup.style.display = "block";
+    }
+    function onEventSearchResultClick(event_title) {
+      current_search_event_title = event_title;
+      document.getElementById("search_event_feed").style.display = "";
+      document.getElementById("search_results").style.display    = "none";
+
+      var s_xhr = new XMLHttpRequest();
+      s_xhr.open('POST', 'https://tomcalendar.com/search_events', true);
+      s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      s_xhr.onload = function() {
+        if (s_xhr.status == 200) {
+          var search_event_response = JSON.parse(s_xhr.responseText);
+          var search_event_cards = search_event_response['events'];
+          if (search_event_cards.length > 0) {
+            current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('search_event_feed', search_event_cards);
+          }
+        }
+      };
+      s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: ''} ));
     }
   </script>
   <style>
@@ -3253,6 +3349,9 @@ print %(
       outline: none;
       background-color: #F0F2F5;
       color: #404041;
+      z-index: 1;
+      position: fixed;
+      left: 3%;
     }
     ::placeholder {
       color: #6F7175;
@@ -3264,6 +3363,7 @@ print %(
       list-style-type: none;
       padding: 0;
       margin: 0;
+      margin-top: 7vh;
       height: 70vh;
       overflow-y: scroll;
     }
