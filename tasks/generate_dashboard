@@ -53,6 +53,7 @@ print %(
       <div class="page", id="search_page">
         <div class="event_feed" style="display:none;" id="search_event_feed" onscroll="onFeedScroll(this.id)">
           <div id="event_card_react_container_search_0" style="margin-top:#{14 * VH_FACTOR}vh;"></div>
+          <p style="display:none;" id="search_no_events_txt">No events found</p>
         </div>
         <div style="background-color:rgba(254, 255, 254, 1);border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;width:100%;padding-top:7vh;z-index:0;position:relative;"><input type="text" id="search_input" onclick="onSearchBarSelect()" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar"></div>
         <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
@@ -66,7 +67,7 @@ print %(
           <div id="user_profile_border"></div>
           <p id="user_profile_name_txt">Username</p>
           <div id="event_card_react_container_user_profile_0" style="margin-top:#{3 * VH_FACTOR}vh;"></div>
-          <p id="user_profile_no_post_txt">No events yet</p>
+          <p id="user_profile_no_post_txt">No events created yet</p>
         </div>
       </div>
       <div class="page", id="settings_page">
@@ -441,6 +442,70 @@ print %(
         }
       };
       http.send(user_time_zone);
+
+      var s_xhr = new XMLHttpRequest();
+      s_xhr.open('GET', 'https://tomcalendar.com/get_top_autocomplete', true);
+      s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      s_xhr.onload = function() {
+        if (s_xhr.status == 200) {
+          var search_results;
+          if (s_xhr.responseText) {
+            search_results = JSON.parse(s_xhr.responseText);
+            //search_user_start_from[input.value.trim()] = 10;
+          } else {
+            search_results = [];
+          }
+          var search_bar_list = document.getElementById("search_results");
+
+          search_results.forEach(function(search_result) {
+            if (search_result['title']) { // if event result
+              if (!autocomplete_event_results[search_result['title']]) {
+                search_bar_list.insertAdjacentHTML("beforeend", `
+                  <li id="event_${search_result['title']}"><a onclick="onEventSearchResultClick('${search_result['title']}')"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
+                `);
+                autocomplete_event_results[search_result['title']] = search_result;
+              } else {
+                autocomplete_event_results[search_result['title']]['description'] += ` ${search_result['description']}`
+              }
+            } else {  // if user result
+              if (!autocomplete_user_results[search_result['google_id']]) {
+                search_bar_list.insertAdjacentHTML("beforeend", `
+                  <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                `);
+                autocomplete_user_results[search_result['google_id']] = search_result;
+              }
+            }
+          });
+        }
+        
+        /*
+        var ul = document.getElementById("search_results");
+        var li = ul.getElementsByTagName('li');
+        for (i = 0; i < li.length; i++) {
+          a = li[i].getElementsByTagName("a")[0];
+          txtValue = a.textContent || a.innerText;
+
+          li[i].style.display = "";
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+          } else {
+            var keywords;
+            if (is_event_regex.test(li[i].id)) {
+              keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
+            } else {
+              keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
+            }
+
+            if (keywords.toUpperCase().indexOf(filter) > -1) {
+              li[i].style.display = "";
+            } else {
+              li[i].style.display = "none";
+            }
+          }
+        }
+        */
+      };
+      s_xhr.send();
 
       var request = new XMLHttpRequest();
       request.open('POST', 'https://tomcalendar.com/load_settings_data', true);
@@ -2128,7 +2193,18 @@ print %(
       filter = input.value.toUpperCase();
       ul = document.getElementById("search_results");
 
+      if (document.getElementById("search_event_feed").style.display != 'none') {
+        document.getElementById("search_no_events_txt").style.display = "none";
+        onSearchBarSelect();
+      }
+
       if (!input.value || input.value.trim() == '') {
+        return;
+      }
+
+      if(event.key === 'Enter') {
+        document.getElementById("search_no_events_txt").style.display = "none";
+        onEventSearchResultClick(input.value);
         return;
       }
 
@@ -2321,6 +2397,8 @@ print %(
           if (search_event_cards.length > 0) {
             current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
             insertEventCardsToFeed('search_event_feed', search_event_cards);
+          } else {
+            document.getElementById("search_no_events_txt").style.display = "";
           }
         }
       };
@@ -3315,7 +3393,7 @@ print %(
       border-radius: 0;
       margin-top: -2.5vh;
     }
-    #user_profile_no_post_txt, #other_user_profile_no_post_txt {
+    #user_profile_no_post_txt, #other_user_profile_no_post_txt, #search_no_events_txt {
       margin-top: 12vh;
       font-size: 6rem;
       font-weight: 500;
