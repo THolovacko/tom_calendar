@@ -330,8 +330,7 @@ print %(
       'user_profile_event_feed'       : true,
       'other_user_profile_event_feed' : true,
       'explore_event_feed'            : true,
-      'search_event_feed'             : true,
-      'search_results'                : true
+      'search_event_feed'             : true
     }
     var event_url_ids = {};
     const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -2133,7 +2132,6 @@ print %(
       }
 
       const is_event_regex = new RegExp('event');
-      load_feed['search_results'] = true;
 
       if ( !autocomplete_queries[input.value.trim()] || ( ((Date.now() / 1000) - autocomplete_queries[input.value.trim()]) > 60 ) ) {
         var xhr = new XMLHttpRequest();
