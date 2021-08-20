@@ -51,11 +51,11 @@ print %(
         </div>
       </div>
       <div class="page", id="search_page">
-        <input type="text" id="search_input" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar">
-        <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
         <div class="event_feed" style="display:none;" id="search_event_feed" onscroll="onFeedScroll(this.id)">
           <div id="event_card_react_container_search_0" style="margin-top:#{14 * VH_FACTOR}vh;"></div>
         </div>
+        <div style="background-color:rgba(254, 255, 254, 1);border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;width:100%;padding-top:7vh;z-index:0;position:relative;"><input type="text" id="search_input" onclick="onSearchBarSelect()" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar"></div>
+        <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
       </div>
       <div class="page", id="profile_page">
         <div class="event_feed" id="user_profile_event_feed" onscroll="onFeedScroll(this.id)">
@@ -2107,12 +2107,7 @@ print %(
 
       }
     }
-    function onSearchKeyUp(id) {
-      var input, filter, ul, li, a, i, txtValue;
-      input = document.getElementById(id);
-      filter = input.value.toUpperCase();
-      ul = document.getElementById("search_results");
-
+    function onSearchBarSelect() {
       if (document.getElementById("search_event_feed").style.display != 'none') {
         document.getElementById("search_event_feed").style.display = "none";
         document.getElementById("search_results").style.display    = "";
@@ -2126,6 +2121,12 @@ print %(
           }
         });
       }
+    }
+    function onSearchKeyUp(id) {
+      var input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById(id);
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("search_results");
 
       if (!input.value || input.value.trim() == '') {
         return;
@@ -3348,8 +3349,7 @@ print %(
       background-color: #F0F2F5;
       color: #404041;
       z-index: 1;
-      position: fixed;
-      left: 3%;
+      position: relative;
     }
     ::placeholder {
       color: #6F7175;
@@ -3361,7 +3361,7 @@ print %(
       list-style-type: none;
       padding: 0;
       margin: 0;
-      margin-top: 7vh;
+      margin-top: 1vh;
       height: 70vh;
       overflow-y: scroll;
     }
@@ -3394,6 +3394,9 @@ print %(
       align: center;
       margin-left: 8px;
       margin-right: 8px;
+    }
+    #search_page {
+      margin-top: #{0 * VH_FACTOR}vh;
     }
   </style>
 </html>
