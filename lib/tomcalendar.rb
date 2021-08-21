@@ -513,6 +513,9 @@ class Autocomplete
   def self.get_recent_searched(limit)
     JSON.parse(`curl -X GET "#{@endpoint}/events,users/_search?size=#{limit}" -H 'Content-Type: application/json'`)["hits"]["hits"]
   end
+  def self.get_random_events(limit)
+    JSON.parse(`curl -X GET "#{@endpoint}/events/_search?size=#{limit}" -H 'Content-Type: application/json'`)["hits"]["hits"]
+  end
 end
 
 

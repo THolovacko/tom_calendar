@@ -10,7 +10,7 @@ begin
 
   reminders_params = {
     table_name: 'EventReminders',
-    index_name: "event_id-last_updated-index",
+    index_name: "event_id-last_updated_timestamp-index",
     key_condition_expression: "#eid = :event_id",
     expression_attribute_names: { "#eid" => "event_id" },
     expression_attribute_values: { ":event_id" => event_id },
@@ -26,7 +26,7 @@ begin
     subscriber_google_calendar_id = ( dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: { google_id: subscriber_google_id } })&.item || {} )['google_calendar_id']
     delete_google_calendar_events([event],subscriber_google_calendar_id,subscriber_google_id) if subscriber_google_calendar_id && subscriber_google_id
     create_google_calendar_events([event],subscriber_google_calendar_id,subscriber_google_id) if subscriber_google_calendar_id && subscriber_google_id
-    dynamodb.update_item({ table_name: 'EventReminders', key: {subscriber_id: subscriber_google_id, event_id: reminder['event_id']}, update_expression: 'SET last_updated = :lu', expression_attribute_values: {':lu': Time.now.to_s} })
+    dynamodb.update_item({ table_name: 'EventReminders', key: {subscriber_id: subscriber_google_id, event_id: reminder['event_id']}, update_expression: 'SET last_updated_timestamp = :lu', expression_attribute_values: {':lu': Time.now.to_i} })
   end
 
   if query_result.last_evaluated_key != last_evaluated_key

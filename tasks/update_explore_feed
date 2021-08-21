@@ -1,0 +1,51 @@
+#! /usr/bin/ruby
+
+end_time   = Time.now.to_i
+start_time = end_time - 86400 # 24 hours ago
+
+event_id_to_count = {}
+begin
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+  last_evaluated_key ||= nil
+  db_attempts ||= 0
+
+  reminders_params = {
+    table_name: 'EventReminders',
+    index_name: "event_id-last_updated_timestamp-index",
+    key_condition_expression: "#lut BETWEEN :start_time AND :end_time",
+    expression_attribute_names: { "#lut" => "last_updated_timestamp" },
+    expression_attribute_values: { ":start_time" => start_time, ":end_time" => end_time },
+    limit: 1000,
+    exclusive_start_key: last_evaluated_key
+  }
+
+  query_result = dynamodb.query(reminders_params)
+  query_result.items.each do |reminder|
+    if event_id_to_count[reminder['event_id']].nil?
+      event_id_to_count[reminder['event_id']] = 1
+    else
+      event_id_to_count[reminder['event_id']] = event_id_to_count[reminder['event_id']] + 1
+    end
+  end
+
+  if query_result.last_evaluated_key != last_evaluated_key
+    last_evaluated_key = query_result.last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
+rescue Exception => e
+  if db_attempts < 8
+    db_attempts = db_attempts + 1
+    sleep 1
+    retry
+  else
+    raise "Failed to update explore feed"
+  end
+end
+
+sorted_ids = event_id_to_count.sort.map{|v| v[0]}
+
+if sorted_ids < 100
+  #fill remainder with whatever
+end

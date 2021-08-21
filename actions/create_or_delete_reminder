@@ -20,7 +20,7 @@ exponential_backoff do
   event_reminder = dynamodb.get_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })&.item
   if is_creating
     return StatusCodeStr::OK if event_reminder
-    dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event_user_id}-#{event_title}", last_updated: Time.now.to_s, subscriber_id: session_id['google_id']} })
+    dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event_user_id}-#{event_title}", last_updated_timestamp: Time.now.to_i, subscriber_id: session_id['google_id']} })
     create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
   else
     return StatusCodeStr::OK unless event_reminder

@@ -8,7 +8,7 @@ exponential_backoff do
 
   reminders_params = {
     table_name: 'EventReminders',
-    index_name: "event_id-last_updated-index",
+    index_name: "event_id-last_updated_timestamp-index",
     key_condition_expression: "#eid = :event_id",
     expression_attribute_names: { "#eid" => "event_id" },
     expression_attribute_values: { ":event_id" => event_id },
