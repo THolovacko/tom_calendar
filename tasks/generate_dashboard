@@ -46,7 +46,7 @@ print %(
         <i class="material-icons md-36 nav select" id="settings" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">settings</i>
       </div>
       <div class="page", id="explore_page">
-        <div class="event_feed" id="explore_event_feed">
+        <div class="event_feed" id="explore_event_feed" onscroll="onFeedScroll(this.id)">
           <div id="event_card_react_container_explore_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
         </div>
       </div>
@@ -347,6 +347,7 @@ print %(
     var user_profile = {};
     var other_user_profile = {};
     var current_user_event_last_evaluated_key = '';
+    var current_explore_event_last_evaluated_key = '';
     var current_search_event_last_evaluated_key = '';
     var current_search_event_title = '';
     var other_current_user_event_last_evaluated_key = '';
@@ -399,6 +400,21 @@ print %(
           var event_cards = JSON.parse(xhr.responseText);
           insertEventCardsToFeed('explore_event_feed', event_cards);
         }
+
+        var exp_xhr = new XMLHttpRequest();
+        exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
+        exp_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        exp_xhr.onload = function() {
+          if (exp_xhr.status == 200) {
+            var explore_event_response = JSON.parse(exp_xhr.responseText);
+            var explore_event_cards = explore_event_response['events'];
+            if (explore_event_cards.length > 0) {
+              current_explore_event_last_evaluated_key = explore_event_response['last_evaluated_key'];
+              insertEventCardsToFeed('explore_event_feed', explore_event_cards);
+            }
+          }
+        };
+        exp_xhr.send('');
       };
       xhr.send();
 
@@ -477,33 +493,6 @@ print %(
             }
           });
         }
-        
-        /*
-        var ul = document.getElementById("search_results");
-        var li = ul.getElementsByTagName('li');
-        for (i = 0; i < li.length; i++) {
-          a = li[i].getElementsByTagName("a")[0];
-          txtValue = a.textContent || a.innerText;
-
-          li[i].style.display = "";
-          if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = "";
-          } else {
-            var keywords;
-            if (is_event_regex.test(li[i].id)) {
-              keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
-            } else {
-              keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
-            }
-
-            if (keywords.toUpperCase().indexOf(filter) > -1) {
-              li[i].style.display = "";
-            } else {
-              li[i].style.display = "none";
-            }
-          }
-        }
-        */
       };
       s_xhr.send();
 
@@ -2168,8 +2157,14 @@ print %(
             }
           };
           s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: current_search_event_last_evaluated_key} ));
-        }
+        } else if (id == 'explore_event_feed') {
+          // @current: finishing this then make action
 
+
+
+
+
+        }
       }
     }
     function onSearchBarSelect() {
