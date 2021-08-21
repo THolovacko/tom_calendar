@@ -510,26 +510,8 @@ class Autocomplete
   def self.search_events(event_title)
     JSON.parse(`curl -X POST --header 'Content-Type: application/json' #{@endpoint}/events/_search -d '{"size":"10", "from":"0", "query":{"multi_match":{"fields":["title^2","description"],"fuzziness":"AUTO","query":"#{event_title}"}}}'`)["hits"]["hits"]
   end
-  def self.get_top_searched(limit)
-    JSON.parse(`
-      curl -X POST "#{@endpoint}/events,users/_search?size=#{limit}" -H 'Content-Type: application/json' -d '{
-        "aggs": {
-          "top_tags": {
-            "terms": {
-              "field": "type",
-              "size": 3
-            },
-            "aggs": {
-              "top_tom_hits": {
-                "top_hits": {
-                  "size": 1
-                }
-              }
-            }
-          }
-        }
-      }'
-    `)["hits"]["hits"]
+  def self.get_recent_searched(limit)
+    JSON.parse(`curl -X GET "#{@endpoint}/events,users/_search?size=#{limit}" -H 'Content-Type: application/json'`)["hits"]["hits"]
   end
 end
 

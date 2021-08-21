@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: search : result onclick and default searches
+# @current: explore feed
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -53,7 +53,7 @@ print %(
       <div class="page", id="search_page">
         <div class="event_feed" style="display:none;" id="search_event_feed" onscroll="onFeedScroll(this.id)">
           <div id="event_card_react_container_search_0" style="margin-top:#{14 * VH_FACTOR}vh;"></div>
-          <p style="display:none;" id="search_no_events_txt">No events found</p>
+          <p style="display:none;margin-top:20vh;" id="search_no_events_txt">No events found</p>
         </div>
         <div style="background-color:rgba(254, 255, 254, 1);border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;width:100%;padding-top:7vh;z-index:0;position:relative;"><input type="text" id="search_input" onclick="onSearchBarSelect()" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar"></div>
         <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
@@ -444,7 +444,7 @@ print %(
       http.send(user_time_zone);
 
       var s_xhr = new XMLHttpRequest();
-      s_xhr.open('GET', 'https://tomcalendar.com/get_top_autocomplete', true);
+      s_xhr.open('GET', 'https://tomcalendar.com/get_recent_autocomplete', true);
       s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
       s_xhr.onload = function() {
         if (s_xhr.status == 200) {
@@ -2174,6 +2174,7 @@ print %(
     }
     function onSearchBarSelect() {
       if (document.getElementById("search_event_feed").style.display != 'none') {
+        document.getElementById("search_no_events_txt").style.display = "none";
         document.getElementById("search_event_feed").style.display = "none";
         document.getElementById("search_results").style.display    = "";
         load_feed['search_event_feed'] = true;
@@ -2194,7 +2195,6 @@ print %(
       ul = document.getElementById("search_results");
 
       if (document.getElementById("search_event_feed").style.display != 'none') {
-        document.getElementById("search_no_events_txt").style.display = "none";
         onSearchBarSelect();
       }
 
@@ -2205,6 +2205,7 @@ print %(
       if(event.key === 'Enter') {
         document.getElementById("search_no_events_txt").style.display = "none";
         onEventSearchResultClick(input.value);
+        input.blur();
         return;
       }
 
@@ -2395,6 +2396,7 @@ print %(
           var search_event_response = JSON.parse(s_xhr.responseText);
           var search_event_cards = search_event_response['events'];
           if (search_event_cards.length > 0) {
+            document.getElementById("search_no_events_txt").style.display = "none";
             current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
             insertEventCardsToFeed('search_event_feed', search_event_cards);
           } else {
