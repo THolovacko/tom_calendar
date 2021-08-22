@@ -10,7 +10,7 @@
 # @remember: event cards should auto convert datetime to user's local timezone
 # @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: explore feed
+# @current: push notifications
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
@@ -1804,12 +1804,17 @@ print %(
     function calculate_image_url(image_id, image_extension) {
       return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
     }
-    function insertEventCardsToFeed(feed_id, event_cards, insert_at_top=false) {
+    function insertEventCardsToFeed(feed_id, event_cards, overwrite=false) {
       var event_feed = document.getElementById(feed_id);
       for (i=0; i < event_cards.length; ++i) {
-        var position = insert_at_top ? "afterbegin" : "beforeend";
-        event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        var position = "beforeend";
+
         var event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
+        if (!overwrite && event_card_container) {
+          continue;
+        }
+        event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
         var event_card_avatar = event_cards[i]['creator_picture'];
         var event_card_user_name = event_cards[i]['creator_email'].replace('@gmail.com', '');
@@ -1954,7 +1959,7 @@ print %(
                 var sr_current_event_card = feed_events[`${event_user_id}-${event_title}`];
                 sr_current_event_card['is_reminder_set'] = is_creating;
                 ReactDOM.unmountComponentAtNode(current_event_card_container);
-                insertEventCardsToFeed(feed,[sr_current_event_card]);
+                insertEventCardsToFeed(feed,[sr_current_event_card],true);
               }
             });
           }
@@ -2100,7 +2105,7 @@ print %(
     }
     function onFeedScroll(id) {
       var wheel = document.getElementById(id);
-      var scroll_amount = (wheel.scrollTop / wheel.scrollHeight) * 10;
+      var scroll_amount = (wheel.scrollTop / (wheel.scrollHeight - wheel.clientHeight)) * 10;
       if ( (scroll_amount >= 7) && load_feed[id] ) {
         load_feed[id] = false;
         if (id == 'user_profile_event_feed') {
@@ -2158,12 +2163,23 @@ print %(
           };
           s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: current_search_event_last_evaluated_key} ));
         } else if (id == 'explore_event_feed') {
-          // @current: finishing this then make action
-
-
-
-
-
+          var exp_xhr = new XMLHttpRequest();
+          exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
+          exp_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          exp_xhr.onload = function() {
+            if (exp_xhr.status == 200) {
+              var explore_event_response = JSON.parse(exp_xhr.responseText);
+              var explore_event_cards = explore_event_response['events'];
+              insertEventCardsToFeed('explore_event_feed', explore_event_cards);
+              if (explore_event_response['last_evaluated_key']) {
+                current_explore_event_last_evaluated_key = explore_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          exp_xhr.send(JSON.stringify({last_evaluated_key: current_explore_event_last_evaluated_key}));
         }
       }
     }

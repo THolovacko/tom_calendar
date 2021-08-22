@@ -61,7 +61,7 @@ exponential_backoff do
   sorted_ids.each do |sorted_id|
     event_user_id = sorted_id.split('-',2)[0]
     event_title   = sorted_id.split('-',2)[1]
-    dynamodb.put_item({ table_name: 'ExploreFeed', item: {id: index, google_id: "#{event_user_id}", title: "#{event_title}"} })
+    dynamodb.put_item({ table_name: 'ExploreFeed', item: {id: index, index: index, google_id: "#{event_user_id}", title: "#{event_title}"} })
     index = index + 1
   end
 end
