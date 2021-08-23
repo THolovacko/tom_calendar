@@ -19,6 +19,7 @@
 * enable apache cgi mods
 * add `ScriptAliasMatch "^/.{0}$" "/decided/path/tom_calendar/actions/index.html"` to apache virtual host config
 * add `ScriptAliasMatch "^/dashboard" "/decided/path/tom_calendar/actions/dashboard"` to apache virtual host config
+* add `ScriptAliasMatch "^/robots.txt" "/decided/path/tom_calendar/actions/robots.txt"` to apache virtual host config
 * add `ScriptAliasMatch "/" "/decided/path/tom_calendar/lib/tomcalendar_app_server/tomcalendar_forward.tomexe"` to apache virtual host config
 * create symbolic link /usr/bin/ruby pointing to ruby
 * enable google calendar API in google developer console

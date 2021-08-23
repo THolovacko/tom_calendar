@@ -4,8 +4,8 @@ return %(Content-type: text/html
 
 
 <html lang="en">
-  <title>Page Not Found</title>
   <head>
+    <title>Page Not Found</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>

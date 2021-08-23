@@ -48,8 +48,16 @@ return %(Content-type: text/html
 
 
 <html lang="en">
-  <title>#{event['title']}</title>
   <head>
+    <title>#{event['title']}</title>
+    <meta property="og:title" content="#{event['title']}">
+    <meta property="og:site_name" content="TomCalendar">
+    <meta name="description" content="#{event['description']}">
+    <meta property="og:description" content="#{event['description']}">
+    <meta property="og:url" content="https://tomcalendar.com/event?e=#{url_id}">
+    <meta property="og:image" content="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="event['title']">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
