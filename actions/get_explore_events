@@ -14,11 +14,12 @@ else
   request_input = JSON.parse(request_input)
   last_evaluated_key = request_input['last_evaluated_key']
   last_evaluated_key['id'] = last_evaluated_key['id'].to_i
-  last_evaluated_key['index'] = last_evaluated_key['id'].to_i
+  last_evaluated_key['index'] = last_evaluated_key['index'].to_i
   last_evaluated_key = nil if last_evaluated_key.to_s.strip == ''
 end
 
 cache_result = TomMemcache::get("exp#{last_evaluated_key['id'] if last_evaluated_key}").freeze
+cache_result = nil
 if cache_result
   return "Content-type: application/json\n\n#{cache_result}"
 end
@@ -38,12 +39,10 @@ exponential_backoff do
   })
   explore_event_ids = scan_result&.items || []
 
-  puts explore_event_ids.to_s
-
   scan_result_last_evaluated_key = scan_result&.last_evaluated_key
   scan_result_last_evaluated_key['id'] = scan_result_last_evaluated_key['id'].to_i if scan_result_last_evaluated_key
-  scan_result_last_evaluated_key['index'] = scan_result_last_evaluated_key['id'].to_i if scan_result_last_evaluated_key
-  if scan_result_last_evaluated_key != last_evaluated_key
+  scan_result_last_evaluated_key['index'] = scan_result_last_evaluated_key['index'].to_i if scan_result_last_evaluated_key
+  if last_evaluated_key != scan_result_last_evaluated_key
     last_evaluated_key = scan_result_last_evaluated_key
   else
     last_evaluated_key = nil
@@ -51,6 +50,7 @@ exponential_backoff do
 
   explore_event_ids.sort_by! { |explore_event_key| explore_event_key['id'].to_i }
   explore_event_keys = explore_event_ids.map { |item| { google_id: item['google_id'], title: item['title'] } }
+  explore_event_keys.uniq!
 
   batch_events_result = dynamodb.batch_get_item({
     request_items: {

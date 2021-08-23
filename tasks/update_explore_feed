@@ -48,12 +48,10 @@ end
 sorted_ids = event_id_to_count.sort.map{|v| v[0]}
 sorted_ids.reverse!
 
-if sorted_ids.size < 100
-  random_events = Autocomplete::get_random_events(100)
-  random_events.each do |random_event|
-    random_event_id = "#{random_event['_source']['google_id']}-#{random_event['_source']['title']}"
-    sorted_ids.push(random_event_id) if event_id_to_count[random_event_id].nil?
-  end
+random_events = Autocomplete::get_random_events(100)
+random_events.each do |random_event|
+  random_event_id = "#{random_event['_source']['google_id']}-#{random_event['_source']['title']}"
+  sorted_ids.push(random_event_id) if event_id_to_count[random_event_id].nil?
 end
 
 index = 0
