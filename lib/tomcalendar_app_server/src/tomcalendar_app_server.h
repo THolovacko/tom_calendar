@@ -14,7 +14,7 @@
 #define SERVER_IP_ADDRESS "127.0.0.1"
 #define SERVER_PORT_MIN 34000
 #define SERVER_PORT_MAX 34999
-#define MAX_SOCKET_BUFFER_SIZE 10240
+#define MAX_SOCKET_BUFFER_SIZE 65507
 #define CLIENT_SOCKET_TIMEOUT  5 // 5 seconds
 
 struct tom_socket {

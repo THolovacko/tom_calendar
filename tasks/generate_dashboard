@@ -907,7 +907,7 @@ print %(
                     var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
                     if (current_event_card_container) {
                       ReactDOM.unmountComponentAtNode(current_event_card_container);
-                      insertEventCardsToFeed(feed,[current_event_card]);
+                      insertEventCardsToFeed(feed,[current_event_card],true);
                     }
                   });
                 } else {
@@ -934,7 +934,7 @@ print %(
                   var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
                   if (current_event_card_container) {
                     ReactDOM.unmountComponentAtNode(current_event_card_container);
-                    insertEventCardsToFeed(feed,[current_event_card]);
+                    insertEventCardsToFeed(feed,[current_event_card],true);
                   }
                 });
               } else {
