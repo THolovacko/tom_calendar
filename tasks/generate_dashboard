@@ -1,14 +1,8 @@
 #! /usr/bin/ruby
 
-# @remember: figure out how to scale radius?
-# @remember: need to speed up body onload
-# @remember: some things should have set pixel height and/or width  ex) the date type toggle switch
 # @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
 # @test:     user agent detection on several platforms
 # @remember: maybe force garbage collection in app server
-# @remember: only allow valid values for create event input
-# @remember: event cards should auto convert datetime to user's local timezone
-# @remember: make dashboard loading screen
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
 # @current: push notifications
 
@@ -245,7 +239,7 @@ print %(
     </div>
     <div class="card_options_react_container" id="card_options_react_container"></div>
     <div id="snackbar_notification_react_container"></div>
-    <div id="time_zones_react_container"></div><!-- @remember: the close button and title are currently added during init -->
+    <div id="time_zones_react_container"></div><!-- the close button and title are currently added during init -->
     <div id="spinner_react_container"></div>
     <div id="alert_dialog_react_container"></div>
   </body>
@@ -448,8 +442,6 @@ print %(
             xhr.open('POST', 'https://tomcalendar.com/create_tomcalendar_if_needed', true);
             xhr.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
             xhr.send('');
-
-            // @remember: should probably post request to fix potential out of sync event changes (should make sure occurs after calendar is created)
           } else {
             localStorage.removeItem("session_id");
             document.cookie = "session_id=;secure; path=/";
@@ -530,7 +522,6 @@ print %(
           `);
           
           for(var i=1; i < sessions.length; i++) {
-            // @remember: need more robust device type checking for sessions
             session_icon_type = "smartphone";
             if (sessions[i]['device_type'].toLowerCase().match(phone_regex) == null) {
               session_icon_type = "computer";
@@ -850,7 +841,6 @@ print %(
           btn.innerText = "Google Calendar sync complete";
           btn.style.color = "black";
         } else {
-          // @remember: handle failed recreate
           can_google_calendar_sync = true;
           btn.innerText = "Resync Google Calendar";
           btn.style.color = "blue";
@@ -863,8 +853,6 @@ print %(
         document.getElementById("create_form_title_input").style.borderColor = "red";
         return;
       }
-
-      // @remember: should validate start datetime is before or equal to end datetime on client
 
       document.getElementById("spinner_react_container").style.display = "block";
       if (is_event_updating) {
@@ -957,7 +945,6 @@ print %(
             document.getElementById("start_timepicker_txt").style.color = "red";
             document.getElementById("end_timepicker_txt").style.color = "red";
           } else {
-            // @remember: handle unkown error
             //document.getElementById("create_form_title_input").style.borderColor = "red";
           }
           document.getElementById("spinner_react_container").style.display = "none";
@@ -1140,7 +1127,6 @@ print %(
         date_str += year;
       }
 
-      // @remember: this is a temporary hack until I decide if there should be a comma without a day selected
       if ( !day || (day == "TBD")) {
         date_str = date_str.replace(',' , '');
       }
@@ -1933,7 +1919,6 @@ print %(
       }
     }
     function handleEventCardSetReminderClick(ev) {
-      // @remember: need to confirm google id will never use '-'
       var title_index;
       var container_id  = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
       container_id = container_id.substring(4);
@@ -1949,8 +1934,6 @@ print %(
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.onload = function() {
           if(http.status == 200) {
-            // @remember: maybe have pending state then set state to finished here
-            // @remember: should allow users to set reminder on and off as quick as they want (maybe queue?)
             is_currently_syncing_event = false;
 
             Object.keys(load_feed).forEach(function(feed){
@@ -2013,7 +1996,6 @@ print %(
 
         user_selected_time_zone = current_event_card['time_zone'];
 
-        // @optimize: this should be calculated on client
         wheel_indexes = JSON.parse(JSON.stringify(current_event_card['form_state']['wheel_indexes']));
 
         if (wheel_indexes['end_month_wheel'] || wheel_indexes['end_day_wheel'] || wheel_indexes['end_year_wheel']) {
@@ -2068,14 +2050,6 @@ print %(
                 }
               });
               delete feed_events[container_id];
-
-              /* @remember: need to show no posts yet text when user deletes single event
-              var profile_event_cards = ;
-              if (profile_event_cards.length == 0) {
-                document.getElementById("user_profile_no_post_txt").style.display = "inline-block";
-              }
-              */
-
             };
             http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
             http2.send(JSON.stringify({ google_id: event_user_id, title: event_title }));

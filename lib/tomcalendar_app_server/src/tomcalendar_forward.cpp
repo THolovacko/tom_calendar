@@ -4,7 +4,7 @@
 #include <iostream>
 #include "tomcalendar_app_server.h"
 
-// @remember: memcache and app-server size are limited by UDP (65,535 bytes)
+// memcache and app-server size are limited by UDP (65,535 bytes)
 
 extern char **environ;
 

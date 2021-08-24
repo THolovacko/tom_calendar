@@ -2,21 +2,25 @@
 ------------------
 ? Push notifications (https://aws.amazon.com/sns/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc)
 Make more pretty
-Update @ reminders (review Beta Todo)
-
 
 * Submit to google verification
 * Make pitch deck and full presentation
-
 
     Beta Todo
 ----------------
 Automate deployment
 Automate testing
 New frontend for website + similar iPhone and Android apps
+Client should automatically translate timezone to current timezone?
 Simplify and document API
 Security analysis
-Email notifications when error occurs (overall more activity logging)
-User Analytics
-Replace UDP backend communication
-Handle all @ reminders
+Email notifications when error occurs (overall more activity logging) + when high system usage
+User analytics
+Improve search
+Replace explore feed with trending feed?
+More location based features (see what events are happening near them soon)
+Recommended events?
+Add subscribed events to user profile? Also maybe user description?
+Users get updates when subscribed event is updated?
+Info page + let people see company info, contact info etc...
+Improve current backend (finsh todo.sh results)

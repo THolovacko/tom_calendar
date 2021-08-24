@@ -1,7 +1,5 @@
 #! /usr/bin/bash
 
-# @remember: should probably have port ranges be environment variables
-
 sudo killall -v tomcalendar_app_server
 server_count=$(tomcalendar_server_count)
 start_port_range=34000

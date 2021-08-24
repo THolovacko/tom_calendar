@@ -30,7 +30,7 @@ explore_event_ids   = nil
 exponential_backoff do
   dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
 
-  # @remember: should rewrite this so that trending events appear first, currently mostly recent and sort of random events
+  # currently mostly recent and sort of random events (not trending); redundant stuff going on here
 
   scan_result = dynamodb.scan({
     table_name: 'ExploreFeed',

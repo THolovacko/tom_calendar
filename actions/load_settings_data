@@ -33,7 +33,7 @@ exponential_backoff do
     result[:deactivation_code] = code
   }
 
-  # @optimize @remember: need to optimze this
+  # @optimize need to optimze this
 
   last_evaluated_key = nil
   db_attempts = 0

@@ -1,8 +1,5 @@
 #! /usr/bin/ruby
 
-# @remember: use image(screenshot)?
-# @remember: maybe say something like "Stay updated for things you are interested in"
-
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
@@ -107,9 +104,6 @@ print %(Content-type: text/html
             authorization_url = http.responseText;
             //gapi.auth2.getAuthInstance().signOut();
           }
-          else {
-            // @remember: handle error
-          }
         };
         http.send('');
       }
@@ -146,9 +140,6 @@ print %(Content-type: text/html
           } else {
             window.location = 'https://tomcalendar.com/dashboard';
           }
-        }
-        else {
-          // @remember: handle error
         }
       };
       http.send(auth_code);

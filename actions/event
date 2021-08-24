@@ -1,7 +1,5 @@
 #! /usr/bin/ruby
 
-# @test: is file too big for UDP if max description?
-
 url_id = TomEnv::get('QUERY_STRING')
 url_id = url_id.split('=')[1]
 
@@ -38,7 +36,6 @@ if session_id
   end
 end
 
-# @optimize
 event['form_state'] = ''
 
 user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase || ''
@@ -187,8 +184,6 @@ return %(Content-type: text/html
           http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
           http.onload = function() {
             if(http.status == 200) {
-              // @remember: maybe have pending state then set state to finished here
-              // @remember: should allow users to set reminder on and off as quick as they want (maybe queue?)
               is_currently_syncing_event = false;
             }
           };

@@ -1,8 +1,6 @@
 #! /usr/bin/ruby
 
-# @remember: need submit consent screen for OAuth verification
-# @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
-# @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
+# @remember: Send user email if google refresh token fails during background task (need to resync google calendar when user gives permission again to handle changed events)
 
 session_id = {}
 google_profile_params = nil

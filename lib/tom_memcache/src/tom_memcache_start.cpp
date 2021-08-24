@@ -9,8 +9,8 @@
 #include <memory>
 #include "tom_memcache.h"
 
-// @remember: do I need to increase OS default socket buffer size? https://dropbox.tech/infrastructure/optimizing-web-servers-for-high-throughput-and-low-latency
-// @remember: need to review bucket reserve count and memory percentage allocated for cache
+// @optimize: do I need to increase OS default socket buffer size? https://dropbox.tech/infrastructure/optimizing-web-servers-for-high-throughput-and-low-latency
+// @optimize: need to review bucket reserve count and memory percentage allocated for cache
 
 
 std::atomic<bool> is_garbage_collection_active(false);
@@ -74,7 +74,6 @@ struct tom_timed_map {
     if (!is_garbage_collection_active.load()) {
       is_garbage_collection_active.store(true);
 
-      // @remember: maybe have candidate array of { timestamp, bucket_index } and only check expired timestamps
       for(std::size_t i=0; i < bucket_count; ++i) {
         std::shared_ptr<entry> current_entry = std::atomic_load( &(buckets[i]) );
         if ( current_entry && (current_entry->expiration_time <= std::chrono::system_clock::now()) ) {
@@ -114,7 +113,7 @@ std::vector<std::thread*> thread_pool;
 std::vector<std::queue<tom_socket::client_message>*> thread_queues;
 std::vector<std::mutex*> thread_mutexes;
 std::vector<std::condition_variable*> thread_condition_variables;
-std::vector<bool> thread_flags; // @remember: make atomic variable?
+std::vector<bool> thread_flags; // make atomic variable?
 tom_timed_map* tom_cache;
 const long int max_ram_bytes = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
 const long int max_cache_ram_bytes = max_ram_bytes / 3;

@@ -12,6 +12,8 @@ require 'tzinfo'
 require 'uri'
 require 'cgi'
 
+# @remember: currently each server needs to have region environment variable accurately set in apache config
+
 def exponential_backoff(&block)
   retries = 0
   begin
@@ -412,17 +414,6 @@ def create_google_calendar_events(events, google_calendar_id, google_id=nil)
 end
 
 def delete_google_calendar_events(events, google_calendar_id, google_id=nil)
-  # https://developers.google.com/calendar/create-events
-  # https://developers.google.com/calendar/v3/reference/events
-  # https://tools.ietf.org/html/rfc5545#section-3.8.5
-  # https://icalendar.org/rrule-tool.html
-
-  # @remember: should limit image file size
-  # @remember: should allow event to be from 11pm - 12am (maybe auto set to 11:59)
-
-  #events = JSON.parse(ARGV[0])
-  #google_calendar_id = ARGV[1]
-  #google_id = ARGV[2] || events[0]['google_id']
   if !google_id || (google_id == '') || (google_id == ' ')
     google_id = events[0]['google_id']
   end
