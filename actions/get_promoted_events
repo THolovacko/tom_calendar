@@ -1,6 +1,8 @@
 #! /usr/bin/ruby
 
 session_id = get_session_id_from_cookies()
+return StatusCodeStr::BAD_REQUEST unless session_id
+
 current_google_id = session_id['google_id']
 
 cache_result = `tom_memcache_get 'get_promoted_events'`.freeze
