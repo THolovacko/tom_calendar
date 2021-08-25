@@ -400,6 +400,19 @@ def create_google_calendar_events(events, google_calendar_id, google_id=nil)
       recurrence: [
         rrule
       ],
+      reminders:Google::Apis::CalendarV3::Event::Reminders.new(
+        use_default: false,
+        overrides: [
+          Google::Apis::CalendarV3::EventReminder.new(
+            reminder_method: 'email',
+            minutes: 0
+          ),
+          Google::Apis::CalendarV3::EventReminder.new(
+            reminder_method: 'popup',
+            minutes: 0
+          )
+        ]
+      ),
       extended_properties: { 'private': { 'tomcalendar_id': "#{event['google_id']}-#{event['title']}" } }
     )
 

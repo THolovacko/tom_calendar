@@ -24,3 +24,4 @@ Add subscribed events to user profile? Also maybe user description?
 Users get updates when subscribed event is updated?
 Info page + let people see company info, contact info etc...
 Improve current backend (finsh todo.sh results)
+Users set how long before event to recieve reminder
