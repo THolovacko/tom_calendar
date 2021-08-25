@@ -1,6 +1,5 @@
     Alpha Todo
 ------------------
-? Push notifications (https://aws.amazon.com/sns/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc)
 Make more pretty
 
 * Submit to google verification
@@ -8,9 +7,10 @@ Make more pretty
 
     Beta Todo
 ----------------
+New frontend for website + iPhone and Android apps
+Push notifications (when mobile app developemnt is ready)
 Automate deployment
 Automate testing
-New frontend for website + similar iPhone and Android apps
 Client should automatically translate timezone to current timezone?
 Simplify and document API
 Security analysis
