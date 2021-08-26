@@ -4,7 +4,6 @@
 # @test:     user agent detection on several platforms
 # @remember: maybe force garbage collection in app server
 # @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
-# @current: push notifications
 
 dashboard_type = ARGV[0]
 IS_DESKTOP = dashboard_type == 'desktop'
