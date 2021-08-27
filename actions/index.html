@@ -49,11 +49,10 @@ print %(Content-type: text/html
   </head>
   <body id="background" onload="init();">
     <div id="description_and_button">
-      <div id="logo_txt"><h1>TomCalendar</h1></div>
+      <div id="logo_txt"><p>TomCalendar</p></div>
       <div id="description">
         <div id="description_content">
-          <h1>You've earned your audience's attention, keep it.</h1><br>
-          <h1>Stay in the know, without spam.</h1>
+          <p>A crowdsourced notification service integrated with Google Calendar.</p><br>
         </div>
         <div id="google_button_wrapper">
           <div id="my-signin2" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="redirectLogin();"></div>
@@ -66,6 +65,44 @@ print %(Content-type: text/html
     var authorization_url  = "https://tomcalendar.com";  // default value
     var authorization_code = #{code ? "\"#{code}\"" : 'null'};
     var login_redirect_id  = "#{login_redirect || ''}";
+
+    // background code
+    const colors = ["#4285F4", "#DB4437", "#F4B400", "#0F9D58"];
+    const numBalls = 1000 / #{IS_DESKTOP ? 1 : 3};
+    const balls = [];
+    for (let i = 0; i < numBalls; i++) {
+      let ball = document.createElement("div");
+      ball.classList.add("ball");
+      ball.style.background = colors[Math.floor(Math.random() * colors.length)];
+      ball.style.left = `${Math.floor(Math.random() * 100)}vw`;
+      ball.style.top = `${Math.floor(Math.random() * 100)}vh`;
+      ball.style.transform = `scale(${Math.random()})`;
+      ball.style.width = `${Math.random() * 4}em`;
+      ball.style.height = ball.style.width;
+      
+      balls.push(ball);
+      document.body.append(ball);
+    }
+    balls.forEach((el, i, ra) => {
+      let to = {
+        x: Math.random() * (i % 2 === 0 ? -11 : 11),
+        y: Math.random() * 12
+      };
+
+      let anim = el.animate(
+        [
+          { transform: "translate(0, 0)" },
+          { transform: `translate(${to.x}rem, ${to.y}rem)` }
+        ],
+        {
+          duration: (Math.random() + 1) * 2000,
+          direction: "alternate",
+          fill: "both",
+          iterations: Infinity,
+          easing: "ease-in-out"
+        }
+      );
+    });
 
     function init() {
       if ( localStorage.getItem("session_id") ) {
@@ -143,6 +180,7 @@ print %(Content-type: text/html
         }
       };
       http.send(auth_code);
+      document.getElementById("background").style.transition   = "all 10s";
       document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
   </script>
@@ -156,32 +194,49 @@ print %(Content-type: text/html
       margin: 0;
     }
     body {
-      transition: all 10s;
+      //transition: all 10s;
       transition-timing-function: ease-out;
+      background-color: #FEFFFE;
+      //background-color: #121212;
+      overflow: hidden;
     }
     #description_and_button {
       margin-top: #{24 * VH_FACTOR}vh;
+      //-webkit-text-stroke: 1px rgba(254, 255, 254, .9);
     }
     #logo_txt {
-      font-size: #{6 * FONT_FACTOR}rem;
+      font-size: #{12 * FONT_FACTOR}rem;
       font-weight: bold;
       width: 100%;
+      //color: #FEFFFE;
+      color: #121212;
+      //color: #FE4633;
+      //color: #FDFEFD;
     }
     #description {
       display: inline-block;
     }
     #description_content {
       text-align: center;
-      font-size: #{2 * FONT_FACTOR}rem;
-      margin-top: #{4 * VH_FACTOR}vh;
+      font-size: #{4 * FONT_FACTOR}rem;
       font-weight: normal;
       width: 100%;
+      color: #121212;
+      //color: #FEFFFE;
+      //color: #FDFEFD;
+      margin-top: -#{4 * VH_FACTOR}vh;
     }
     #google_button_wrapper {
       display: inline-block;
       margin-top: #{6 * VH_FACTOR}vh;
       border: none;
       transform: scale(#{SCALE}, #{SCALE});
+    }
+    .ball {
+      position: absolute;
+      border-radius: 100%;
+      opacity: 0.75;
+      z-index: -1;
     }
   </style>
 </html>

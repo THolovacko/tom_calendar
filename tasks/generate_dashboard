@@ -243,6 +243,7 @@ print %(
     <div id="alert_dialog_react_container"></div>
   </body>
   <script>
+    // start of javascript
     const is_desktop = ('#{IS_DESKTOP}' == 'true');
     var current_settings_page = "settings";
     var months = {
@@ -2393,6 +2394,7 @@ print %(
   </script>
   <style>
     html {
+      /* start of css */
       text-align: center;
       border: none;
       font-family: 'Roboto', sans-serif;
