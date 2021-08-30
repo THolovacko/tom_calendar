@@ -16,6 +16,7 @@ print "Content-type: text/html\n\n".freeze
 print %(
 <html lang="en">
   <head>
+    <div id="loading_screen" style="background-color:#FEFFFE;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"></div>
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
@@ -394,6 +395,10 @@ print %(
           var event_cards = JSON.parse(xhr.responseText);
           insertEventCardsToFeed('explore_event_feed', event_cards);
         }
+
+        setTimeout(function() {
+          document.getElementById("loading_screen").style.display = "none";
+        }, 33);
 
         var exp_xhr = new XMLHttpRequest();
         exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
