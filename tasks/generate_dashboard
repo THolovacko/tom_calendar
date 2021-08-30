@@ -452,6 +452,10 @@ print %(
             document.cookie = "session_id=;secure; path=/";
             window.location = "https://tomcalendar.com/";
           }
+        } else {
+          localStorage.removeItem("session_id");
+          document.cookie = "session_id=;secure; path=/";
+          window.location = "https://tomcalendar.com/";
         }
       };
       http.send(user_time_zone);
