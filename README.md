@@ -15,7 +15,7 @@
 * clone repo in decided server directory then give it read and execute permissions for configured apache user
 * add `Alias "/favicon.ico" "/decided/path/tom_calendar/public/favicon.ico"` to apache virtual host config
 * add `Alias "/public" "/decided/path/tom_calendar/public/"` to apache virtual host config
-* add `ErrorDocument 404 https://DecidedWebsiteName.com/not_found` to apache virtual host config
+* add `ErrorDocument 404 https://DecidedWebsiteName.com/not-found` to apache virtual host config
 * enable apache cgi mods
 * add `ScriptAliasMatch "^/.{0}$" "/decided/path/tom_calendar/actions/index.html"` to apache virtual host config
 * add `ScriptAliasMatch "^/dashboard" "/decided/path/tom_calendar/actions/dashboard"` to apache virtual host config
