@@ -47,6 +47,9 @@ return %(Content-type: text/html
 <html lang="en">
   <head>
     <title>#{event['title']}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <div id="loading_screen" style="background-color:#FEFFFE;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"></div>
     <meta property="og:title" content="#{event['title']}">
     <meta property="og:site_name" content="TomCalendar">
     <meta name="description" content="#{event['description']}">
@@ -58,7 +61,6 @@ return %(Content-type: text/html
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="preload"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
   <body onload="init();">
@@ -170,6 +172,10 @@ return %(Content-type: text/html
           event_description_txt.innerText = CURRENT_EVENT['description'];
         }
       }
+
+      setTimeout(function() {
+        document.getElementById("loading_screen").style.display = "none";
+      }, 66);
     }
     function onSetReminder() {
       var button_text   = document.getElementById('set_reminder_btn');
