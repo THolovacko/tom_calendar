@@ -64,10 +64,7 @@ return %(Content-type: text/html
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
   <body onload="init();">
-    <div id="event_image2" align="center">
-    </div>
-    <div id="event_image" align="center">
-    </div>
+    <div id="event_image" align="center"></div>
     <div id="header_img">
       <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
     </div>
@@ -92,6 +89,10 @@ return %(Content-type: text/html
       <i style="display:inline-block;" class="material-icons md-36">location_on</i>
       <span class="event_date_attribute_txt" id="event_location_txt">none</span>
     </div>
+    <div class="event_date_attribute" id="event_author">
+      <i style="display:inline-block;" class="material-icons md-36">perm_identity</i>
+      <span class="event_date_attribute_txt" id="event_author_txt">none</span>
+    </div>
     <div class="event_date_attribute" id="event_description">
       <i style="display:inline-block;" class="material-icons md-36">notes</i>
       <span class="event_date_attribute_txt" id="event_description_txt">none</span>
@@ -105,9 +106,9 @@ return %(Content-type: text/html
 
     function init() {
       document.addEventListener('scroll', function(e) {
-        //e.preventDefault();
-        onBodyScroll();
-      });
+        onBodyScroll(e);
+      }, {passive: true});
+
       update_event_txt();
     }
     function parseTimeZone(target_time_zone) {
@@ -177,6 +178,11 @@ return %(Content-type: text/html
           document.getElementById('event_description').style.display = "table";
           event_description_txt.innerText = CURRENT_EVENT['description'];
         }
+
+        if (CURRENT_EVENT['creator_email']) {
+          document.getElementById('event_author').style.display = "table";
+          event_author_txt.innerText = CURRENT_EVENT['creator_email'];
+        }
       }
 
       setTimeout(function() {
@@ -212,15 +218,14 @@ return %(Content-type: text/html
         window.location = "https://tomcalendar.com?eid=#{url_id}";
       }
     }
-    function onBodyScroll() {
+    function onBodyScroll(e) {
       var scroll_position = document.documentElement.scrollTop || document.body.scrollTop;
+      var scroll_amount = (scroll_position / (document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight));
 
       if (scroll_position < 0) {
-        document.getElementById("event_image2").style.visibility = "visible";
-        document.getElementById("event_image").style.visibility  = "hidden";
+        document.getElementById("event_image").style.opacity = "1.0";
       } else {
-        document.getElementById("event_image").style.visibility  = "visible";
-        document.getElementById("event_image2").style.visibility = "hidden";
+        document.getElementById("event_image").style.opacity = `${1 - (scroll_amount * 2.75)}`;
       }
     }
   </script>
@@ -229,6 +234,7 @@ return %(Content-type: text/html
       text-align: center;
       font-family: 'Roboto', sans-serif;
       font-size: #{IS_DESKTOP ? '11' : '16'}px;
+      color: #0F1419;
     }
     body {
       background-color: #FEFFFE;
@@ -244,29 +250,10 @@ return %(Content-type: text/html
       z-index: -1;
       content: "";
       display: block;
-      width: 100vw;
-      height: 32vh;
-    }
-    #event_image, #event_image2 {
-      box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
-    }
-    #event_image2::before {
-      background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      -webkit-filter: blur(25px);
-      z-index: -1;
-      content: "";
-      display: block;
       height: 32vh;
       position: fixed;
       top: 0;
       width: 100%;
-    }
-    #event_image2 {
-      box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
-      visibility: hidden;
     }
     #header_img {
       background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
@@ -275,7 +262,7 @@ return %(Content-type: text/html
       background-size: cover;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
       display: inline-block;
-      margin-top: -30vh;
+      margin-top: 2vh;
       z-index: 3;
       position: relative;
     }
@@ -293,7 +280,7 @@ return %(Content-type: text/html
     }
     .material-icons {
       margin-top: 4px;
-      font-size: 3rem;
+      font-size: 3.75rem;
       margin-right: 3vw;
       vertical-align: middle;
     }
