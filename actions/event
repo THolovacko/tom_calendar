@@ -59,11 +59,13 @@ return %(Content-type: text/html
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image:alt" content="event['title']">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="preload"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="preload" as="style" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
   </head>
   <body onload="init();">
+    <div id="event_image2" align="center">
+    </div>
     <div id="event_image" align="center">
     </div>
     <div id="header_img">
@@ -102,6 +104,10 @@ return %(Content-type: text/html
     var is_currently_syncing_event = false;
 
     function init() {
+      document.addEventListener('scroll', function(e) {
+        //e.preventDefault();
+        onBodyScroll();
+      });
       update_event_txt();
     }
     function parseTimeZone(target_time_zone) {
@@ -206,6 +212,17 @@ return %(Content-type: text/html
         window.location = "https://tomcalendar.com?eid=#{url_id}";
       }
     }
+    function onBodyScroll() {
+      var scroll_position = document.documentElement.scrollTop || document.body.scrollTop;
+
+      if (scroll_position < 0) {
+        document.getElementById("event_image2").style.visibility = "visible";
+        document.getElementById("event_image").style.visibility  = "hidden";
+      } else {
+        document.getElementById("event_image").style.visibility  = "visible";
+        document.getElementById("event_image2").style.visibility = "hidden";
+      }
+    }
   </script>
   <style type="text/css">
     html {
@@ -230,8 +247,26 @@ return %(Content-type: text/html
       width: 100vw;
       height: 32vh;
     }
-    #event_image {
+    #event_image, #event_image2 {
       box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+    }
+    #event_image2::before {
+      background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-filter: blur(25px);
+      z-index: -1;
+      content: "";
+      display: block;
+      height: 32vh;
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
+    #event_image2 {
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+      visibility: hidden;
     }
     #header_img {
       background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
