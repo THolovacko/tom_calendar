@@ -68,7 +68,7 @@ return %(Content-type: text/html
     <div id="header_img">
       <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
     </div>
-    <p style="font-size:5rem;font-weight:500;word-break:break-all;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
+    <p style="font-size:5rem;font-weight:500;word-break:break-all;color:#26272A;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
     <div class="event_date_attribute" id="event_days">
       <i style="display:inline-block;" class="material-icons md-36">date_range</i>
       <span id="event_days_txt" class="event_date_attribute_txt">TBD</span>
@@ -178,11 +178,11 @@ return %(Content-type: text/html
           document.getElementById('event_description').style.display = "table";
           event_description_txt.innerText = CURRENT_EVENT['description'];
         }
+      }
 
-        if (CURRENT_EVENT['creator_email']) {
-          document.getElementById('event_author').style.display = "table";
-          event_author_txt.innerText = CURRENT_EVENT['creator_email'];
-        }
+      if (CURRENT_EVENT['creator_email']) {
+        document.getElementById('event_author').style.display = "table";
+        event_author_txt.innerText = CURRENT_EVENT['creator_email'];
       }
 
       setTimeout(function() {
@@ -234,7 +234,7 @@ return %(Content-type: text/html
       text-align: center;
       font-family: 'Roboto', sans-serif;
       font-size: #{IS_DESKTOP ? '11' : '16'}px;
-      color: #0F1419;
+      color: #292A2D;
     }
     body {
       background-color: #FEFFFE;
@@ -269,20 +269,21 @@ return %(Content-type: text/html
     .event_date_attribute {
       display: none;
       text-align: left;
-      font-size: 2.5rem;
+      font-size: 2.35rem;
       margin-left: 5vw;
-      line-height: 1.5;
-      margin-bottom: 1vh;
+      line-height: 3.1vh;
+      margin-bottom: 2vh;
     }
     .event_date_attribute_txt {
       display: table-cell;
       vertical-align: middle;
     }
     .material-icons {
-      margin-top: 4px;
-      font-size: 3.75rem;
-      margin-right: 3vw;
+      margin-top: 0px;
+      font-size: 3.5rem;
+      margin-right: 5vw;
       vertical-align: middle;
+      color: #595D62;
     }
     .event_attribute_space {
       width: 100%;
