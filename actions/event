@@ -225,7 +225,9 @@ return %(Content-type: text/html
       if (scroll_position < 0) {
         document.getElementById("event_image").style.opacity = "1.0";
       } else {
-        document.getElementById("event_image").style.opacity = `${1 - (scroll_amount * 2.75)}`;
+        if ((document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight) > #{IS_DESKTOP ? 200 : 500}) {
+          document.getElementById("event_image").style.opacity = `${1 - (scroll_amount * #{IS_DESKTOP ? 1.2 : 2.75})}`;
+        }
       }
     }
   </script>
