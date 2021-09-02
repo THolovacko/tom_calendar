@@ -25,3 +25,4 @@ Users get updates when subscribed event is updated?
 Info page + let people see company info, contact info etc...
 Improve current backend (finsh todo.sh results)
 Users set how long before event to recieve reminder
+Users can embed events in other websites

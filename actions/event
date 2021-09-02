@@ -68,7 +68,7 @@ return %(Content-type: text/html
     <div id="header_img">
       <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
     </div>
-    <p style="font-size:5rem;font-weight:500;word-break:break-all;color:#26272A;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
+    <p style="font-size:4rem;font-weight:500;word-break:break-all;color:#26272A;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
     <div class="event_date_attribute" id="event_days">
       <i style="display:inline-block;" class="material-icons md-36">date_range</i>
       <span id="event_days_txt" class="event_date_attribute_txt">TBD</span>
@@ -97,7 +97,14 @@ return %(Content-type: text/html
       <i style="display:inline-block;" class="material-icons md-36">notes</i>
       <span class="event_date_attribute_txt" id="event_description_txt">none</span>
     </div>
-    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()">#{event['is_reminder_set'] ? 'REMINDER ON' : 'SET REMINDER'}</button>
+    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()" #{IS_DESKTOP ? '' : 'disabled'}>#{event['is_reminder_set'] ? 'REMINDER ON' : 'SET REMINDER'}</button>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <!-- <div id="logo_link" style="pointer-events:none;text-decoration:none;font-size:2.5rem;font-wieght:bold;text-align:right;display:inline-block;width:100%;height:4vh;position:fixed;bottom:2vh;right:4vw"><i style="display:inline-block;color:#DB4437;font-size:3.25rem;margin-right:2vw;pointer-events:auto;" class="material-icons md-36" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="window.location='https://tomcalendar.com';" id="logo_link_icon">home</i></div> -->
   </body>
   <script>
     const CURRENT_EVENT = #{event.to_json};
@@ -128,6 +135,15 @@ return %(Content-type: text/html
       return time_zone_str;
     }
     function update_event_txt() {
+      var button_text   = document.getElementById('set_reminder_btn');
+      var is_creating   = button_text.textContent == "SET REMINDER";
+      if (is_creating) {
+        button_text.style.color = "";
+      } else {
+        button_text.style.color = "#8F8F8F";
+        button_text.style.borderColor = "#8F8F8F";
+      }
+
       var event_days_txt      = document.getElementById('event_days_txt');
       var event_times_txt     = document.getElementById('event_times_txt');
       var event_time_zone_txt = document.getElementById('event_time_zone_txt');
@@ -187,6 +203,13 @@ return %(Content-type: text/html
 
       setTimeout(function() {
         document.getElementById("loading_screen").style.display = "none";
+
+        if ((document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight) > #{IS_DESKTOP ? 200 : 500}) {
+          //document.getElementById("logo_link").style.opacity = "0";
+        } else {
+          //document.getElementById("logo_link").style.opacity = "1";
+        }
+
       }, 66);
     }
     function onSetReminder() {
@@ -210,13 +233,18 @@ return %(Content-type: text/html
 
           if (is_creating) {
             button_text.textContent = "REMINDER ON";
+            button_text.style.color = "#8F8F8F";
+            button_text.style.borderColor = "#8F8F8F";
           } else {
             button_text.textContent = "SET REMINDER";
+            button_text.style = "";
           }
         }
       } else {
         window.location = "https://tomcalendar.com?eid=#{url_id}";
       }
+
+      #{ IS_DESKTOP ? '' : 'setTimeout(function() { button_text.style.backgroundColor = "FEFFFE"; }, 100);'}
     }
     function onBodyScroll(e) {
       var scroll_position = document.documentElement.scrollTop || document.body.scrollTop;
@@ -227,6 +255,7 @@ return %(Content-type: text/html
       } else {
         if ((document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight) > #{IS_DESKTOP ? 200 : 500}) {
           document.getElementById("event_image").style.opacity = `${1 - (scroll_amount * #{IS_DESKTOP ? 1.2 : 2.75})}`;
+          //document.getElementById("logo_link").style.opacity = `${scroll_amount * #{IS_DESKTOP ? 1.2 : 2.75}}`;
         }
       }
     }
@@ -302,7 +331,7 @@ return %(Content-type: text/html
       border-color: blue;
       border-radius: 4px;
       cursor: pointer;
-      background-color: rgba(254, 255, 254, 1);
+      background-color: #FEFFFE;
       transition: background-color .175s;
       transition-timing-function: ease-out;
       text-align: center;
@@ -311,10 +340,26 @@ return %(Content-type: text/html
       color: #0F82FF;
     }
     #set_reminder_btn:hover {
-      background-color: #f1fff1;
+      background-color: rgb(232,241,252,0.6);
     }
     #set_reminder_btn:active {
-      background-color: #e5ffe5;
+      background-color: rgb(232,241,252,1);
+      outline: none;
+    }
+    #set_reminder_btn:focus {
+      outline: none;
+    }
+    #logo_link {
+      cursor: pointer;
+      z-index: 6;
+      opacity: 1;
+    }
+    #logo_link_icon {
+      background-color: #EEEEEE;
+      padding: 12px;
+      border-radius: 8px;
+      color: #585C61;
+      opacity: 0.8;
     }
   </style>
 </html>

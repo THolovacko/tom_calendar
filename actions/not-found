@@ -15,7 +15,7 @@ return %(Content-type: text/html
   <!-- <h1 style="font-size:10rem;margin-top:20vh;">404</h1> -->
   <h1>Page not found</h1>
   <p>The requested URL was not found on this server</p>
-  <a href="/" style="text-decoration:none;color:#4285F4;font-size:3rem;position:absolute;bottom:1vh;right:1vh;text-align:right;">TomCalendar</a>
+  <a href="/" style="text-decoration:none;color:blue;font-size:2.5rem;position:absolute;bottom:1vh;right:1vh;text-align:right;">TomCalendar.com</a>
   <script>
     // background code
     const colors = ["#EA4335", "#FBBC05", "#34A853", "#4285F4"];
