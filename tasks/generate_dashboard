@@ -28,7 +28,7 @@ print %(
     <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
-  <body onload="onNavIconSelect('explore'); init();">
+  <body onload="onNavIconSelect('explore'); init();" style="background-color:E8E8EB;">
     <div id="background">
       <div id="navbar">
         <i class="material-icons md-36 nav select" id="explore" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">explore</i>
@@ -394,11 +394,11 @@ print %(
         if (xhr.status == 200) {
           var event_cards = JSON.parse(xhr.responseText);
           insertEventCardsToFeed('explore_event_feed', event_cards);
-        }
 
-        setTimeout(function() {
-          document.getElementById("loading_screen").style.display = "none";
-        }, 33);
+          setTimeout(function() {
+            document.getElementById("loading_screen").style.display = "none";
+          }, 33);
+        }
 
         var exp_xhr = new XMLHttpRequest();
         exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
@@ -1854,6 +1854,7 @@ print %(
         if (event_cards[i]['is_reminder_set']) {
           var button_text = event_card_container.getElementsByClassName('MuiButton-label')[0];
           button_text.textContent = "Reminder on";
+          button_text.style.color = "#8F8F8F";
         }
 
         feed_events[`${event_cards[i]['google_id']}-${event_cards[i]['title']}`] = event_cards[i];
@@ -1960,8 +1961,10 @@ print %(
 
         if (is_creating) {
           button_text.textContent = "Reminder on";
+          button_text.style.color = "#8F8F8F";
         } else {
           button_text.textContent = "Set reminder";
+          button_text.style = "";
         }
       }
     }
@@ -2412,7 +2415,7 @@ print %(
       -webkit-tap-highlight-color: transparent;
     }
     body {
-      background-color: #FEFFFE;
+      //background-color: #FEFFFE;
       overflow: auto;
     }
     ul {
@@ -2453,6 +2456,7 @@ print %(
     #navbar {
       margin: 0;
       background-color: rgba(254, 255, 254, .9);
+      color: #E8E8EB;
       width: 100%;
       overflow: auto;
       border-bottom-style: solid;
@@ -2542,17 +2546,20 @@ print %(
       margin-top: #{1.5 * VH_FACTOR}vh;
       margin-bottom: #{0.75 * VH_FACTOR}vh;
       font-size: #{7 * FONT_FACTOR}rem;
-      color: #000000;
+      //color: #000000;
+      color: #0F1419;
       text-align: center;
       transition: color .175s;
       transition-timing-function: ease-out;
     }
     .material-icons.nav.select {
-      color: #000000;
+      //color: #000000;
+      color: #0F1419;
       cursor: pointer;
     }
     .material-icons.nav.create {
-      color: #0F9D58;
+      color: #34A853;
+      //color: #0F9D58;
       background-color: rgba(254, 255, 254, 1);
       border-style: solid;
       border-color: #4285F4;
@@ -2567,7 +2574,8 @@ print %(
       transition-timing-function: ease-out;
     }
     .material-icons.nav.create:hover {
-      background-color: #EEEEEE;
+      background-color: #ebf6ee;
+      //background-color: #EEEEEE;
     }
     .material-icons.create_close, .material-icons.time_zones_close {
       float: left;
@@ -3195,9 +3203,10 @@ print %(
       margin-left: 2.25%;
       margin-bottom: 2.25%;
       padding-bottom: #{1.25 * VH_FACTOR}vh;
+      background-color: #FEFFFE;
     }
     .event_card_react_container .MuiAvatar-root {
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{1 * FONT_FACTOR}rem;
       background-color: #F44336;
       cursor: pointer;
     }
@@ -3207,6 +3216,8 @@ print %(
     }
     .event_card_react_container .MuiCardHeader-title {
       //margin-top: #{0.5 * VW_FACTOR}vh;
+      color: #292A2D;
+      font-size: #{4.25 * FONT_FACTOR}rem;
     }
     .event_card_react_container .MuiCardHeader-avatar {
       margin-right: #{2 * VW_FACTOR}vw;
@@ -3226,7 +3237,7 @@ print %(
       padding-bottom: #{0 * VH_FACTOR}vh;
     }
     .event_card_react_container .material-icons {
-      font-size: #{3 * FONT_FACTOR}rem;
+      font-size: #{3.3 * FONT_FACTOR}rem;
       vertical-align: top;
       transform: scale(1.75, 1.75);
       margin-right: #{1 * VW_FACTOR}vw;
@@ -3240,7 +3251,7 @@ print %(
     }
     .event_card_react_container .MuiTypography-h6 {
       line-height: #{2.5 * VH_FACTOR}vh;
-      font-size: #{4 * FONT_FACTOR}rem;
+      font-size: #{3.9 * FONT_FACTOR}rem;
       font-family: 'Roboto', sans-serif;
       vertical-align: middle;
       padding-bottom: #{0 * VH_FACTOR}vh;
@@ -3248,6 +3259,9 @@ print %(
       margin-top: #{0.25 * VH_FACTOR}vh;
       cursor: default;
       //transform: scale(1.025, 1.025);
+      color:#26272A;
+      font-weight:500;
+      white-space: nowrap;
     }
     .event_card_react_container .MuiCardContent-root {
       padding-top: #{1 * VH_FACTOR}vh;
@@ -3261,13 +3275,14 @@ print %(
       margin-bottom: #{0 * VH_FACTOR}vh;
     }
     .event_card_react_container .MuiButtonBase-root {
-      line-height: #{2.5 * VH_FACTOR}vh;
+      line-height: #{2.75 * VH_FACTOR}vh;
       font-size: #{3.5 * FONT_FACTOR}rem;
       vertical-align: middle;
       padding-top: #{0 * VH_FACTOR}vh;
       padding-bottom: #{0 * VH_FACTOR}vh;
       margin-bottom: #{0 * VH_FACTOR}vh;
-      margin-top: #{0.25 * VH_FACTOR}vh;
+      margin-top: #{0.01 * VH_FACTOR}vh;
+      color: #0F82FF;
     }
     .event_card_react_container .MuiCardActionArea-root {
       padding-top: #{0 * VH_FACTOR}vh;
@@ -3294,6 +3309,7 @@ print %(
       padding: 0;
       font-size: #{3.2 * FONT_FACTOR}rem;
       vertical-align: middle;
+      color: #292A2D;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
       margin-left: #{3.5 * VW_FACTOR}vw;
@@ -3302,14 +3318,19 @@ print %(
       vertical-align: middle;
       padding-top: #{0.25 * VH_FACTOR}vh;
       border-radius: 0px;
-      color: black;
+      color: #585C61;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons:hover {
       background-color: rgba(1, 1, 1, 0);
     }
-    .event_card_react_container .date_range_txt, .event_card_react_container .location_txt, .event_card_react_container .description_txt {
+    .event_card_react_container .date_range_txt, .event_card_react_container .location_txt {
       white-space: nowrap;
       overflow-x: scroll;
+      overflow-y: hidden;
+    }
+    .event_card_react_container .description_txt {
+      //white-space: nowrap;
+      overflow-y: scroll;
       overflow-y: hidden;
     }
     .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
@@ -3319,14 +3340,15 @@ print %(
       margin-top: #{IS_DESKTOP ? 5 * VH_FACTOR : 6.5 * VH_FACTOR}vh;
       margin-left: -#{IS_DESKTOP ? 24 * VW_FACTOR : 0}vw;
       width: #{32 * VW_FACTOR}vw;
+      background-color: #FEFFFE;
+      color: #585C61;
     }
     .MuiMenuItem-root {
       height: #{4 * VH_FACTOR}vh;
-      font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 4 * FONT_FACTOR}rem;
+      font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 3.75 * FONT_FACTOR}rem;
     }
     .MuiMenuItem-root:hover {
-      color: yellow;
-      background-color: green;
+      background-color: #EEEEEE;
     }
     .MuiSnackbarContent-message {
       font-size: #{3.75 * FONT_FACTOR}rem;

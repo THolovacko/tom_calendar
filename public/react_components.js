@@ -110,7 +110,7 @@ class EventCard extends React.Component {
           "aria-label": "options",
           fontSize: "inherit",
           style: {
-            marginTop: '8px',
+            marginTop: '7px',
             marginRight: '8px'
           },
           onClick: function(ev) { setCardOptionsMenuAnchor(ev); handleEventCardOptionsClick(ev) } /* handler function defined in dashboard */
