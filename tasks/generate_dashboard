@@ -797,6 +797,7 @@ print %(
       document.getElementById("start_timepicker_txt").style.color = "";
       document.getElementById("end_timepicker_txt").style.color = "";
 
+      document.getElementById("other_user_profile_event_feed").scrollTop = 0;
       document.getElementById("other_user_profile").style.display = "none";
 
       other_user_profile = {};
@@ -1888,10 +1889,15 @@ print %(
       }
     }
     function handleEventCardAvatarClick(ev) {
+      document.getElementById("spinner_react_container").style.display = "block";
+
       var container_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
       container_id = container_id.substring(4);
       var title_index;
       var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+
+      var data_load_profile = false;
+      var data_load_events  = false;
 
       var http2 = new XMLHttpRequest();
       http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
@@ -1904,6 +1910,17 @@ print %(
           document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
           document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
           document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+        }
+
+        data_load_profile = true;
+        if (data_load_events) {
+          var profile_popup = document.getElementById("other_user_profile");
+          var popup_close_layer = document.getElementById("popup_close_layer");
+          popup_close_layer.style.display = "block";
+          profile_popup.style.display = "block";
+          setTimeout(function() {
+            document.getElementById("spinner_react_container").style.display = "none";
+          }, 33);
         }
       };
       http2.send(event_user_id);
@@ -1920,14 +1937,27 @@ print %(
             other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
             insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
           }
+
+          data_load_events = true;
+          if (data_load_profile) {
+            var profile_popup = document.getElementById("other_user_profile");
+            var popup_close_layer = document.getElementById("popup_close_layer");
+            popup_close_layer.style.display = "block";
+            profile_popup.style.display = "block";
+            setTimeout(function() {
+              document.getElementById("spinner_react_container").style.display = "none";
+            }, 33);
+          }
         }
       };
       up_xhr.send(JSON.stringify( {user_id: event_user_id, last_evaluated_key: ''} ));
-
+      
+      /*
       var profile_popup = document.getElementById("other_user_profile");
       var popup_close_layer = document.getElementById("popup_close_layer");
       popup_close_layer.style.display = "block";
       profile_popup.style.display = "block";
+      */
     }
     function handleEventCardOptionsClick(ev) {
       var container_id = ev.target.id.replace('options_event_card_react_container_','');
@@ -3360,13 +3390,14 @@ print %(
       white-space: pre-wrap;
       overflow: hidden;
       height: max-content;
-      width: 96.73%;
+      width: 96%;
       text-align: left;
       float: right;
     }
     .event_card_react_container .description_txt .material-icons {
-      left: 0;
-      margin-left: 0;
+      left: 0px;
+      margin-left: 0px;
+      display: none;
     }
     .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
       height: 4px;
