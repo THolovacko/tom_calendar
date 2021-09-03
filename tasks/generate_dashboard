@@ -909,7 +909,7 @@ print %(
                     }
                   });
                 } else {
-                  insertEventCardsToFeed('user_profile_event_feed',[current_event_card]);
+                  insertEventCardsToFeed('user_profile_event_feed',[current_event_card],false,true);
                 }
                 document.getElementById("user_profile_no_post_txt").style.display = "none";
                 onCreateClose();
@@ -936,7 +936,7 @@ print %(
                   }
                 });
               } else {
-                insertEventCardsToFeed('user_profile_event_feed',[current_event_card]);
+                insertEventCardsToFeed('user_profile_event_feed',[current_event_card],false,true);
               }
               document.getElementById("user_profile_no_post_txt").style.display = "none";
               onCreateClose();
@@ -1800,7 +1800,7 @@ print %(
     function calculate_image_url(image_id, image_extension) {
       return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
     }
-    function insertEventCardsToFeed(feed_id, event_cards, overwrite=false) {
+    function insertEventCardsToFeed(feed_id, event_cards, overwrite=false, creating_event=false) {
       var event_feed = document.getElementById(feed_id);
       for (i=0; i < event_cards.length; ++i) {
         var position = "beforeend";
@@ -1809,7 +1809,11 @@ print %(
         if (!overwrite && event_card_container) {
           continue;
         }
-        event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        if ( (feed_id == 'user_profile_event_feed') &&  creating_event) {
+          document.getElementById('event_card_react_container_user_profile_0').insertAdjacentHTML('afterend', `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        } else {
+          event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        }
         event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
         var event_card_avatar = event_cards[i]['creator_picture'];
@@ -2478,7 +2482,7 @@ print %(
               document.getElementById("search_event_feed").style.display = "";
               document.getElementById("search_results").style.display    = "none";
               document.getElementById("spinner_react_container").style.display = "none";
-            }, 99);
+            }, 300);
           } else {
             document.getElementById("search_event_feed").style.display = "";
             document.getElementById("search_results").style.display    = "none";
