@@ -28,7 +28,7 @@ print %(
     <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
-  <body onload="onNavIconSelect('explore'); init();" style="background-color:E8E8EB;">
+  <body onload="init(); onNavIconSelect('explore');" style="background-color:E8E8EB;">
     <div id="background">
       <div id="navbar">
         <i class="material-icons md-36 nav select" id="explore" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">explore</i>
@@ -1951,13 +1951,6 @@ print %(
         }
       };
       up_xhr.send(JSON.stringify( {user_id: event_user_id, last_evaluated_key: ''} ));
-      
-      /*
-      var profile_popup = document.getElementById("other_user_profile");
-      var popup_close_layer = document.getElementById("popup_close_layer");
-      popup_close_layer.style.display = "block";
-      profile_popup.style.display = "block";
-      */
     }
     function handleEventCardOptionsClick(ev) {
       var container_id = ev.target.id.replace('options_event_card_react_container_','');
@@ -2399,6 +2392,10 @@ print %(
       }
     }
     function onUserSearchResultClick(user_id) {
+      document.getElementById("spinner_react_container").style.display = "block";
+      var data_load_profile = false;
+      var data_load_events  = false;
+
       var http2 = new XMLHttpRequest();
       http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
       http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
@@ -2410,6 +2407,21 @@ print %(
           document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
           document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
           document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+
+          data_load_profile = true;
+          if (data_load_events) {
+            var profile_popup = document.getElementById("other_user_profile");
+            var popup_close_layer = document.getElementById("popup_close_layer");
+            popup_close_layer.style.visibility = "hidden";
+            profile_popup.style.visibility = "hidden";
+            popup_close_layer.style.display = "block";
+            profile_popup.style.display = "block";
+            setTimeout(function() {
+              document.getElementById("spinner_react_container").style.display = "none";
+              popup_close_layer.style.visibility = "visible";
+              profile_popup.style.visibility = "visible";
+            }, 33);
+          }
         }
       };
       http2.send(user_id);
@@ -2425,20 +2437,29 @@ print %(
             document.getElementById("other_user_profile_no_post_txt").style.display = "none";
             other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
             insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+
+            data_load_events = true;
+            if (data_load_profile) {
+              var profile_popup = document.getElementById("other_user_profile");
+              var popup_close_layer = document.getElementById("popup_close_layer");
+              profile_popup.style.visibility = "hidden";
+              popup_close_layer.style.visibility = "hidden";
+              popup_close_layer.style.display = "block";
+              profile_popup.style.display = "block";
+              setTimeout(function() {
+                document.getElementById("spinner_react_container").style.display = "none";
+                popup_close_layer.style.visibility = "visible";
+                profile_popup.style.visibility = "visible";
+              }, 33);
+            }
           }
         }
       };
       up_xhr.send(JSON.stringify( {user_id: user_id, last_evaluated_key: ''} ));
-
-      var profile_popup = document.getElementById("other_user_profile");
-      var popup_close_layer = document.getElementById("popup_close_layer");
-      popup_close_layer.style.display = "block";
-      profile_popup.style.display = "block";
     }
     function onEventSearchResultClick(event_title) {
+      document.getElementById("spinner_react_container").style.display = "block";
       current_search_event_title = event_title;
-      document.getElementById("search_event_feed").style.display = "";
-      document.getElementById("search_results").style.display    = "none";
 
       var s_xhr = new XMLHttpRequest();
       s_xhr.open('POST', 'https://tomcalendar.com/search_events', true);
@@ -2447,12 +2468,22 @@ print %(
         if (s_xhr.status == 200) {
           var search_event_response = JSON.parse(s_xhr.responseText);
           var search_event_cards = search_event_response['events'];
+
           if (search_event_cards.length > 0) {
             document.getElementById("search_no_events_txt").style.display = "none";
             current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
             insertEventCardsToFeed('search_event_feed', search_event_cards);
+
+            setTimeout(function() {
+              document.getElementById("search_event_feed").style.display = "";
+              document.getElementById("search_results").style.display    = "none";
+              document.getElementById("spinner_react_container").style.display = "none";
+            }, 99);
           } else {
+            document.getElementById("search_event_feed").style.display = "";
+            document.getElementById("search_results").style.display    = "none";
             document.getElementById("search_no_events_txt").style.display = "";
+            document.getElementById("spinner_react_container").style.display = "none";
           }
         }
       };
@@ -2587,7 +2618,7 @@ print %(
       /*color: yellow;*/
     }
     .page {
-      display: none;
+      display: block;
       position: absolute;
       border: none;
       left: 0;
@@ -2615,7 +2646,7 @@ print %(
     .material-icons.nav.create {
       color: #34A853;
       //color: #0F9D58;
-      background-color: rgba(254, 255, 254, 1);
+      //background-color: rgba(254, 255, 254, 1);
       border-style: solid;
       border-color: #4285F4;
       border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
