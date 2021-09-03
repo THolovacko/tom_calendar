@@ -1844,6 +1844,7 @@ print %(
         var event_card_params = { container_id: event_card_container.id, user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
         ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
+        // @current: 1
         if (!event_cards[i]['location']) {
           event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
         }
@@ -1862,9 +1863,29 @@ print %(
     }
     function handleEventCardImageClick(img_ev) {
       var current_image = img_ev.target;
+
+      // @current: 2
+      var event_card_container = current_image.parentNode.parentNode.parentNode;
+      var event_card_id = current_image.parentNode.parentNode.parentNode.id.replace('event_card_react_container_','').substring(4);
+      var event_card_data = feed_events[event_card_id]
+
       if (current_image.style.maxHeight == event_card_img_expand_height) {
+        //current_image.style.maxHeight = event_card_img_max_height;
+
+        if (event_card_data['location']) {
+          event_card_container.getElementsByClassName('location_txt')[0].style.disaply = "block";
+        }
+        if (event_card_data['description']) {
+          event_card_container.getElementsByClassName('description_txt')[0].style.display = "block";
+        }
+
         current_image.style.maxHeight = event_card_img_max_height;
       } else {
+        //current_image.style.maxHeight = event_card_img_expand_height;
+
+        event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
+        event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
+
         current_image.style.maxHeight = event_card_img_expand_height;
       }
     }
@@ -3312,7 +3333,8 @@ print %(
       color: #292A2D;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
-      margin-left: #{3.5 * VW_FACTOR}vw;
+      margin-left: #{3.25 * VW_FACTOR}vw;
+      margin-left: 13px;
       cursor: default;
       font-size: #{2.75 * FONT_FACTOR}rem;
       vertical-align: middle;
@@ -3329,9 +3351,15 @@ print %(
       overflow-y: hidden;
     }
     .event_card_react_container .description_txt {
-      //white-space: nowrap;
-      overflow-y: scroll;
-      overflow-y: hidden;
+      white-space: pre-wrap;
+      overflow: hidden;
+      height: max-content;
+      width: 97%;
+      text-align: left;
+      float: right;
+    }
+    .event_card_react_container .description_txt .material-icons {
+      display: none;
     }
     .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
       height: 4px;
@@ -3341,14 +3369,14 @@ print %(
       margin-left: -#{IS_DESKTOP ? 24 * VW_FACTOR : 0}vw;
       width: #{32 * VW_FACTOR}vw;
       background-color: #FEFFFE;
-      color: #585C61;
+      color: #292A2D;
     }
     .MuiMenuItem-root {
       height: #{4 * VH_FACTOR}vh;
       font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 3.75 * FONT_FACTOR}rem;
     }
     .MuiMenuItem-root:hover {
-      background-color: #EEEEEE;
+      background-color: #f5f5f5;
     }
     .MuiSnackbarContent-message {
       font-size: #{3.75 * FONT_FACTOR}rem;
