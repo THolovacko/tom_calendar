@@ -1844,7 +1844,7 @@ print %(
         var event_card_params = { container_id: event_card_container.id, user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
 
         ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
-        // @current: 1
+
         if (!event_cards[i]['location']) {
           event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
         }
@@ -1863,28 +1863,26 @@ print %(
     }
     function handleEventCardImageClick(img_ev) {
       var current_image = img_ev.target;
-
-      // @current: 2
       var event_card_container = current_image.parentNode.parentNode.parentNode;
       var event_card_id = current_image.parentNode.parentNode.parentNode.id.replace('event_card_react_container_','').substring(4);
       var event_card_data = feed_events[event_card_id]
 
       if (current_image.style.maxHeight == event_card_img_expand_height) {
-        //current_image.style.maxHeight = event_card_img_max_height;
-
+        /*
         if (event_card_data['location']) {
           event_card_container.getElementsByClassName('location_txt')[0].style.disaply = "block";
         }
         if (event_card_data['description']) {
           event_card_container.getElementsByClassName('description_txt')[0].style.display = "block";
         }
+        */
 
         current_image.style.maxHeight = event_card_img_max_height;
       } else {
-        //current_image.style.maxHeight = event_card_img_expand_height;
-
+        /*
         event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
         event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
+        */
 
         current_image.style.maxHeight = event_card_img_expand_height;
       }
@@ -1983,9 +1981,15 @@ print %(
         if (is_creating) {
           button_text.textContent = "Reminder on";
           button_text.style.color = "#8F8F8F";
+
+          snackbar_notification_message = `Reminder set for ${event_title}`;
+          snackbarNotify();
         } else {
           button_text.textContent = "Set reminder";
           button_text.style = "";
+
+          snackbar_notification_message = `Reminder removed for ${event_title}`;
+          snackbarNotify();
         }
       }
     }
@@ -3283,6 +3287,7 @@ print %(
       color:#26272A;
       font-weight:500;
       white-space: nowrap;
+      text-align: left;
     }
     .event_card_react_container .MuiCardContent-root {
       padding-top: #{1 * VH_FACTOR}vh;
@@ -3327,14 +3332,15 @@ print %(
     }
     .event_card_react_container .MuiCardActionArea-root p {
       margin: 0;
+      margin-top: #{IS_DESKTOP ? 1 : 2}px;
       padding: 0;
       font-size: #{3.2 * FONT_FACTOR}rem;
       vertical-align: middle;
       color: #292A2D;
     }
     .event_card_react_container .MuiCardActionArea-root .material-icons {
-      margin-left: #{3.25 * VW_FACTOR}vw;
       margin-left: 13px;
+      margin-right: 6px;
       cursor: default;
       font-size: #{2.75 * FONT_FACTOR}rem;
       vertical-align: middle;
@@ -3354,12 +3360,13 @@ print %(
       white-space: pre-wrap;
       overflow: hidden;
       height: max-content;
-      width: 97%;
+      width: 96.73%;
       text-align: left;
       float: right;
     }
     .event_card_react_container .description_txt .material-icons {
-      display: none;
+      left: 0;
+      margin-left: 0;
     }
     .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
       height: 4px;
