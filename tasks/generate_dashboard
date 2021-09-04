@@ -2490,12 +2490,12 @@ print %(
 
             setTimeout(function() {
               document.getElementById("search_event_feed").style.visibility = "visible";
-              //document.getElementById("search_event_feed").style.display = "block";
+              document.getElementById("search_event_feed").style.display = "block";
               document.getElementById("search_results").style.display    = "none";
               document.getElementById("spinner_react_container").style.display = "none";
             }, 300);
           } else {
-            //document.getElementById("search_event_feed").style.display = "block";
+            document.getElementById("search_event_feed").style.display = "block";
             document.getElementById("search_event_feed").style.visibility = "visible";
             document.getElementById("search_results").style.display    = "none";
             document.getElementById("search_no_events_txt").style.display = "";
