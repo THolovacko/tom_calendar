@@ -85,13 +85,18 @@ print %(
           <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
           <div class="settings_page_title">Deactivate account</div> 
         </div>
-        <div style="text-align:left;background-color:#FEFFFE;margin-top:#{2 * VH_FACTOR}vh;padding:#{2 * VH_FACTOR};width:100%;color:010101;#{IS_DESKTOP ? 'transform:scale(1.25,1.25);' : ''};border-radius:4px;">
+        <div style="margin-top:#{2 * VH_FACTOR}vh;padding:#{2 * VH_FACTOR};width:#{IS_DESKTOP ? 100 : 100}%;color:010101;border-radius:4px;">
           <h2 style="text-align:center;font-size:#{5 * FONT_FACTOR}rem;">This action is permanent</h2>
-          <ul style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? 'margin-left:25%;' : ''}">
+          <!-- <ul style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? 'margin-left:25%;' : ''}">
             <li style="padding:6px;">You CAN NOT restore your TomCalendar account after deactivation.</li>
             <li style="padding:6px;">Some account information may still be available in search engines, such as Google or Bing.</li>
             <li style="padding:6px;">All Tomcalendar events in your Google Calendar will be deleted.</li>
-          </ul>
+          </ul> -->
+          <p style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? '' : ''};padding:6px;#{IS_DESKTOP ? 'padding-left:100px;' : ''}">
+            You CAN NOT restore your TomCalendar account after deactivation.
+            Some account information may still be available in search engines, such as Google or Bing.
+            All Tomcalendar events in your Google Calendar will be deleted.
+          </p>
         </div>
       </div>
     </div>
@@ -397,7 +402,7 @@ print %(
 
           setTimeout(function() {
             document.getElementById("loading_screen").style.display = "none";
-          }, 33);
+          }, 99);
         }
 
         var exp_xhr = new XMLHttpRequest();

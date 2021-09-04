@@ -184,16 +184,16 @@ return %(Content-type: text/html
           }
           event_repeat_txt.innerText = repeat_str;
         }
+      }
 
-        if (CURRENT_EVENT['location']) {
-          document.getElementById('event_location').style.display = "table";
-          event_location_txt.innerText = CURRENT_EVENT['location'];
-        }
+      if (CURRENT_EVENT['location']) {
+        document.getElementById('event_location').style.display = "table";
+        event_location_txt.innerText = CURRENT_EVENT['location'];
+      }
 
-        if (CURRENT_EVENT['description']) {
-          document.getElementById('event_description').style.display = "table";
-          event_description_txt.innerText = CURRENT_EVENT['description'];
-        }
+      if (CURRENT_EVENT['description']) {
+        document.getElementById('event_description').style.display = "table";
+        event_description_txt.innerText = CURRENT_EVENT['description'];
       }
 
       if (CURRENT_EVENT['creator_email']) {

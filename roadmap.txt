@@ -1,12 +1,9 @@
-    Alpha Todo
-------------------
-Make more pretty
+    Beta Todo
+----------------
 
 * Submit to google verification
 * Make pitch deck and full presentation
 
-    Beta Todo
-----------------
 New frontend for website + iPhone and Android apps
 Push notifications (when mobile app developemnt is ready)
 Automate deployment
