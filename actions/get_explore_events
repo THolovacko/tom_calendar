@@ -13,9 +13,9 @@ if (request_input == '') || (request_input == ' ')
 else
   request_input = JSON.parse(request_input)
   last_evaluated_key = request_input['last_evaluated_key']
-  last_evaluated_key['id'] = last_evaluated_key['id'].to_i
-  last_evaluated_key['index'] = last_evaluated_key['index'].to_i
-  last_evaluated_key = nil if last_evaluated_key.to_s.strip == ''
+  last_evaluated_key['id'] = last_evaluated_key['id']&.to_i if last_evaluated_key
+  last_evaluated_key['index'] = last_evaluated_key['index'].to_i if last_evaluated_key
+  last_evaluated_key = nil if last_evaluated_key.to_s.strip == '' if last_evaluated_key
 end
 
 cache_result = TomMemcache::get("exp#{last_evaluated_key['id'] if last_evaluated_key}").freeze

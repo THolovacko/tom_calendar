@@ -65,11 +65,11 @@ print %(
         </div>
       </div>
       <div class="page", id="settings_page">
-        <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;color:#0F1419;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
+        <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;color:#010101;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
         <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
         <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
-        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:#4285F4;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
+        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:#1A65D0;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
         <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
       </div>
       <div class="page", id="sessions_page">
@@ -85,12 +85,12 @@ print %(
           <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
           <div class="settings_page_title">Deactivate account</div> 
         </div>
-        <div style="text-align:left;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{2 * VH_FACTOR}vh;">
-          <h2 style="font-size:#{4 * FONT_FACTOR}rem;">This action is permanent</h2>
-          <ul style="font-size:#{4 * FONT_FACTOR}rem;">
-            <li>You CAN NOT restore your TomCalendar account after deactivation.</li>
-            <li>Some account information may still be available in search engines, such as Google or Bing.</li>
-            <li>All Tomcalendar events in your Google Calendar will be deleted.</li>
+        <div style="text-align:left;background-color:#FEFFFE;margin-top:#{2 * VH_FACTOR}vh;padding:#{2 * VH_FACTOR};width:100%;color:010101;#{IS_DESKTOP ? 'transform:scale(1.25,1.25);' : ''};border-radius:4px;">
+          <h2 style="text-align:center;font-size:#{5 * FONT_FACTOR}rem;">This action is permanent</h2>
+          <ul style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? 'margin-left:25%;' : ''}">
+            <li style="padding:6px;">You CAN NOT restore your TomCalendar account after deactivation.</li>
+            <li style="padding:6px;">Some account information may still be available in search engines, such as Google or Bing.</li>
+            <li style="padding:6px;">All Tomcalendar events in your Google Calendar will be deleted.</li>
           </ul>
         </div>
       </div>
@@ -526,7 +526,7 @@ print %(
               <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
               <span class="session_device_type">${sessions[0]['device_type']}</span>
               <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
-              <span class="session_last_updated" style="color: green;">Active now</span>
+              <span class="session_last_updated" style="color: #34A853;">Active now</span>
             </div>
           `);
           
@@ -688,7 +688,8 @@ print %(
         var page = document.getElementById(nav_icon_id + "_page")
       }
       else {
-        document.body.style.backgroundColor = "#F2F2F7";
+        document.body.style.backgroundColor = "#F0F2F5";
+        //document.body.style.backgroundColor = "#F2F2F7";
         var page = document.getElementById(current_settings_page + "_page");
       }
 
@@ -2716,16 +2717,17 @@ print %(
       transition-timing-function: ease-out;
       text-align: center;
       margin-top: #{4 * VH_FACTOR}vh;
-      #color: #0F82FF;
-      color: #4285F4;
+      //color: #0F82FF;
+      //color: #4285F4;
+      color: #1A65D0;
     }
     #log_out_btn:hover {
-      background-color: #EEEEEE;
+      //background-color: #EEEEEE;
       //background-color: #f1fff1;
+      background-color: #C0C0C1;
     }
     #log_out_btn:active {
       background-color: #FEFFFE;
-      //background-color: #e5ffe5;
     }
     #create_form_title input[type=text] {
       float: left;
@@ -2856,7 +2858,8 @@ print %(
       background-color: rgba(254, 255, 254, 1);
       transition: background-color .175s;
       transition-timing-function: ease-out;
-      color: #0F1419;
+      //color: #0F1419;
+      color: #010101;
     }
     .settings_btn:hover {
       background-color: #EEEEEE;
@@ -2881,7 +2884,8 @@ print %(
       margin-left: #{4 * VW_FACTOR}vw;
       line-height: #{6 * VH_FACTOR}vh;
       font-size: #{8 * FONT_FACTOR}rem;
-      color: #0F82FF;
+      //color: #0F82FF;
+      color: #1A65D0;
       cursor: pointer;
       vertical-align: middle;
       display:inline-block;
@@ -2892,7 +2896,8 @@ print %(
       line-height: #{6 * VH_FACTOR}vh;
       float:left;
       vertical-align: middle;
-      margin-left: #{7 * VW_FACTOR}vw;
+      margin-left: #{5 * VW_FACTOR}vw;
+      font-weight: bold;
     }
     .session_widget {
       display: inline-block;
@@ -2911,14 +2916,16 @@ print %(
       border-color: #E8E8EB;
       border-radius: 0;
       background-color: rgba(254, 255, 254, 1);
-      color: black;
+      color: #010101;
     }
     .material-icons.session_icon {
       font-size: #{10 * FONT_FACTOR}rem;
       vertical-align: middle;
+      color: #010101;
     }
     .session_device_type {
       font-size: #{3.5 * FONT_FACTOR}rem;
+      color: #010101;
     }
     .session_last_updated {
       font-size: #{3 * FONT_FACTOR}rem;
@@ -2927,7 +2934,7 @@ print %(
     .session_log_out {
       display: inline-block;
       font-size: #{3.75 * FONT_FACTOR}rem;
-      color: red;
+      color: #EA4335;
       float: right;
       padding-right: #{8 * VW_FACTOR}vw;
       padding-left: #{4 * VW_FACTOR}vw;
@@ -2952,13 +2959,14 @@ print %(
       transition-timing-function: ease-out;
       text-align: center;
       line-height: #{5 * VH_FACTOR}vh;
-      color: #0F82FF;
+      //color: #0F82FF;
+      color: #1A65D0;
     }
     #all_sessions_log_out:hover {
-      background-color: #f1fff1;
+      background-color: #C0C0C1;
     }
     #all_sessions_log_out:active {
-      background-color: #e5ffe5;
+      background-color: #FEFFFE;
     }
     #deactivate_btn {
       display: inline-block;
@@ -2968,7 +2976,8 @@ print %(
       cursor: pointer;
       text-align: center;
       line-height: #{5 * VH_FACTOR}vh;
-      color: #0F82FF;
+      //color: #0F82FF;
+      color: #1A65D0;
     }
     #save_event_btn {
       margin: 0;
@@ -3473,12 +3482,19 @@ print %(
     }
     .MuiDialog-container p {
       font-size: #{3.75 * FONT_FACTOR}rem;
+      text-align: left;
     }
     .MuiDialog-container h2 {
-      font-size: #{5 * FONT_FACTOR}rem;
+      font-size: #{6 * FONT_FACTOR}rem;
     }
     .MuiDialog-container button {
-      font-size: #{3.3 * FONT_FACTOR}rem;
+      font-size: #{3.5 * FONT_FACTOR}rem;
+    }
+    #ok_btn {
+      color: #0F82FF;
+    }
+    #cancel_btn {
+      color: #8F8F8F;
     }
     #user_profile_image::before, #other_user_profile_image::before {
       background-position: center;
@@ -3530,8 +3546,9 @@ print %(
     }
     #user_profile_no_post_txt, #other_user_profile_no_post_txt, #search_no_events_txt {
       margin-top: 12vh;
-      font-size: 6rem;
+      font-size: 5.25rem;
       font-weight: 500;
+      color: #0F1419;
     }
     #other_user_profile_create_close {
       position: fixed;
