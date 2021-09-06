@@ -2435,6 +2435,7 @@ print %(
             }, 33);
           }
         }
+        data_load_profile = true;
       };
       http2.send(user_id);
 
@@ -2464,10 +2465,33 @@ print %(
                 profile_popup.style.visibility = "visible";
               }, 33);
             }
+          } else {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "";
           }
         }
+        data_load_events = true;
       };
       up_xhr.send(JSON.stringify( {user_id: user_id, last_evaluated_key: ''} ));
+
+      // @hack: bug when user has no events and tried 3 times
+      setTimeout(function() {
+        var profile_popup = document.getElementById("other_user_profile");
+        var popup_close_layer = document.getElementById("popup_close_layer");
+        if(!(popup_close_layer.style.display == "block" && (profile_popup.style.display == "block"))) {
+          document.getElementById("other_user_profile_no_post_txt").style.display = "";
+          var profile_popup = document.getElementById("other_user_profile");
+          var popup_close_layer = document.getElementById("popup_close_layer");
+          profile_popup.style.visibility = "hidden";
+          popup_close_layer.style.visibility = "hidden";
+          popup_close_layer.style.display = "block";
+          profile_popup.style.display = "block";
+          setTimeout(function() {
+            document.getElementById("spinner_react_container").style.display = "none";
+            popup_close_layer.style.visibility = "visible";
+            profile_popup.style.visibility = "visible";
+          }, 33);
+        }
+      }, 250);
     }
     function onEventSearchResultClick(event_title) {
       document.getElementById("spinner_react_container").style.display = "block";
