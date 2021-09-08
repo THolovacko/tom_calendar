@@ -1825,7 +1825,7 @@ print %(
         event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
 
         var event_card_avatar = event_cards[i]['creator_picture'];
-        var event_card_user_name = event_cards[i]['creator_email'].replace('@gmail.com', '');
+        var event_card_user_name = event_cards[i]['creator_email'].replace(/@.*.com/, '');
         var event_card_image = calculate_image_url(event_cards[i]['image_id'], event_cards[i]['image_extension']);
         var event_card_date_time;
         if (event_cards[i]['is_general_event']) {
