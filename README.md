@@ -1,4 +1,4 @@
-[![TomCalendar](public/youtube_screenshot.png?raw=true "TomCalendar")](https://www.youtube.com/watch?v=AnKuT0GGpAU "TomCalendar")
+[![TomCalendar](help/youtube_screenshot.png?raw=true "TomCalendar")](https://www.youtube.com/watch?v=AnKuT0GGpAU "TomCalendar")
 
 # My Tech Stack
 
