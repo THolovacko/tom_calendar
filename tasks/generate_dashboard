@@ -1,0 +1,3666 @@
+#! /usr/bin/ruby
+
+# @remember: is places api key safe? should maybe implement cache to limit all api calls or see if solution already exists
+# @test:     user agent detection on several platforms
+# @remember: maybe force garbage collection in app server
+# @remember: should make script to auto create all scripts copied from other sites like react.production.min.js etc...
+
+dashboard_type = ARGV[0]
+IS_DESKTOP = dashboard_type == 'desktop'
+
+VW_FACTOR   = IS_DESKTOP ? 0.25 : 1
+VH_FACTOR   = IS_DESKTOP ? 1 : 1
+FONT_FACTOR = IS_DESKTOP ? 1.1 : 1
+
+print "Content-type: text/html\n\n".freeze
+print %(
+<html lang="en">
+  <head>
+    <div id="loading_screen" style="background-color:#FEFFFE;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"></div>
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
+    <script src="https://tomcalendar.com/public/react.production.min.js" crossorigin></script>
+    <script src="https://tomcalendar.com/public/react-dom.production.min.js"></script>
+    <script src="https://tomcalendar.com/public/material-ui.production.min.js"></script>
+    <script src="https://tomcalendar.com/public/react_components.js?force_reload=#{rand(1000)}"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+  </head>
+  <body onload="init(); onNavIconSelect('explore');" style="background-color:E8E8EB;">
+    <div id="background">
+      <div id="navbar">
+        <i class="material-icons md-36 nav select" id="explore" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">explore</i>
+        <div class="navbar_space"></div>
+        <i class="material-icons md-36 nav select" id="search" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">search</i>
+        <i class="material-icons md-36 nav create" id="create" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreate()">create</i>
+        <i class="material-icons md-36 nav select" id="profile" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">person</i>
+        <div class="navbar_space"></div>
+        <i class="material-icons md-36 nav select" id="settings" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onNavIconSelect(this.id)">settings</i>
+      </div>
+      <div class="page", id="explore_page">
+        <div class="event_feed" id="explore_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="event_card_react_container_explore_0" style="margin-top:#{7.25 * VH_FACTOR}vh;"></div>
+        </div>
+      </div>
+      <div class="page", id="search_page">
+        <div class="event_feed" style="display:block;" id="search_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="event_card_react_container_search_0" style="margin-top:#{14 * VH_FACTOR}vh;"></div>
+          <p style="display:none;margin-top:20vh;" id="search_no_events_txt">No events found</p>
+        </div>
+        <div style="background-color:rgba(254, 255, 254, 1);width:100%;padding-top:7vh;z-index:0;position:relative;"><input type="text" id="search_input" onclick="onSearchBarSelect()" onkeyup="onSearchKeyUp(this.id)" placeholder="Search TomCalendar"></div>
+        <ul id="search_results" onscroll="onSearchResultsScroll(this.id)"></ul>
+      </div>
+      <div class="page", id="profile_page">
+        <div class="event_feed" id="user_profile_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="user_profile_image" align="center"></div>
+          <div id="user_header_img">
+            <img id="user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
+          </div>
+          <div id="user_profile_border"></div>
+          <p id="user_profile_name_txt">Username</p>
+          <div id="event_card_react_container_user_profile_0" style="margin-top:#{3 * VH_FACTOR}vh;"></div>
+          <p id="user_profile_no_post_txt">No events created yet</p>
+        </div>
+      </div>
+      <div class="page", id="settings_page">
+        <h1 style="text-align:left;font-size:#{12 * FONT_FACTOR}rem;color:#010101;margin-left:#{6 * VW_FACTOR}vw;margin-top:#{6 * VH_FACTOR}vh">Settings</h1>
+        <div style="border-bottom-style:solid; border-width:thin; border-color:#E8E8EB;"></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onViewSessions()">Sessions<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onDeactivate()">Deactivate account<i class="material-icons md-36 settings_next">arrow_forward_ios</i></div>
+        <div class="settings_btn" id="google_calendar_recreate_btn" style="color:#1A65D0;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onGoogleCalendarRecreate(this.id)">Resync Google Calendar</div>
+        <button id="log_out_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="signOut()">Log out</button>
+      </div>
+      <div class="page", id="sessions_page">
+        <div class="sessions_page_header">
+          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <div class="settings_page_title">Sessions</div>
+        </div>
+        <div style="border-bottom-style:solid;margin-top:#{4 * VH_FACTOR}vh; border-width:thin; border-color:#E8E8EB;"></div>
+        <div id="sessions_page_session_list"></div>
+      </div>
+      <div class="page", id="deactivate_page">
+        <div class="sessions_page_header">
+          <i class="material-icons md-36 settings_navigate_before" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="current_settings_page='settings';onNavIconSelect('settings')">keyboard_backspace</i>
+          <div class="settings_page_title">Deactivate account</div> 
+        </div>
+        <div style="margin-top:#{2 * VH_FACTOR}vh;padding:#{2 * VH_FACTOR};width:#{IS_DESKTOP ? 100 : 100}%;color:010101;border-radius:4px;">
+          <h2 style="text-align:center;font-size:#{5 * FONT_FACTOR}rem;">This action is permanent</h2>
+          <!-- <ul style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? 'margin-left:25%;' : ''}">
+            <li style="padding:6px;">You CAN NOT restore your TomCalendar account after deactivation.</li>
+            <li style="padding:6px;">Some account information may still be available in search engines, such as Google or Bing.</li>
+            <li style="padding:6px;">All Tomcalendar events in your Google Calendar will be deleted.</li>
+          </ul> -->
+          <p style="text-align:left;font-size:#{4 * FONT_FACTOR}rem;#{IS_DESKTOP ? '' : ''};padding:6px;#{IS_DESKTOP ? 'padding-left:100px;' : ''}">
+            You CAN NOT restore your TomCalendar account after deactivation.
+            Some account information may still be available in search engines, such as Google or Bing.
+            All Tomcalendar events in your Google Calendar will be deleted.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div id="popup_close_layer" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="onCreateClose();"></div>
+    <div id="other_user_profile">
+      <i class="material-icons md-36 create_close" id="other_user_profile_create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
+      <!-- might use this for events later <object id="other_user_profile_content" type="text/html" width="100%" height="100%" style="overflow:auto;"></object> -->
+      <div id="other_user_profile_content">
+        <div class="event_feed" id="other_user_profile_event_feed" onscroll="onFeedScroll(this.id)">
+          <div id="other_user_profile_image" align="center"></div>
+          <div id="other_user_header_img">
+            <img id="other_user_header_img_src" src="" style="height:12vh;max-width:33vw;visibility:hidden;">
+          </div>
+          <div id="other_user_profile_border"></div>
+          <p id="other_user_profile_name_txt">Username</p>
+          <div id="other_event_card_react_container_user_profile_0" style="margin-top:#{3 * VH_FACTOR}vh;"></div>
+          <p id="other_user_profile_no_post_txt">No posts yet</p>
+        </div>
+      </div>
+    </div>
+    <div id="create_form">
+      <i class="material-icons md-36 create_close" id="create_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onCreateClose()">close</i>
+      <button id="save_event_btn" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="saveEvent()">Save</button>
+      <div id="create_form_title"><input type="text" id="create_form_title_input" placeholder="Add title" maxlength="100"></div>
+      <div id="date_type_toggle">
+        <i class="material-icons md-36" id="date_type_icon">date_range</i>
+        <input type="text" id="date_type_description_txt" value="Generic" readonly>
+        <div id="create_event_switch_react_container"></div>
+      </div>
+      <div id="start_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('start')"><input type="text" id="start_datepicker_txt" placeholder="Add start date" readonly></div>
+      <div id="date_type" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDateType()"><input type="text" id="date_type_txt" placeholder="Add date" readonly></div>
+      <div id="start_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('start')"><input type="text" id="start_timepicker_txt" placeholder="Add start time" readonly></div>
+      <div class="seasonal_quarterly_picker create_form_wheel" id="seasonal_quarterly_picker">
+        <div class="sq_wheel_select_box_cover_top"></div>
+        <div class="sq_wheel_select_box"></div>
+        <div class="sq_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="sq_wheel_desktop_cover" id="sq_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="sq_wheel" id="sq_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li><li>Spring</li><li>Summer</li><li>Fall</li><li>Winter</li><li>Q1</li><li>Q2</li><li>Q3</li><li>Q4</li><li></li></ul>
+        #{ %(<div class="sq_year_wheel_desktop_cover" id="sq_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="sq_year_wheel" id="sq_year_wheel" onscroll="onSQWheelScroll(this.id)"><li></li><li>TBD</li></ul>
+      </div>
+      <div class="date_wheel_picker create_form_wheel" id="start_datepicker">
+        <div class="date_wheel_select_box_cover_top"></div>
+        <div class="date_wheel_select_box"></div>
+        <div class="date_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="month_wheel_desktop_cover" id="start_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="month_wheel" id="start_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+        #{ %(<div class="day_wheel_desktop_cover" id="start_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="day_wheel" id="start_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="start_day_29">29</li><li id="start_day_30">30</li><li id="start_day_31">31</li><li></li></ul>
+        #{ %(<div class="year_wheel_desktop_cover" id="start_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="year_wheel" id="start_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
+      </div>
+      <div class="time_wheel_picker create_form_wheel" id="start_timepicker">
+        <div class="time_wheel_select_box_cover_top"></div>
+        <div class="time_wheel_select_box"></div>
+        <div class="time_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="hour_wheel_desktop_cover" id="start_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="hour_wheel" id="start_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+        #{ %(<div class="minute_wheel_desktop_cover" id="start_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="minute_wheel" id="start_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+        #{ %(<div class="period_wheel_desktop_cover" id="start_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="period_wheel" id="start_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
+      </div>
+      <div style="width:100%;height:#{0 * VH_FACTOR}vh;display:inline-block;"></div>
+      <div id="end_date" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleDate('end')"><input type="text" id="end_datepicker_txt" placeholder="Add end date" readonly></div>
+      <div id="end_time" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="toggleTime('end')"><input type="text" id="end_timepicker_txt" placeholder="Add end time  " readonly></div><!-- extra space character in placeholder is for txt alignment -->
+      <div class="date_wheel_picker create_form_wheel" id="end_datepicker">
+        <div class="date_wheel_select_box_cover_top"></div>
+        <div class="date_wheel_select_box"></div>
+        <div class="date_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="month_wheel_desktop_cover" id="end_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="month_wheel" id="end_month_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>January</li><li>February</li><li>March</li><li>April</li><li>May</li><li>June</li><li>July</li><li>August</li><li>September</li><li>October</li><li>November</li><li>December</li><li></li></ul>
+        #{ %(<div class="day_wheel_desktop_cover" id="end_day_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="day_wheel" id="end_day_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li><li>15</li><li>16</li><li>17</li><li>18</li><li>19</li><li>20</li><li>21</li><li>22</li><li>23</li><li>24</li><li>25</li><li>26</li><li>27</li><li>28</li><li id="end_day_29">29</li><li id="end_day_30">30</li><li id="end_day_31">31</li><li></li></ul>
+        #{ %(<div class="year_wheel_desktop_cover" id="end_year_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="year_wheel" id="end_year_wheel" onscroll="onDateWheelScroll(this.id)"><li></li><li>TBD</li></ul>
+      </div>
+      <div class="time_wheel_picker create_form_wheel" id="end_timepicker">
+        <div class="time_wheel_select_box_cover_top"></div>
+        <div class="time_wheel_select_box"></div>
+        <div class="time_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="hour_wheel_desktop_cover" id="end_hour_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="hour_wheel" id="end_hour_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li></li></ul>
+        #{ %(<div class="minute_wheel_desktop_cover" id="end_minute_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="minute_wheel" id="end_minute_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>00</li><li>05</li><li>10</li><li>15</li><li>20</li><li>25</li><li>30</li><li>35</li><li>40</li><li>45</li><li>50</li><li>55</li><li></li></ul>
+        #{ %(<div class="period_wheel_desktop_cover" id="end_period_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="period_wheel" id="end_period_wheel" onscroll="onTimeWheelScroll(this.id)"><li></li><li>TBD</li><li>AM</li><li>PM</li><li></li></ul>
+      </div>
+      <div style="width:100%;height:0vh;display:inline-block;"></div>
+      <div id="time_zone">
+        <i class="material-icons md-36" id="time_zone_icon">public</i>
+        <input type="text" id="time_zone_txt" placeholder="Select Time zone" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZones()">
+      </div>
+      <div id="event_repeat_select">
+        <i class="material-icons md-36" id="event_repeat_select_icon">refresh</i>
+        <input type="text" id="event_repeat_select_txt" value="Does not repeat" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatSelect()">
+      </div>
+      <div class="repeat_wheel_picker create_form_wheel" id="repeat_wheel_picker">
+        <div class="repeat_wheel_select_box_cover_top"></div>
+        <div class="repeat_wheel_select_box"></div>
+        <div class="repeat_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="repeat_n_wheel_desktop_cover" id="repeat_n_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="repeat_n_wheel" id="repeat_n_wheel" onscroll="onRepeatNWheelScroll(this.id)"><li></li><li>0</li></ul>
+        #{ %(<div class="time_span_wheel_desktop_cover" id="time_span_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="time_span_wheel" id="time_span_wheel" onscroll="onTimeSpanWheelScroll(this.id)"><li></li><li id="time_span_days">days</li><li id="time_span_weeks">weeks</li><li id="time_span_months">months</li><li id="time_span_years">years</li><li></li></ul>
+        <div style="width:100%;height:0vh;display:inline-block;"></div>
+      </div>
+      <div id="event_repeats_on_select">
+        <input type="text" id="event_repeats_on_select_txt" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventRepeatsOnSelect()"> 
+      </div>
+      <div style="width:100%;height:0vh;display:inline-block;"></div>
+      <div id="repeat_on_select_checkbox" style="text-align:center;width:100%;" value="null">
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_sunday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_monday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">M</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_tuesday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">T</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_wednesday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">W</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_thursday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">T</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_friday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">F</div>
+        <div class="repeat_on_select_checkbox_day" id="repeat_on_select_checkbox_day_saturday" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onRepeatOnSelectCheckbox(this.id)">S</div>
+      </div>
+      <div class="repeat_month_wheel_picker create_form_wheel" id="repeat_month_wheel_picker">
+        <div class="repeat_month_wheel_select_box_cover_top"></div>
+        <div class="repeat_month_wheel_select_box"></div>
+        <div class="repeat_month_wheel_select_box_cover_bottom"></div>
+        #{ %(<div class="repeat_month_wheel_desktop_cover" id="repeat_month_wheel_desktop_cover"></div>) if IS_DESKTOP }
+        <ul class="repeat_month_wheel" id="repeat_month_wheel" onscroll="onRepeatMonthWheelScroll(this.id)"><li></li><li>On the same day each month</li><li id="repeat_month_wheel_on_n_day">On every n current weekday</li><li id="repeat_month_wheel_on_last_weekday" style="display:none;">On the last current weekday</li><li id="repeat_month_wheel_on_last_day" style="display:none;">On the last day</li><li></li></ul>
+      </div>
+      <div id="event_divider"></div>
+      <div id="event_location">
+        <i class="material-icons md-36" id="event_location_icon">location_on</i>
+        <input type="text" id="event_location_txt" placeholder="Add location" autocomplete="on" runat="server">
+      </div>
+      <div id="event_divider"></div>
+      <div id="event_description">
+        <i class="material-icons md-36" id="description_icon">notes</i>
+        <textarea name="text" id="event_description_txt" placeholder="Add description" oninput="eventDescriptionTxtResize(this.id)" maxlength="1000"></textarea>
+      </div>
+      <div id="event_divider"></div>
+      <div id="event_image">
+        <i class="material-icons md-36" id="event_image_icon">image</i>
+        <input type="text" id="event_image_txt" placeholder="Add image" readonly #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onEventAddImage()">
+        <input type="file" id="event_image_file" accept=".jpg,.jpeg,.jfif,.pjpeg,.pjp,.png,.gif" hidden/>
+      </div>
+      <div id="event_divider"></div>
+    </div>
+    <div class="card_options_react_container" id="card_options_react_container"></div>
+    <div id="snackbar_notification_react_container"></div>
+    <div id="time_zones_react_container"></div><!-- the close button and title are currently added during init -->
+    <div id="spinner_react_container"></div>
+    <div id="alert_dialog_react_container"></div>
+  </body>
+  <script>
+    // start of javascript
+    const is_desktop = ('#{IS_DESKTOP}' == 'true');
+    var current_settings_page = "settings";
+    var months = {
+      'January'   : '00',
+      'February'  : '01',
+      'March'     : '02',
+      'April'     : '03',
+      'May'       : '04',
+      'June'      : '05',
+      'July'      : '06',
+      'August'    : '07',
+      'September' : '08',
+      'October'   : '09',
+      'November'  : '10',
+      'December'  : '11'
+    }
+    var weekdays = {
+      0   : 'Sunday',
+      1   : 'Monday',
+      2   : 'Tuesday',
+      3   : 'Wednesday',
+      4   : 'Thursday',
+      5   : 'Friday',
+      6   : 'Saturday'
+    }
+    var ordinal_indicators = {
+      1   : 'st',
+      2   : 'nd',
+      3   : 'rd',
+      4   : 'th',
+      5   : 'th',
+      6   : 'th'
+    }
+    var data_selected_value = { 
+      'repeat_n_wheel': '0',
+      'time_span_wheel': 'days',
+    }; // maps an element id to its current_value (made to replace data attributes)
+    var scroll_tops = {
+      'start_month_wheel'  : 0,
+      'start_year_wheel'   : 0,
+      'start_day_wheel'    : 0,
+      'start_hour_wheel'   : 0,
+      'start_minute_wheel' : 0,
+      'start_period_wheel' : 0,
+      'end_month_wheel'    : 0,
+      'end_year_wheel'     : 0,
+      'end_day_wheel'      : 0,
+      'end_hour_wheel'     : 0,
+      'end_minute_wheel'   : 0,
+      'end_period_wheel'   : 0,
+      'repeat_n_wheel'     : 0,
+      'time_span_wheel'    : 0,
+      'repeat_month_wheel' : 0,
+      'sq_wheel'           : 0,
+      'sq_year_wheel'      : 0
+    }
+    var wheel_indexes = {}
+    var sync_end_date = true;
+    var sync_end_time = true;
+    var timers = {
+      'start_month_wheel'  : -1,
+      'start_year_wheel'   : -1,
+      'start_day_wheel'    : -1,
+      'start_hour_wheel'   : -1,
+      'start_minute_wheel' : -1,
+      'start_period_wheel' : -1,
+      'end_month_wheel'    : -1,
+      'end_year_wheel'     : -1,
+      'end_day_wheel'      : -1,
+      'end_hour_wheel'     : -1,
+      'end_minute_wheel'   : -1,
+      'end_period_wheel'   : -1,
+      'repeat_n_wheel'     : -1,
+      'time_span_wheel'    : -1,
+      'sq_wheel'           : -1,
+      'sq_year_wheel'      : -1
+    }
+    var load_feed = {
+      'user_profile_event_feed'       : true,
+      'other_user_profile_event_feed' : true,
+      'explore_event_feed'            : true,
+      'search_event_feed'             : true
+    }
+    var event_url_ids = {};
+    const user_time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var user_selected_time_zone = user_time_zone;
+    var is_general_event = false;
+    var can_google_calendar_sync = true;
+    const event_card_img_max_height = '#{40 * VH_FACTOR}vh';
+    const event_card_img_expand_height = '#{100 * VH_FACTOR}vh';
+    var is_currently_syncing_event = false;
+    const current_user_id = JSON.parse(localStorage.getItem("session_id"))['google_id'];
+    var is_event_updating = false;
+    var feed_events = {};
+    var user_profile = {};
+    var other_user_profile = {};
+    var current_user_event_last_evaluated_key = '';
+    var current_explore_event_last_evaluated_key = '';
+    var current_search_event_last_evaluated_key = '';
+    var current_search_event_title = '';
+    var other_current_user_event_last_evaluated_key = '';
+    var autocomplete_event_results = {};
+    var autocomplete_user_results  = {};
+    var autocomplete_queries = {};
+    var search_user_start_from = {};
+
+    function init() {
+      if(is_desktop) {
+        document.getElementById("start_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_month_wheel') },{passive: true});
+        document.getElementById("start_day_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_day_wheel') },{passive: true});
+        document.getElementById("start_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_year_wheel') },{passive: true});
+        document.getElementById("end_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_month_wheel') },{passive: true});
+        document.getElementById("end_day_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_day_wheel') },{passive: true});
+        document.getElementById("end_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_year_wheel') },{passive: true});
+        document.getElementById("start_hour_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_hour_wheel') },{passive: true});
+        document.getElementById("start_minute_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_minute_wheel') },{passive: true});
+        document.getElementById("start_period_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'start_period_wheel') },{passive: true});
+        document.getElementById("end_hour_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_hour_wheel') },{passive: true});
+        document.getElementById("end_minute_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_minute_wheel') },{passive: true});
+        document.getElementById("end_period_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'end_period_wheel') },{passive: true});
+        document.getElementById("repeat_n_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_n_wheel') },{passive: true});
+        document.getElementById("time_span_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'time_span_wheel') },{passive: true});
+        document.getElementById("repeat_month_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'repeat_month_wheel') },{passive: true});
+        document.getElementById("sq_year_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_year_wheel') },{passive: true});
+        document.getElementById("sq_wheel_desktop_cover").addEventListener("wheel",function() { onDiscreteWheelScroll(event,'sq_wheel') },{passive: true});
+
+        document.getElementById("create_form").addEventListener("wheel",function() { onCreateFormScroll(event,'create_form') },{passive: true});
+      }
+
+      ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
+      ReactDOM.render(React.createElement(Spinner), document.getElementById("spinner_react_container"));
+      ReactDOM.render(React.createElement(CardOptionsMenu), document.getElementById("card_options_react_container"));
+      ReactDOM.render(React.createElement(SimpleSnackbar), document.getElementById("snackbar_notification_react_container"));
+      ReactDOM.render(React.createElement(AlertDialog), document.getElementById("alert_dialog_react_container"));
+      ReactDOM.render(React.createElement(TimeZones), document.getElementById("time_zones_react_container"));
+      document.getElementById("time_zones_react_container").insertAdjacentHTML("afterbegin", `
+        <div style="border-bottom-style:solid;border-width:thin;border-color:#E8E8EB;position:fixed;z-index:2;height:#{7.5 * VH_FACTOR}vh;width:#{( IS_DESKTOP ? '80' : '100' )}%;background-color:#FEFFFE;border-radius: #{( IS_DESKTOP ? '25' : '0' )}px #{( IS_DESKTOP ? '25' : '0' )}px 0px 0px;">
+          <i class="material-icons md-36 time_zones_close" id="time_zones_close" #{( IS_DESKTOP ? 'onmousedown' : 'onclick' )}="onTimeZonesClose()">keyboard_backspace</i>
+          <p id="time_zones_title">Time zone</p>
+        </div>
+      `);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://tomcalendar.com/get_promoted_events', true);
+      xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      xhr.onload = function() {
+        if (xhr.status == 200) {
+          var event_cards = JSON.parse(xhr.responseText);
+          insertEventCardsToFeed('explore_event_feed', event_cards);
+
+          setTimeout(function() {
+            document.getElementById("loading_screen").style.display = "none";
+          }, 99);
+        }
+
+        var exp_xhr = new XMLHttpRequest();
+        exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
+        exp_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        exp_xhr.onload = function() {
+          if (exp_xhr.status == 200) {
+            var explore_event_response = JSON.parse(exp_xhr.responseText);
+            var explore_event_cards = explore_event_response['events'];
+            if (explore_event_cards.length > 0) {
+              current_explore_event_last_evaluated_key = explore_event_response['last_evaluated_key'];
+              insertEventCardsToFeed('explore_event_feed', explore_event_cards);
+            }
+          }
+        };
+        exp_xhr.send('');
+      };
+      xhr.send();
+
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          if (user_event_cards.length > 0) {
+            document.getElementById("user_profile_no_post_txt").style.display = "none";
+            current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('user_profile_event_feed', user_event_cards);
+          }
+        }
+      };
+      up_xhr.send('');
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/validate_tokens_and_load_initial_content', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
+          var result = JSON.parse(http.responseText);
+
+          if (result["is_valid"]) {
+            // handle initial data load
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://tomcalendar.com/create_tomcalendar_if_needed', true);
+            xhr.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+            xhr.send('');
+          } else {
+            localStorage.removeItem("session_id");
+            document.cookie = "session_id=;secure; path=/";
+            window.location = "https://tomcalendar.com/";
+          }
+        } else {
+          localStorage.removeItem("session_id");
+          document.cookie = "session_id=;secure; path=/";
+          window.location = "https://tomcalendar.com/";
+        }
+      };
+      http.send(user_time_zone);
+
+      var s_xhr = new XMLHttpRequest();
+      s_xhr.open('GET', 'https://tomcalendar.com/get_recent_autocomplete', true);
+      s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      s_xhr.onload = function() {
+        if (s_xhr.status == 200) {
+          var search_results;
+          if (s_xhr.responseText) {
+            search_results = JSON.parse(s_xhr.responseText);
+            //search_user_start_from[input.value.trim()] = 10;
+          } else {
+            search_results = [];
+          }
+          var search_bar_list = document.getElementById("search_results");
+
+          search_results.forEach(function(search_result) {
+            if (search_result['title']) { // if event result
+              if (!autocomplete_event_results[search_result['title']]) {
+                search_bar_list.insertAdjacentHTML("beforeend", `
+                  <li id="event_${search_result['title']}"><a onclick="onEventSearchResultClick('${search_result['title']}')"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
+                `);
+                autocomplete_event_results[search_result['title']] = search_result;
+              } else {
+                autocomplete_event_results[search_result['title']]['description'] += ` ${search_result['description']}`
+              }
+            } else {  // if user result
+              if (!autocomplete_user_results[search_result['google_id']]) {
+                search_bar_list.insertAdjacentHTML("beforeend", `
+                  <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                `);
+                autocomplete_user_results[search_result['google_id']] = search_result;
+              }
+            }
+          });
+        }
+      };
+      s_xhr.send();
+
+      var request = new XMLHttpRequest();
+      request.open('POST', 'https://tomcalendar.com/load_settings_data', true);
+      request.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      request.onload = function() {
+        if(request.status == 200) {
+          result = JSON.parse(request.responseText);
+
+          var deactivate_page            = document.getElementById("deactivate_page");
+          var sessions_page_session_list = document.getElementById("sessions_page_session_list");
+          var sessions                   = result['sessions'];
+          var current_session_index      = result['current_session_index'];
+
+          // swap first sesions with active session
+          var first_session = sessions[0];
+          sessions[0] = sessions[current_session_index];
+          sessions[current_session_index] = first_session;
+
+          let phone_regex = /phone|android/;
+          var session_icon_type = "smartphone";
+          if (sessions[0]['device_type'].toLowerCase().match(phone_regex) == null) {
+            session_icon_type = "computer";
+          }
+
+          sessions_page_session_list.insertAdjacentHTML("beforeend", `
+            <div class="session_widget" id="active_session_widget">
+              <i class="material-icons md-36 session_icon">${session_icon_type}</i>
+              <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+              <span class="session_device_type">${sessions[0]['device_type']}</span>
+              <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
+              <span class="session_last_updated" style="color: #34A853;">Active now</span>
+            </div>
+          `);
+          
+          for(var i=1; i < sessions.length; i++) {
+            session_icon_type = "smartphone";
+            if (sessions[i]['device_type'].toLowerCase().match(phone_regex) == null) {
+              session_icon_type = "computer";
+            }
+            sessions_page_session_list.insertAdjacentHTML("beforeend", `
+              <div class="session_widget" id=${sessions[i]['device_id']}>
+                <i class="material-icons md-36 session_icon">${session_icon_type}</i>
+                <div style="display:inline-block;width:#{2 * VW_FACTOR}vw"></div>
+                <span class="session_device_type">${sessions[i]['device_type']}</span>
+                <div style="display:inline-block;width:#{1 * VW_FACTOR}vw">&middot</div>
+                <span class="session_last_updated">${sessions[i]['last_active']}</span>
+                <div class="session_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutSession('${sessions[i]['device_id']}');">Log out</div>
+              </div>
+            `);
+          }
+
+          sessions_page_session_list.insertAdjacentHTML("beforeend", `
+            <div style="margin-top:#{4 * VH_FACTOR}vh;"></div>
+            <div id="all_sessions_log_out" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="logOutAllOtherSessions();">Log out all other sessions</div>
+          `);
+
+          deactivate_page.insertAdjacentHTML("beforeend", `
+            <div id="deactivate_btn" style="margin-top:#{2 * VH_FACTOR}vh;" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="confirmRevoke('${result['deactivation_code']}');">Deactivate my account</div>
+          `);
+        }
+      }
+      request.send('');
+
+      var http2 = new XMLHttpRequest();
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          user_profile = JSON.parse(http2.responseText);
+          document.getElementById('user_profile_image').style.backgroundImage = `url(${user_profile['picture']})`;
+          document.getElementById('user_header_img_src').src = `url(${user_profile['picture']})`;
+          document.getElementById('user_header_img_src').style.backgroundImage = `url(${user_profile['picture']})`;
+          document.getElementById('user_profile_name_txt').innerText = user_profile['name'];
+          document.getElementById('user_header_img').style.backgroundImage = `url(${user_profile['picture']})`;
+        }
+      };
+      http2.send('');
+
+      // initialize wheel pickers
+      var start_year_wheel = document.getElementById("start_year_wheel");
+      var end_year_wheel = document.getElementById("end_year_wheel");
+      var sq_year_wheel = document.getElementById("sq_year_wheel");
+      var current_year = new Date().getFullYear();
+      for(var i=current_year; i < (current_year + 101); i++) { 
+        start_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
+        end_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
+        sq_year_wheel.insertAdjacentHTML("beforeend", `<li>${i}</li>`);
+      }
+      start_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+      end_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+      sq_year_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+      hideExtraDaysOnDayWheelPickers();
+
+      document.getElementById("time_zone_txt").value = `${parseTimeZone(user_time_zone)} Time`;
+
+      var repeat_n_wheel = document.getElementById("repeat_n_wheel");
+      for(var i=1; i <= 99; i++) {
+        repeat_n_wheel.insertAdjacentHTML("beforeend", `<li id="repeat_wheel_li_${i}">${i}</li>`);
+      }
+      repeat_n_wheel.insertAdjacentHTML("beforeend", `
+        <li></li>
+      `);
+
+      new google.maps.places.Autocomplete( document.getElementById('event_location_txt'), {fields: ['name','adr_address']} );
+
+      document.getElementById('event_image_file').addEventListener('change', function(){
+        document.getElementById('event_image_txt').value = this.files[0].name;
+      });
+
+      document.getElementById('search_event_feed').style.display = "none";
+    }
+    function signOut() {
+      document.getElementById("background").style.webkitFilter = "blur(100px)";
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/sign_out', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if(http.status == 200) {
+          localStorage.removeItem("session_id");
+          document.cookie = "session_id=;secure; path=/";
+          window.location = "https://tomcalendar.com/";
+        }
+      };
+      http.send('');
+    }
+    function confirmRevoke(code) {
+      alert_dialog_notification_message = "Deactivating your account will delete all your TomCalendar events from your google calendar. Are you sure you want to deactivate your account?";
+      alert_dialog_title = "Deactivate Account?";
+      alert_ok_text = "Deactivate";
+      alertDialogCallback = function() {
+        if (alert_dialog_decision == 'OK') {
+          document.getElementById("background").style.webkitFilter = "blur(100px)";
+          var http = new XMLHttpRequest();
+          http.open('POST', 'https://tomcalendar.com/deactivate_tomcalendar', true);
+          http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+          http.onload = function() {
+            if(http.status == 200) {
+              localStorage.removeItem("session_id");
+              document.cookie = "session_id=;secure; path=/";
+              window.location = "https://tomcalendar.com/";
+            }
+          };
+          http.send(code);
+        }
+      };
+      alertDialog();
+    }
+    function logOutAllOtherSessions() {
+      var all_session_widgets = document.getElementsByClassName("session_widget");
+      var non_active_session_widget_ids = [];
+      for(var i=0; i < all_session_widgets.length; i++) {
+        if (all_session_widgets[i].id != "active_session_widget") {
+          non_active_session_widget_ids.push(all_session_widgets[i].id);
+        }
+      }
+      for(var i=0; i < non_active_session_widget_ids.length; i++) {
+        document.getElementById(non_active_session_widget_ids[i]).remove();
+      }
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/log_out_all_other_sessions', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.send('');
+    }
+    function logOutSession(session_index) {
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/sign_out', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.send(session_index);
+      
+      var session_widget = document.getElementById(session_index);
+      session_widget.remove();
+
+      document.getElementById("all_sessions_log_out").blur(); // this fixes auto focus bug on mobile
+    }
+    async function onNavIconSelect(nav_icon_id) {
+      unactivateAllNavIcons();
+      unactivateAllPages();
+      var nav_icon = document.getElementById(nav_icon_id);
+      nav_icon.style.color = "black";
+
+      if(nav_icon_id != 'settings') {
+        document.body.style.backgroundColor = "#FEFFFE";
+        var page = document.getElementById(nav_icon_id + "_page")
+      }
+      else {
+        document.body.style.backgroundColor = "#F0F2F5";
+        //document.body.style.backgroundColor = "#F2F2F7";
+        var page = document.getElementById(current_settings_page + "_page");
+      }
+
+      page.style.display = "block";
+    }
+    function onCreate() {
+      var create_form = document.getElementById("create_form");
+      var popup_close_layer = document.getElementById("popup_close_layer");
+      popup_close_layer.style.display = "block";
+      create_form.style.display = "block";
+      eventDescriptionTxtResize('event_description_txt');
+    }
+    function onCreateClose() {
+      var create_form = document.getElementById("create_form");
+      var popup_close_layer = document.getElementById("popup_close_layer");
+      popup_close_layer.style.display = "none";
+      create_form.style.display = "none";
+
+      sync_end_date = true;
+      sync_end_time = true;
+      Object.keys(scroll_tops).forEach(value => scroll_tops[value] = 0);
+      wheel_indexes = {};
+      Object.keys(timers).forEach(value => clearTimeout(timers[value]));
+      is_event_updating = false;
+
+      var create_form_title_input = document.getElementById("create_form_title_input");
+      create_form_title_input.blur();
+      create_form_title_input.value = "";
+      var start_datepicker = document.getElementById("start_datepicker");
+      if (start_datepicker.style != 'none') {
+        start_datepicker.style = 'none';
+        document.getElementById("start_datepicker_txt").value = "";
+      }
+      var end_datepicker = document.getElementById("end_datepicker");
+      if (end_datepicker.style != 'none') {
+        end_datepicker.style = 'none';
+        document.getElementById("end_datepicker_txt").value = "";
+      }
+      var start_timepicker = document.getElementById("start_timepicker");
+      if (start_timepicker.style != 'none') {
+        start_timepicker.style = 'none';
+        document.getElementById("start_timepicker_txt").value = "";
+      }
+      var end_timepicker = document.getElementById("end_timepicker");
+      if (end_timepicker.style != 'none') {
+        end_timepicker.style = 'none';
+        document.getElementById("end_timepicker_txt").value = "";
+      }
+      var repeat_wheel_picker = document.getElementById("repeat_wheel_picker");
+      if (repeat_wheel_picker.style != 'none') {
+        repeat_wheel_picker.style = 'none';
+        document.getElementById("event_repeat_select_txt").value = "Does not repeat";
+      }
+      var seasonal_quarterly_picker = document.getElementById("seasonal_quarterly_picker");
+      if (seasonal_quarterly_picker.style != 'none') {
+        seasonal_quarterly_picker.style = 'none';
+        document.getElementById("date_type_txt").value = "";
+      }
+      document.getElementById("time_span_days").innerText = "days";
+      document.getElementById("time_span_weeks").innerText = "weeks";
+      document.getElementById("time_span_months").innerText = "months";
+      document.getElementById("time_span_years").innerText = "years";
+
+      document.getElementById("time_zone_txt").value = `${parseTimeZone(user_time_zone)} Time`;
+      document.getElementById("time_zones_react_container").scrollTop = 0;
+      document.getElementById("time_zones_react_container").style.display = "none";
+      document.getElementById("time_zones_react_container").value = null;
+
+      document.getElementById("event_repeats_on_select_txt").value = "";
+      document.getElementById("event_repeats_on_select").style.display = "none";
+
+      data_selected_value = { 'repeat_n_wheel': '0', 'time_span_wheel': 'days' }; // reset selected values
+
+      document.getElementById("repeat_on_select_checkbox").style.display = "none";
+      document.getElementById("repeat_month_wheel_picker").style.display = "none";
+
+      document.getElementById("date_type").style.display = "none";
+      document.getElementById("start_date").style.display = "inline-block";
+      document.getElementById("end_date").style.display = "inline-block";
+      document.getElementById("start_time").style.display = "inline-block";
+      document.getElementById("end_time").style.display = "inline-block";
+      document.getElementById("event_repeat_select").style.display = "inline-block";
+      var sq_toggle = document.getElementById("create_event_switch_react_container");
+      sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
+      sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
+      sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
+
+      is_general_event = false;
+      ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
+      ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
+
+      document.getElementById("event_location_txt").value = "";
+      document.getElementById("event_description_txt").value = "";
+      document.getElementById("event_image_txt").value = "";
+      document.getElementById("event_image_file").value = "";
+
+      user_selected_time_zone = user_time_zone;
+      document.getElementById("create_form_title_input").style.borderColor = "";
+      document.getElementById("create_form_title_input").style.pointerEvents = 'auto';
+
+      document.getElementById("spinner_react_container").style.display = "none";
+
+      document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+      document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
+
+      document.getElementById("start_datepicker_txt").style.color = "";
+      document.getElementById("end_datepicker_txt").style.color = "";
+      document.getElementById("start_timepicker_txt").style.color = "";
+      document.getElementById("end_timepicker_txt").style.color = "";
+
+      document.getElementById("other_user_profile_event_feed").scrollTop = 0;
+      document.getElementById("other_user_profile").style.display = "none";
+
+      other_user_profile = {};
+      other_current_user_event_last_evaluated_key = '';
+      load_feed['other_user_profile_event_feed'] = true;
+
+      var other_event_card_containers = document.querySelectorAll(`[id^=event_card_react_container_${'other_user_profile_event_feed'.substring(0,3)}_]`);
+      other_event_card_containers.forEach(function(other_event_card_container) {
+        if (other_event_card_container) {
+          ReactDOM.unmountComponentAtNode(other_event_card_container);
+          other_event_card_container.remove();
+        }
+      });
+    }
+    function unactivateAllNavIcons() {
+      var all_nav_icons = document.getElementsByClassName("material-icons nav select");
+      for(var i = 0; i < all_nav_icons.length; i++){
+        all_nav_icons[i].style.color = "rgba(0, 0, 0, .6)";
+      }
+    }
+    function unactivateAllPages() {
+      var all_pages = document.getElementsByClassName("page");
+      for(var i = 0; i < all_pages.length; i++){
+        all_pages[i].style.display = "none";
+      }
+    }
+    function onViewSessions() {
+      unactivateAllPages();
+      current_settings_page = "sessions";
+      var sessions_page = document.getElementById("sessions_page");
+      sessions_page.style.display = "block";
+    }
+    function onDeactivate() {
+      unactivateAllPages();
+      current_settings_page = "deactivate";
+      var deactivate_page = document.getElementById("deactivate_page");
+      deactivate_page.style.display = "block";
+    }
+    function onGoogleCalendarRecreate(id) {
+      if (!can_google_calendar_sync) { return };
+      var btn = document.getElementById(id);
+      btn.innerText = "Syncing";
+      btn.style.color = "yellow";
+      can_google_calendar_sync = false;
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/recreate_google_calendar', true);
+      http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http.onload = function() {
+        if (http.status == 200) {
+          btn.innerText = "Google Calendar sync complete";
+          btn.style.color = "black";
+        } else {
+          can_google_calendar_sync = true;
+          btn.innerText = "Resync Google Calendar";
+          btn.style.color = "blue";
+        }
+      };
+      http.send('');
+    }
+    function saveEvent() {
+      if (!document.getElementById("create_form_title_input").value.trim()) {
+        document.getElementById("create_form_title_input").style.borderColor = "red";
+        return;
+      }
+
+      document.getElementById("spinner_react_container").style.display = "block";
+      if (is_event_updating) {
+        if (sync_end_date) {
+          delete wheel_indexes['end_month_wheel'];
+          delete wheel_indexes['end_day_wheel'];
+          delete wheel_indexes['end_year_wheel'];
+        }
+        if (sync_end_time) {
+          delete wheel_indexes['end_hour_wheel'];
+          delete wheel_indexes['end_minute_wheel'];
+        }
+      }
+      var form_state = { "data_selected_value": data_selected_value, "wheel_indexes": wheel_indexes };
+      var is_updating_image = document.getElementById("event_image_file").files.length > 0;
+      var current_title = document.getElementById("create_form_title_input").value.trim();
+
+      var http = new XMLHttpRequest();
+      http.open('POST', 'https://tomcalendar.com/save_event', true);
+      http.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      http.onload = function() {
+        if (http.status == 200) {
+          var upload_url = http.responseText;
+          if (upload_url) {
+            var image_file = document.getElementById("event_image_file").files[0];
+            var xhr = new XMLHttpRequest();
+            xhr.open("PUT", upload_url);
+            xhr.onload = function() {
+              var current_event_card = null;
+              var http_current_event = new XMLHttpRequest();
+              http_current_event.open('POST', 'https://tomcalendar.com/get_events', true);
+              http_current_event.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+              http_current_event.onload = function() {
+                if (http_current_event.status == 200) {
+                  current_event_card = JSON.parse(http_current_event.responseText)[0];
+                }
+
+                if (is_event_updating) {
+                  Object.keys(load_feed).forEach(function(feed){
+                    var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                    if (current_event_card_container) {
+                      ReactDOM.unmountComponentAtNode(current_event_card_container);
+                      insertEventCardsToFeed(feed,[current_event_card],true);
+                    }
+                  });
+                } else {
+                  insertEventCardsToFeed('user_profile_event_feed',[current_event_card],false,true);
+                }
+                document.getElementById("user_profile_no_post_txt").style.display = "none";
+                onCreateClose();
+              };
+              http_current_event.send(JSON.stringify([`${current_user_id}-${current_title}`]));
+            };
+            xhr.send(image_file);
+          } else {
+            var current_event_card = null;
+            var http_current_event = new XMLHttpRequest();
+            http_current_event.open('POST', 'https://tomcalendar.com/get_events', true);
+            http_current_event.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            http_current_event.onload = function() {
+              if (http_current_event.status == 200) {
+                current_event_card = JSON.parse(http_current_event.responseText)[0];
+              }
+
+              if (is_event_updating) {
+                Object.keys(load_feed).forEach(function(feed){
+                  var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                  if (current_event_card_container) {
+                    ReactDOM.unmountComponentAtNode(current_event_card_container);
+                    insertEventCardsToFeed(feed,[current_event_card],true);
+                  }
+                });
+              } else {
+                insertEventCardsToFeed('user_profile_event_feed',[current_event_card],false,true);
+              }
+              document.getElementById("user_profile_no_post_txt").style.display = "none";
+              onCreateClose();
+            };
+            http_current_event.send(JSON.stringify([`${current_user_id}-${current_title}`]));
+          }
+        } else {
+          const title_error_regex = /title/;
+          const date_error_regex  = /date/;
+          var error_message       = http.statusText;
+          if (error_message.toLowerCase().match(title_error_regex)) {
+            document.getElementById("create_form_title_input").style.borderColor = "red";
+          } else if (error_message.toLowerCase().match(date_error_regex)) {
+            document.getElementById("start_datepicker_txt").style.color = "red";
+            document.getElementById("end_datepicker_txt").style.color = "red";
+            document.getElementById("start_timepicker_txt").style.color = "red";
+            document.getElementById("end_timepicker_txt").style.color = "red";
+          } else {
+            //document.getElementById("create_form_title_input").style.borderColor = "red";
+          }
+          document.getElementById("spinner_react_container").style.display = "none";
+        }
+      };
+      const day_regex  = new RegExp('day');
+      const year_regex = new RegExp('year');
+      var repeats_on_txt = document.getElementById("event_repeats_on_select_txt").value;
+      if ( day_regex.test(document.getElementById("event_repeat_select_txt").value) || year_regex.test(document.getElementById("event_repeat_select_txt").value) ) {
+        repeats_on_txt = '';
+      }
+      if (document.getElementById("event_repeat_select_txt").value == 'Does not repeat') {
+        repeats_on_txt = '';
+        //delete data_selected_value[''];
+      }
+      http.send(JSON.stringify({
+        "title"             : document.getElementById("create_form_title_input").value.trim(),
+        "start_date"        : document.getElementById("start_datepicker_txt").value,
+        "start_time"        : document.getElementById("start_timepicker_txt").value,
+        "end_date"          : document.getElementById("end_datepicker_txt").value,
+        "end_time"          : document.getElementById("end_timepicker_txt").value,
+        "date_type"         : document.getElementById("date_type_txt").value,
+        "time_zone"         : user_selected_time_zone,
+        "repeats"           : document.getElementById("event_repeat_select_txt").value,
+        "repeats_on"        : repeats_on_txt,
+        "location"          : document.getElementById("event_location_txt").value,
+        "description"       : document.getElementById("event_description_txt").value,
+        "image_extension"   : document.getElementById("event_image_txt").value.split('.').pop(),
+        "is_general_event"  : is_general_event,
+        "form_state"        : form_state,
+        "is_updating_image" : is_updating_image,
+        "is_updating"       : is_event_updating
+      }));
+    }
+    function hideExtraDaysOnDayWheelPickers() {
+      ["start","end"].forEach(function(date) {
+        var year  = data_selected_value[`${date}_year_wheel`];
+        var month = data_selected_value[`${date}_month_wheel`];
+        var day   = data_selected_value[`${date}_day_wheel`];
+
+        var is_year_not_selected = !year || (year == "TBD");
+        var is_month_selected    = month && (month != "TBD");
+
+        for(var i=29; i <= 31 ; i++) {
+          document.getElementById(`${date}_day_` + i).style.display = "none";
+        }
+
+        if (is_month_selected) {
+          if (is_year_not_selected) {
+            if (month != "February") {
+              year = 2021;  // year is arbitrary
+            }
+            else
+            {
+              return; // default to 28 days if no month selected
+            }
+          }
+
+          var last_day_in_month = new Date(parseInt(year), parseInt(months[month]) + 1, 0).getDate();
+          for(var i=29; i <= last_day_in_month; i++) {
+            document.getElementById(`${date}_day_` + i).style.display = "block";
+          }
+        }
+      });
+    }
+    function onDateWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+      timers[id] = window.setTimeout(function() {
+        var date_wheel = document.getElementById(id);
+        var index = Math.round(date_wheel.scrollTop / date_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_date_wheel_elements = date_wheel.getElementsByTagName("li");
+        if (index < all_date_wheel_elements.length) {
+          data_selected_value[id] = all_date_wheel_elements[index].innerText;
+        }
+        hideExtraDaysOnDayWheelPickers();
+        var end_date_str = updateCreateFormDate(id);
+        if ( sync_end_date && (RegExp('start').test(id)) ) {
+          document.getElementById("end_datepicker_txt").value = end_date_str;
+          scroll_tops["end_month_wheel"] = document.getElementById("start_month_wheel").scrollTop;
+          scroll_tops["end_day_wheel"]   = document.getElementById("start_day_wheel").scrollTop;
+          scroll_tops["end_year_wheel"]  = document.getElementById("start_year_wheel").scrollTop;
+          data_selected_value["end_month_wheel"] = data_selected_value["start_month_wheel"];
+          data_selected_value["end_day_wheel"]   = data_selected_value["start_day_wheel"];
+          data_selected_value["end_year_wheel"]  = data_selected_value["start_year_wheel"];
+        }
+        scroll_tops[id] = date_wheel.scrollTop;
+      }, 300);
+    }
+    function toggleDate(start_or_end_str) {
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("repeat_on_select_checkbox").style.display = "none";
+      document.getElementById("repeat_month_wheel_picker").style.display = "none";
+      if (start_or_end_str == "start") {
+        document.getElementById("end_datepicker").style.display = "none";
+      }
+      else {
+        document.getElementById("start_datepicker").style.display = "none";
+      }
+
+      var datepicker = document.getElementById(`${start_or_end_str}_datepicker`);
+
+      if (datepicker.style.display != "inline-block") {
+        datepicker.style.display = "inline-block";
+      }
+      else {
+        datepicker.style.display = "none";
+      }
+      
+      // update wheel scrollTops
+      if (is_event_updating) {
+        updateWheelScrollTopFromIndex("start_month_wheel");
+        updateWheelScrollTopFromIndex("start_year_wheel");
+
+        if (sync_end_date) {
+          wheel_indexes["end_month_wheel"] = wheel_indexes["start_month_wheel"];
+          wheel_indexes["end_year_wheel"]  = wheel_indexes["start_year_wheel"];
+          wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
+        }
+
+        updateWheelScrollTopFromIndex("end_month_wheel");
+        updateWheelScrollTopFromIndex("end_year_wheel");
+        hideExtraDaysOnDayWheelPickers();
+        updateWheelScrollTopFromIndex("start_day_wheel");
+        updateWheelScrollTopFromIndex("end_day_wheel");
+        /*
+        if (sync_end_date) {
+          if (data_selected_value["start_day_wheel"] && (data_selected_value["start_day_wheel"] != 'TBD')) {
+            wheel_indexes["end_day_wheel"] = wheel_indexes["start_day_wheel"];
+          } else {
+            wheel_indexes["end_day_wheel"] = '0';
+          }
+        }
+        updateWheelScrollTopFromIndex("end_day_wheel");
+        */
+      } else {
+        document.getElementById("start_month_wheel").scrollTop = scroll_tops["start_month_wheel"];
+        document.getElementById("start_day_wheel").scrollTop   = scroll_tops["start_day_wheel"];
+        document.getElementById("start_year_wheel").scrollTop  = scroll_tops["start_year_wheel"];
+        document.getElementById("end_month_wheel").scrollTop   = scroll_tops["end_month_wheel"];
+        document.getElementById("end_day_wheel").scrollTop     = scroll_tops["end_day_wheel"];
+        document.getElementById("end_year_wheel").scrollTop    = scroll_tops["end_year_wheel"];
+      }
+
+      // sync start and end date until user edits end date
+      if (start_or_end_str === "end") {
+        sync_end_date = (document.getElementById("end_datepicker_txt").value === "");
+      }
+    }
+    function updateCreateFormDate(current_wheel_id) {
+      var date = RegExp('start').test(current_wheel_id) ? "start": "end";
+
+      var datepicker_txt = document.getElementById(`${date}_datepicker_txt`);
+      var year  = data_selected_value[`${date}_year_wheel`];
+      var month = data_selected_value[`${date}_month_wheel`];
+      var day   = data_selected_value[`${date}_day_wheel`];
+
+      var date_str = "";
+      if (month && (month != "TBD")) {
+        if (day && (day != "TBD") && year && (year != "TBD")) {
+          date_str += month.slice(0,3);
+        }
+        else {
+          date_str += month;
+        }
+
+        if (day && (day != "TBD")) {
+          date_str += (' ' + day);
+        }
+      }
+
+      if (year && (year != "TBD")) {
+        if(month && (month != "TBD")) {
+          date_str += ', ';
+        }
+        date_str += year;
+      }
+
+      if ( !day || (day == "TBD")) {
+        date_str = date_str.replace(',' , '');
+      }
+
+      datepicker_txt.value = date_str;
+      updateCreateFormRepeat();
+      return date_str;
+    }
+    function onTimeWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function(){
+        var time_wheel = document.getElementById(id);
+        var index = Math.round(time_wheel.scrollTop / time_wheel.childNodes[0].offsetHeight) + 1; // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_time_wheel_elements = time_wheel.getElementsByTagName("li");
+        data_selected_value[id] = all_time_wheel_elements[index].innerText;
+        var offset_time_str = updateCreateFormTime(id);
+
+        if ( sync_end_time && (RegExp('start').test(id)) ) {
+          document.getElementById("end_timepicker_txt").value = offset_time_str;
+          var start_hour_wheel = document.getElementById("start_hour_wheel");
+          if (data_selected_value["start_hour_wheel"]) {
+            if (data_selected_value["start_hour_wheel"] != "TBD") {
+              scroll_tops["end_hour_wheel"] = start_hour_wheel.scrollTop + start_hour_wheel.childNodes[0].offsetHeight;
+            }
+            scroll_tops["end_minute_wheel"] = document.getElementById("start_minute_wheel").scrollTop;
+            data_selected_value["end_minute_wheel"] = data_selected_value["start_minute_wheel"];
+            if (data_selected_value["start_hour_wheel"] != 11) {
+              scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop;
+              data_selected_value["end_period_wheel"] = data_selected_value["start_period_wheel"];
+            } else {
+              if (data_selected_value["start_period_wheel"] == "AM") {
+                scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop + document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+                data_selected_value["end_period_wheel"] = "PM";
+              } else if (data_selected_value["start_period_wheel"] == "PM") {
+                scroll_tops["end_period_wheel"] = document.getElementById("start_period_wheel").scrollTop - document.getElementById("start_period_wheel").childNodes[0].offsetHeight;
+                data_selected_value["end_period_wheel"] = "AM";
+              }
+            }
+          }
+        }
+        scroll_tops[id] = time_wheel.scrollTop;
+      }, 300);
+    }
+    function toggleTime(start_or_end_str) {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("repeat_on_select_checkbox").style.display = "none";
+      document.getElementById("repeat_month_wheel_picker").style.display = "none";
+
+      if (start_or_end_str == "start") {
+        document.getElementById("end_timepicker").style.display = "none";
+      }
+      else {
+        document.getElementById("start_timepicker").style.display = "none";
+      }
+
+      var timepicker = document.getElementById(`${start_or_end_str}_timepicker`);
+      if (timepicker.style.display != "inline-block") {
+        timepicker.style.display = "inline-block";
+      }
+      else {
+        timepicker.style.display = "none";
+      }
+
+      // update wheel scrollTops
+      document.getElementById("start_hour_wheel").scrollTop   = scroll_tops["start_hour_wheel"];
+      document.getElementById("start_minute_wheel").scrollTop = scroll_tops["start_minute_wheel"];
+      document.getElementById("start_period_wheel").scrollTop = scroll_tops["start_period_wheel"];
+      document.getElementById("end_hour_wheel").scrollTop     = scroll_tops["end_hour_wheel"];
+      document.getElementById("end_minute_wheel").scrollTop   = scroll_tops["end_minute_wheel"];
+      document.getElementById("end_period_wheel").scrollTop   = scroll_tops["end_period_wheel"];
+
+      if (is_event_updating) {
+        updateWheelScrollTopFromIndex("start_hour_wheel");
+        updateWheelScrollTopFromIndex("start_minute_wheel");
+        updateWheelScrollTopFromIndex("start_period_wheel");
+        if (sync_end_time) {
+          if (data_selected_value["start_hour_wheel"] && (data_selected_value["start_hour_wheel"] != 'TBD')) {
+            var start_hour = parseInt(data_selected_value["start_hour_wheel"]);
+            if (start_hour != 12) {
+              wheel_indexes["end_hour_wheel"] = (parseInt(wheel_indexes["start_hour_wheel"]) + 1).toString();
+            } else {
+              wheel_indexes["end_hour_wheel"] = '2';
+            }
+            wheel_indexes["end_minute_wheel"] = wheel_indexes["start_minute_wheel"];
+            if (start_hour != 11) {
+              wheel_indexes["end_period_wheel"] = wheel_indexes["start_period_wheel"];
+            } else {
+              if (wheel_indexes["start_period_wheel"] == '2') {
+                wheel_indexes["end_period_wheel"] = '3';
+              } else {
+                wheel_indexes["end_period_wheel"] = '2';
+              }
+            }
+          } else {
+            wheel_indexes["end_hour_wheel"] = '0';
+            wheel_indexes["end_minute_wheel"] = '0';
+            wheel_indexes["end_period_wheel"] = '0';
+          }
+        }
+        updateWheelScrollTopFromIndex("end_hour_wheel");
+        updateWheelScrollTopFromIndex("end_minute_wheel");
+        updateWheelScrollTopFromIndex("end_period_wheel");
+      }
+
+      // sync start and end date until user edits end date
+      if (start_or_end_str === "end") {
+        sync_end_time = (document.getElementById("end_timepicker_txt").value === "");
+      }
+    }
+    function updateCreateFormTime(current_wheel_id) {
+      var date = RegExp('start').test(current_wheel_id) ? "start": "end";
+
+      var timepicker_txt = document.getElementById(`${date}_timepicker_txt`);
+      var hour = data_selected_value[`${date}_hour_wheel`];
+      var minute = data_selected_value[`${date}_minute_wheel`];
+      var period = data_selected_value[`${date}_period_wheel`];
+
+      var time_str = "";
+      var offset_time_str = "";
+      var offset_hour = '';
+      var switch_period = false;
+
+      if (hour && (hour != "TBD")) {
+        time_str += hour;
+        offset_hour = parseInt(hour) + 1;
+        if (hour == 11) {
+          switch_period = true;
+        }
+        if (offset_hour > 12) {
+          offset_hour = 1;
+        }
+        offset_time_str += offset_hour;
+        
+        if ( minute && (minute != "00") && (minute != "TBD")) {
+          time_str += ':';
+          time_str += minute;
+          offset_time_str += ':';
+          offset_time_str += minute;
+        }
+        if ( period && (period != "TBD")) {
+          time_str += ' ';
+          time_str += period;
+
+          offset_time_str += ' ';
+          if (switch_period) {
+            if (period == "AM") {
+              offset_time_str += "PM";
+            } else if (period == "PM") {
+              offset_time_str += "AM";
+            }
+          }
+          else {
+            offset_time_str += period;
+          }
+        }
+      }
+
+      if ( RegExp('start').test(current_wheel_id) && ( sync_end_time ) ) {
+        data_selected_value["end_hour_wheel"]   = offset_hour;
+      }
+
+      timepicker_txt.value = time_str;
+      return offset_time_str;
+    }
+    function parseTimeZone(target_time_zone) {
+      if (!target_time_zone) {
+        return '';
+      }
+      var time_zone_parts = target_time_zone.split('/');
+      if (time_zone_parts.length > 1) {
+        var time_zone_str = time_zone_parts[time_zone_parts.length - 1].replace(/_/g, ' ');
+        if (time_zone_parts.length > 2) {
+          time_zone_str += `, ${time_zone_parts[time_zone_parts.length - 2].replace(/_/g, ' ')}`;
+        }
+        //time_zone_str += ` (${time_zone_parts[0].replace(/_/g, ' ')})`;
+      }
+      else {
+        var time_zone_str = time_zone_parts[0].replace(/_/g, ' ');
+      }
+      return time_zone_str;
+    }
+    function onTimeZones() {
+      document.getElementById("time_zones_react_container").style.display = "block";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("repeat_on_select_checkbox").style.display = "none";
+      document.getElementById("repeat_month_wheel_picker").style.display = "none";
+      document.getElementById("seasonal_quarterly_picker").style.display = "none";
+    }
+    function handleTimeZonesClick(time_zone) {
+      document.getElementById("time_zones_react_container").value = time_zone;
+      user_selected_time_zone = time_zone;
+      document.getElementById("time_zone_txt").value = `${parseTimeZone(time_zone)} Time`;
+      document.getElementById("time_zones_react_container").scrollTop = 0;
+      document.getElementById("time_zones_react_container").style.display = "none";
+    }
+    function onTimeZonesClose() {
+      document.getElementById("time_zones_react_container").scrollTop = 0;
+      document.getElementById("time_zones_react_container").style.display = "none";
+    }
+    function onEventRepeatSelect() {
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_on_select_checkbox").style.display = "none";
+      document.getElementById("repeat_month_wheel_picker").style.display = "none";
+      var repeat_wheel_picker = document.getElementById("repeat_wheel_picker");
+      if (repeat_wheel_picker.style.display != "inline-block") {
+        repeat_wheel_picker.style.display = "inline-block";
+        document.getElementById("repeat_n_wheel").scrollTop = scroll_tops['repeat_n_wheel'];
+        document.getElementById("time_span_wheel").scrollTop = scroll_tops['time_span_wheel'];
+
+        if (is_event_updating) {
+          updateWheelScrollTopFromIndex("repeat_n_wheel");
+          updateWheelScrollTopFromIndex("time_span_wheel");
+        }
+      } else {
+        repeat_wheel_picker.style.display = "none";
+      }
+    }
+    function onRepeatNWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function() {
+        var repeat_n_wheel = document.getElementById(id);
+
+        var index = Math.round(repeat_n_wheel.scrollTop / repeat_n_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_repeat_n_wheel_elements = repeat_n_wheel.getElementsByTagName("li");
+        if (index < all_repeat_n_wheel_elements.length) {
+          data_selected_value[id] = all_repeat_n_wheel_elements[index].innerText;
+        }
+
+        const day_regex   = new RegExp('day');
+        const week_regex  = new RegExp('week');
+        const month_regex = new RegExp('month');
+        const year_regex  = new RegExp('year');
+
+        if ( parseInt(data_selected_value[id]) == 1 ) {
+          document.getElementById("time_span_days").innerText = "day";
+          document.getElementById("time_span_weeks").innerText = "week";
+          document.getElementById("time_span_months").innerText = "month";
+          document.getElementById("time_span_years").innerText = "year";
+
+          if( day_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "day";
+          } else if ( week_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "week";
+          } else if ( month_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "month";
+          } else if ( year_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "year";
+          }
+        } else {
+          document.getElementById("time_span_days").innerText = "days";
+          document.getElementById("time_span_weeks").innerText = "weeks";
+          document.getElementById("time_span_months").innerText = "months";
+          document.getElementById("time_span_years").innerText = "years";
+
+          if( day_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "days";
+          } else if( week_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "weeks";
+          } else if( month_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "months";
+          } else if( year_regex.test(data_selected_value['time_span_wheel']) ) {
+            data_selected_value['time_span_wheel'] = "years";
+          }
+        }
+        updateCreateFormRepeat();
+        scroll_tops[id] = repeat_n_wheel.scrollTop;
+      }, 300);
+    }
+    function onTimeSpanWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function(){
+        var time_span_wheel = document.getElementById(id);
+        var index = Math.round(time_span_wheel.scrollTop / time_span_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_time_span_wheel_elements = time_span_wheel.getElementsByTagName("li");
+        if (index < all_time_span_wheel_elements.length) {
+          data_selected_value[id] = all_time_span_wheel_elements[index].innerText;
+        }
+
+        for(var i=31; i <= 99 ; i++) {
+          document.getElementById(`repeat_wheel_li_${i}`).style.display = "none";
+        }
+
+        switch (data_selected_value[id].slice(0, -1)) { // slice last char to remove plural case
+          case 'day':
+            for(var i=31; i <= 99; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'week':
+            for(var i=31; i <= 52; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'month':
+            for(var i=31; i <= 36; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+          case 'year':
+            for(var i=31; i <= 30; i++) {
+              document.getElementById(`repeat_wheel_li_${i}`).style.display = "block";
+            }
+            break;
+        }
+        updateCreateFormRepeat();
+        scroll_tops[id] = time_span_wheel.scrollTop;
+      }, 300);
+    }
+    function updateCreateFormRepeat() {
+      if (data_selected_value['repeat_n_wheel'] == 0) {
+        document.getElementById("event_repeat_select_txt").value = 'Does not repeat';
+      } else if (data_selected_value['repeat_n_wheel'] == 1) {
+        document.getElementById("event_repeat_select_txt").value = `Repeats every ${data_selected_value['time_span_wheel']}`;
+      } else {
+        document.getElementById("event_repeat_select_txt").value = `Repeats every ${data_selected_value['repeat_n_wheel']} ${data_selected_value['time_span_wheel']}`;
+      }
+
+      if (data_selected_value['time_span_wheel'].includes("week")) {
+        var start_year  = data_selected_value["start_year_wheel"];
+        var start_month = data_selected_value["start_month_wheel"];
+        var start_day   = data_selected_value["start_day_wheel"];
+
+        if (start_year && start_month && start_day && (start_year != 'TBD') && (start_month != 'TBD') && (start_day != 'TBD') && (data_selected_value['repeat_n_wheel'] != 0)) {
+          var start_date = new Date(parseInt(start_year), parseInt(months[start_month]), parseInt(start_day));
+          var day = weekdays[start_date.getDay()];
+
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+
+          if (!data_selected_value['user_has_selected_repeat_weekday']) {
+            document.getElementById("event_repeats_on_select_txt").value = `On ${day}`;
+            var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+            for (var i=0; i < weekday_checkboxes.length; i++) {
+              data_selected_value[weekday_checkboxes[i].id] = false;
+            }
+            data_selected_value[`repeat_on_select_checkbox_day_${day.toLowerCase()}`] = true;
+          } else {
+            var repeat_days = [];
+            var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+            for (var i=0; i < weekday_checkboxes.length; i++) {
+              if (data_selected_value[weekday_checkboxes[i].id]) {
+                var weekday = weekday_checkboxes[i].id.split("_").pop();
+                weekday = weekday[0].toUpperCase() + weekday.slice(1);
+                repeat_days.push(weekday);
+              }
+            }
+
+            if (repeat_days.length == 1) {
+              document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_days[0]}`;
+            } else {
+              var repeat_str = `${repeat_days[0].substring(0,3)}`;
+              for (var i=1; i < repeat_days.length; i++) {
+                repeat_str += `, ${repeat_days[i].substring(0,3)}`;
+              }
+              document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_str}`;
+            }
+          }
+        } else {
+          document.getElementById("event_repeats_on_select").style.display = "none";
+        }
+      } else if (data_selected_value['time_span_wheel'].includes("month")) {
+        if (data_selected_value['repeat_n_wheel'] != 0) {
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+          var start_year   = data_selected_value["start_year_wheel"];
+          var start_month  = data_selected_value["start_month_wheel"];
+          var start_day    = data_selected_value["start_day_wheel"];
+
+          if (start_year && start_month && start_day && (start_year != 'TBD') && (start_month != 'TBD') && (start_day != 'TBD') && (data_selected_value['repeat_n_wheel'] != 0)) {
+            document.getElementById("repeat_month_wheel_on_n_day").style.display = "block";
+            var start_date = new Date(parseInt(start_year), parseInt(months[start_month]), parseInt(start_day));
+            var day = weekdays[start_date.getDay()];
+
+            var nth_day = parseInt(start_date.getDate() / 7);
+            if ( (start_date.getDate() % 7) != 0 ) {
+              nth_day += 1;
+            }
+
+            document.getElementById("repeat_month_wheel_on_n_day").innerText = `On every ${nth_day}${ordinal_indicators[nth_day]} ${day}`;
+
+            var last_day_in_month = new Date(parseInt(start_year), parseInt(months[start_month]) + 1, 0).getDate();
+            if (start_date.getDate() == last_day_in_month) {
+              document.getElementById("repeat_month_wheel_on_last_day").style.display = "block";
+            } else {
+              document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
+            }
+
+            var last_week_index = last_day_in_month - 6;
+            if (start_date.getDate() >= last_week_index) {
+              document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "block";
+              document.getElementById("repeat_month_wheel_on_last_weekday").innerText = `On every last ${day}`;
+            } else {
+              document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+            }
+
+            // update event_repeats_on_select_txt
+            if (data_selected_value['repeat_month_wheel'] && (data_selected_value['repeat_month_wheel'] != 'On the same day each month')) {
+              var selected_element = document.getElementById(data_selected_value['repeat_month_selected_id']);
+              if ( (selected_element.id == "repeat_month_wheel_on_last_day") && (selected_element.style.display == "none" ) ) {
+                if (document.getElementById("repeat_month_wheel_on_last_weekday").style.display != "none") {
+                  document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_last_weekday").innerText;
+                } else {
+                  document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_n_day").innerText;
+                }
+              } else if ( (selected_element.id == "repeat_month_wheel_on_last_weekday") && (selected_element.style.display == "none" ) ) {
+                document.getElementById("event_repeats_on_select_txt").value = document.getElementById("repeat_month_wheel_on_n_day").innerText;
+              } else {
+                document.getElementById("event_repeats_on_select_txt").value = selected_element.innerText;
+              }
+            } else {
+              document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
+            }
+          } else {
+            document.getElementById("repeat_month_wheel_on_n_day").style.display = "none";
+            document.getElementById("repeat_month_wheel_on_last_weekday").style.display = "none";
+            document.getElementById("repeat_month_wheel_on_last_day").style.display = "none";
+            document.getElementById("event_repeats_on_select_txt").value = "On the same day each month";
+          }
+        } else {
+           document.getElementById("event_repeats_on_select").style.display = "none";
+        }
+      } else {
+        document.getElementById("event_repeats_on_select").style.display = "none";
+      }
+    }
+    function onDiscreteWheelScroll(event, id) {
+      var is_scrolling_down = (event.deltaY > 0);
+      var date_wheel = document.getElementById(id);
+      
+      if (is_scrolling_down) {
+        date_wheel.scrollTop += 50;
+      } else {
+        date_wheel.scrollTop -= 50;
+      }
+    }
+    function onEventRepeatsOnSelect() {
+      document.getElementById("start_timepicker").style.display = "none";
+      document.getElementById("end_timepicker").style.display = "none";
+      document.getElementById("repeat_wheel_picker").style.display = "none";
+      document.getElementById("start_datepicker").style.display = "none";
+      document.getElementById("end_datepicker").style.display = "none";
+
+      if (data_selected_value['time_span_wheel'].includes("week")) {
+        document.getElementById("repeat_month_wheel_picker").style.display = "none";
+        var repeat_on_checkbox = document.getElementById("repeat_on_select_checkbox");
+        if (repeat_on_checkbox.style.display != "inline-block") {
+          repeat_on_checkbox.style.display = "inline-block";
+          var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+          for (var i=0; i < weekday_checkboxes.length; i++) {
+            if (data_selected_value[weekday_checkboxes[i].id]) {
+              weekday_checkboxes[i].style.color = "#FEFFFE";
+              weekday_checkboxes[i].style.borderColor = "#1A73E8";
+              weekday_checkboxes[i].style.backgroundColor = "#1A73E8";
+            } else {
+              weekday_checkboxes[i].style.color = "#585C61";
+              weekday_checkboxes[i].style.borderColor = "#EEEEEE";
+              weekday_checkboxes[i].style.backgroundColor = "#EEEEEE";
+            }
+          }
+        } else {
+          repeat_on_checkbox.style.display = "none";
+        }
+      } else if (data_selected_value['time_span_wheel'].includes("month")) {
+        document.getElementById("repeat_on_select_checkbox").style.display = "none";
+        var repeat_month_wheel_picker = document.getElementById("repeat_month_wheel_picker");
+
+        if (repeat_month_wheel_picker.style.display != "inline-block") {
+          repeat_month_wheel_picker.style.display = "inline-block";
+          document.getElementById("repeat_month_wheel").scrollTop = scroll_tops['repeat_month_wheel'];
+          if (is_event_updating) {
+            updateCreateFormRepeat();
+            updateWheelScrollTopFromIndex("repeat_month_wheel");
+          }
+        } else {
+          repeat_month_wheel_picker.style.display = "none";
+        }
+      }
+    }
+    function onRepeatOnSelectCheckbox(id) {
+      var repeat_on_checkbox_day = document.getElementById(id);
+      if (data_selected_value[id]) {
+        repeat_on_checkbox_day.style.color = "#585C61";
+        repeat_on_checkbox_day.style.borderColor = "#EEEEEE";
+        repeat_on_checkbox_day.style.backgroundColor = "#EEEEEE";
+        data_selected_value[id] = false;
+      } else {
+        repeat_on_checkbox_day.style.color = "#FEFFFE";
+        repeat_on_checkbox_day.style.borderColor = "#1A73E8";
+        repeat_on_checkbox_day.style.backgroundColor = "#1A73E8";
+        data_selected_value[id] = true;
+      }
+
+      var repeat_days = [];
+      var weekday_checkboxes = document.getElementsByClassName('repeat_on_select_checkbox_day');
+      for (var i=0; i < weekday_checkboxes.length; i++) {
+        if (data_selected_value[weekday_checkboxes[i].id]) {
+          var weekday = weekday_checkboxes[i].id.split("_").pop();
+          weekday = weekday[0].toUpperCase() + weekday.slice(1);
+          repeat_days.push(weekday);
+        }
+      }
+
+      if (repeat_days.length == 0) {
+        onRepeatOnSelectCheckbox(id); // this will undo user unselecting the only checkbox
+      } else if (repeat_days.length == 1) {
+        document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_days[0]}`;
+      } else {
+        var repeat_str = `${repeat_days[0].substring(0,3)}`;
+        for (var i=1; i < repeat_days.length; i++) {
+          repeat_str += `, ${repeat_days[i].substring(0,3)}`;
+        }
+        document.getElementById("event_repeats_on_select_txt").value = `On ${repeat_str}`;
+      }
+      data_selected_value['user_has_selected_repeat_weekday'] = true;
+    }
+    function onRepeatMonthWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function() {
+        var repeat_month_wheel = document.getElementById(id);
+
+        var index = Math.round(repeat_month_wheel.scrollTop / repeat_month_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_repeat_month_wheel_elements = repeat_month_wheel.getElementsByTagName("li");
+        if (index < all_repeat_month_wheel_elements.length) {
+          data_selected_value[id] = all_repeat_month_wheel_elements[index].innerText;
+          document.getElementById("event_repeats_on_select_txt").value = data_selected_value[id];
+          data_selected_value['repeat_month_selected_id'] = all_repeat_month_wheel_elements[index].id;
+        }
+        scroll_tops[id] = repeat_month_wheel.scrollTop;
+      }, 300);
+    }
+    function handleToggleSwitchChange() {
+      if ( document.getElementById("date_type").style.display !== "inline-block") {
+        is_general_event = true;
+        document.getElementById("start_datepicker").style.display = "none";
+        document.getElementById("end_datepicker").style.display = "none";
+        document.getElementById("start_timepicker").style.display = "none";
+        document.getElementById("end_timepicker").style.display = "none";
+        document.getElementById("repeat_on_select_checkbox").style.display = "none";
+        document.getElementById("repeat_month_wheel_picker").style.display = "none";
+        document.getElementById("repeat_wheel_picker").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
+        document.getElementById("start_date").style.display = "none";
+        document.getElementById("end_date").style.display = "none";
+        document.getElementById("start_time").style.display = "none";
+        document.getElementById("end_time").style.display = "none";
+        document.getElementById("event_repeat_select").style.display = "none";
+        document.getElementById("event_repeats_on_select").style.display = "none";
+
+        document.getElementById("date_type").style.display = "inline-block";
+
+        var sq_toggle = document.getElementById("create_event_switch_react_container");
+        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#1A73E8";
+        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#1A73E8";
+        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#1A73E8";
+      } else {
+        is_general_event = false;
+        document.getElementById("start_datepicker").style.display = "none";
+        document.getElementById("end_datepicker").style.display = "none";
+        document.getElementById("start_timepicker").style.display = "none";
+        document.getElementById("end_timepicker").style.display = "none";
+        document.getElementById("repeat_on_select_checkbox").style.display = "none";
+        document.getElementById("repeat_month_wheel_picker").style.display = "none";
+        document.getElementById("repeat_wheel_picker").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
+        document.getElementById("date_type").style.display = "none";
+        document.getElementById("seasonal_quarterly_picker").style.display = "none";
+
+        document.getElementById("start_date").style.display = "inline-block";
+        document.getElementById("end_date").style.display = "inline-block";
+        document.getElementById("start_time").style.display = "inline-block";
+        document.getElementById("end_time").style.display = "inline-block";
+        document.getElementById("event_repeat_select").style.display = "inline-block";
+
+        var sq_toggle = document.getElementById("create_event_switch_react_container");
+        sq_toggle.getElementsByClassName("MuiSwitch-root")[0].style.backgroundColor = "#E1E1E2";
+        sq_toggle.getElementsByClassName("MuiSwitch-track")[0].style.backgroundColor = "#E1E1E2";
+        sq_toggle.getElementsByClassName("MuiSwitch-switchBase")[0].style.backgroundColor = "#E1E1E2";
+
+        updateCreateFormRepeat();
+      }
+    }
+    function onSQWheelScroll(id) {
+      if (timers[id] != -1) {
+        clearTimeout(timers[id]);
+      }
+
+      timers[id] = window.setTimeout(function() {
+        var sq_wheel = document.getElementById(id);
+
+        var index = Math.round(sq_wheel.scrollTop / sq_wheel.childNodes[0].offsetHeight) + 1;  // +1 handles empty li
+        wheel_indexes[id] = index.toString();
+        var all_sq_wheel_wheel_elements = sq_wheel.getElementsByTagName("li");
+        if (index < all_sq_wheel_wheel_elements.length) {
+          data_selected_value[id] = all_sq_wheel_wheel_elements[index].innerText;
+        }
+
+        var date_type_txt = document.getElementById('date_type_txt');
+        date_type_txt.value = `${data_selected_value['sq_wheel']} ${data_selected_value['sq_year_wheel']}`.replace('TBD','').replace('TBD','').replace('undefined','').trim();
+
+        scroll_tops[id] = sq_wheel.scrollTop;
+      }, 300);
+    }
+    function toggleDateType() {
+      var sq_picker = document.getElementById('seasonal_quarterly_picker');
+
+      if (sq_picker.style.display != "inline-block") {
+        sq_picker.style.display = "inline-block";
+        document.getElementById('sq_wheel').scrollTop = scroll_tops['sq_wheel'];
+        document.getElementById('sq_year_wheel').scrollTop = scroll_tops['sq_year_wheel'];
+
+        if (is_event_updating) {
+          updateWheelScrollTopFromIndex("sq_wheel");
+          updateWheelScrollTopFromIndex("sq_year_wheel");
+        }
+      }
+      else {
+       sq_picker.style.display = "none";
+      }
+    }
+    function eventDescriptionTxtResize(id) {
+      var description_txt = document.getElementById(id);
+      description_txt.style.height = "";
+      description_txt.style.height = description_txt.scrollHeight;
+    }
+    function onEventAddImage() {
+      document.getElementById('event_image_file').click();
+    }
+    function onCreateFormScroll(event, id) {
+      var create_form = document.getElementById(id);
+      var are_wheels_hovered = document.querySelector(".create_form_wheel:hover");
+      if ( are_wheels_hovered ) {
+        create_form.style.overflowY = "hidden";
+        window.setTimeout(function() {
+          create_form.style.overflowY = "scroll";
+        }, 12);
+      }
+    }
+    function calculate_image_url(image_id, image_extension) {
+      return `https://tomcalendareventimages.s3.us-east-2.amazonaws.com/${image_id}.${image_extension}`
+    }
+    function insertEventCardsToFeed(feed_id, event_cards, overwrite=false, creating_event=false) {
+      var event_feed = document.getElementById(feed_id);
+      for (i=0; i < event_cards.length; ++i) {
+        var position = "beforeend";
+
+        var event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
+        if (!overwrite && event_card_container) {
+          continue;
+        }
+        if ( (feed_id == 'user_profile_event_feed') &&  creating_event) {
+          document.getElementById('event_card_react_container_user_profile_0').insertAdjacentHTML('afterend', `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        } else {
+          event_feed.insertAdjacentHTML(position, `<div class="event_card_react_container" id="event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}">`);
+        }
+        event_card_container = document.getElementById(`event_card_react_container_${feed_id.substring(0,3)}_${event_cards[i]['google_id']}-${event_cards[i]['title']}`);
+
+        var event_card_avatar = event_cards[i]['creator_picture'];
+        var event_card_user_name = event_cards[i]['creator_email'].replace(/@.*.com/, '');
+        var event_card_image = calculate_image_url(event_cards[i]['image_id'], event_cards[i]['image_extension']);
+        var event_card_date_time;
+        if (event_cards[i]['is_general_event']) {
+          if (event_cards[i]['date_type'] && (event_cards[i]['date_type'] != '')) {
+            event_card_date_time = event_cards[i]['date_type'];
+          } else {
+            event_card_date_time = 'TBD';
+          }
+        } else if (!event_cards[i]['start_date']) {
+          event_card_date_time = 'TBD';
+        }
+        else {
+          event_card_date_time = event_cards[i]['start_date'];
+          if (event_cards[i]['end_date'] && (event_cards[i]['end_date'] != event_cards[i]['start_date'])) {
+            event_card_date_time += ` - ${event_cards[i]['end_date']}`;
+          }
+          if (event_cards[i]['start_time'] && event_cards[i]['end_time']) {
+            event_card_date_time += ` from ${event_cards[i]['start_time'].toLowerCase().replace(' ','')} - ${event_cards[i]['end_time'].toLowerCase().replace(' ','')} (${parseTimeZone(event_cards[i]['time_zone'])} time)`;
+          }
+          if ( event_cards[i]['repeats'] && (event_cards[i]['repeats'] != 'Does not repeat') ) {
+            event_card_date_time += event_cards[i]['repeats'].replace('Repeats','');
+            if (event_cards[i]['repeats_on']) {
+              event_card_date_time += ` ${event_cards[i]['repeats_on'].charAt(0).toLowerCase() + event_cards[i]['repeats_on'].slice(1)}`;
+            }
+          }
+        }
+
+        event_url_ids[`${event_cards[i]['google_id']}-${event_cards[i]['title']}`] = event_cards[i]['url_id'];
+        var event_card_params = { container_id: event_card_container.id, user_avatar: event_card_avatar, user_name: event_card_user_name, title: event_cards[i]['title'], image: event_card_image, date_time: event_card_date_time, location: event_cards[i]['location'], description: event_cards[i]['description'] };
+
+        ReactDOM.render(React.createElement(EventCard, event_card_params), event_card_container);
+
+        if (!event_cards[i]['location']) {
+          event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
+        }
+        if (!event_cards[i]['description']) {
+          event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
+        }
+
+        if (event_cards[i]['is_reminder_set']) {
+          var button_text = event_card_container.getElementsByClassName('MuiButton-label')[0];
+          button_text.textContent = "Reminder on";
+          button_text.style.color = "#8F8F8F";
+        }
+
+        feed_events[`${event_cards[i]['google_id']}-${event_cards[i]['title']}`] = event_cards[i];
+      }
+    }
+    function handleEventCardImageClick(img_ev) {
+      var current_image = img_ev.target;
+      var event_card_container = current_image.parentNode.parentNode.parentNode;
+      var event_card_id = current_image.parentNode.parentNode.parentNode.id.replace('event_card_react_container_','').substring(4);
+      var event_card_data = feed_events[event_card_id]
+
+      if (current_image.style.maxHeight == event_card_img_expand_height) {
+        /*
+        if (event_card_data['location']) {
+          event_card_container.getElementsByClassName('location_txt')[0].style.disaply = "block";
+        }
+        if (event_card_data['description']) {
+          event_card_container.getElementsByClassName('description_txt')[0].style.display = "block";
+        }
+        */
+
+        current_image.style.maxHeight = event_card_img_max_height;
+      } else {
+        /*
+        event_card_container.getElementsByClassName('location_txt')[0].style.display = 'none';
+        event_card_container.getElementsByClassName('description_txt')[0].style.display = 'none';
+        */
+
+        current_image.style.maxHeight = event_card_img_expand_height;
+      }
+    }
+    function handleEventCardAvatarClick(ev) {
+      document.getElementById("spinner_react_container").style.display = "block";
+
+      var container_id = ev.target.parentNode.id.replace('avatar_event_card_react_container_','');
+      container_id = container_id.substring(4);
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+
+      var data_load_profile = false;
+      var data_load_events  = false;
+
+      var http2 = new XMLHttpRequest();
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          other_user_profile = JSON.parse(http2.responseText);
+          document.getElementById('other_user_profile_image').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').src = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
+          document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+        }
+
+        data_load_profile = true;
+        if (data_load_events) {
+          var profile_popup = document.getElementById("other_user_profile");
+          var popup_close_layer = document.getElementById("popup_close_layer");
+          popup_close_layer.style.display = "block";
+          profile_popup.style.display = "block";
+          setTimeout(function() {
+            document.getElementById("spinner_react_container").style.display = "none";
+          }, 33);
+        }
+      };
+      http2.send(event_user_id);
+
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          if (user_event_cards.length > 0) {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "none";
+            other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+          }
+
+          data_load_events = true;
+          if (data_load_profile) {
+            var profile_popup = document.getElementById("other_user_profile");
+            var popup_close_layer = document.getElementById("popup_close_layer");
+            popup_close_layer.style.display = "block";
+            profile_popup.style.display = "block";
+            setTimeout(function() {
+              document.getElementById("spinner_react_container").style.display = "none";
+            }, 33);
+          }
+        }
+      };
+      up_xhr.send(JSON.stringify( {user_id: event_user_id, last_evaluated_key: ''} ));
+    }
+    function handleEventCardOptionsClick(ev) {
+      var container_id = ev.target.id.replace('options_event_card_react_container_','');
+      container_id = container_id.substring(4);
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
+      var card_options_menu = document.getElementById('card-options');
+
+      if (event_user_id != current_user_id) {
+        card_options_menu.getElementsByClassName('edit_option_txt')[0].style.display   = 'none';
+        card_options_menu.getElementsByClassName('delete_option_txt')[0].style.display = 'none';
+        card_options_menu.getElementsByClassName('report_option_txt')[0].style.display = '';
+      } else {
+        card_options_menu.getElementsByClassName('report_option_txt')[0].style.display = 'none';
+        card_options_menu.getElementsByClassName('edit_option_txt')[0].style.display   = '';
+        card_options_menu.getElementsByClassName('delete_option_txt')[0].style.display = '';
+      }
+    }
+    function handleEventCardSetReminderClick(ev) {
+      var title_index;
+      var container_id  = ev.target.parentNode.id.replace('reminder_btn_event_card_react_container_','');
+      container_id = container_id.substring(4);
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
+      var button_text   = document.getElementById(ev.target.parentNode.id).getElementsByClassName('MuiButton-label')[0];
+      var is_creating   = button_text.textContent == "Set reminder";
+
+      if (!is_currently_syncing_event) {
+        is_currently_syncing_event = true;
+        var http = new XMLHttpRequest();
+        http.open('POST', 'https://tomcalendar.com/create_or_delete_reminder', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.onload = function() {
+          if(http.status == 200) {
+            is_currently_syncing_event = false;
+
+            Object.keys(load_feed).forEach(function(feed){
+              var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${event_user_id}-${event_title}`);
+              if (current_event_card_container) {
+                var sr_current_event_card = feed_events[`${event_user_id}-${event_title}`];
+                sr_current_event_card['is_reminder_set'] = is_creating;
+                ReactDOM.unmountComponentAtNode(current_event_card_container);
+                insertEventCardsToFeed(feed,[sr_current_event_card],true);
+              }
+            });
+          }
+        };
+        http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
+
+        if (is_creating) {
+          button_text.textContent = "Reminder on";
+          button_text.style.color = "#8F8F8F";
+
+          snackbar_notification_message = `Reminder set for ${event_title}`;
+          snackbarNotify();
+        } else {
+          button_text.textContent = "Set reminder";
+          button_text.style = "";
+
+          snackbar_notification_message = `Reminder removed for ${event_title}`;
+          snackbarNotify();
+        }
+      }
+    }
+    function handleOptionClick(ev) {
+      var container_id  = current_option_container_id; // should rename this since it ended up being the event id
+      container_id = container_id.substring(4);
+      var title_index;
+      var event_user_id = container_id.substring(0, title_index=container_id.indexOf("-"));
+      var event_title   = container_id.substring(title_index + 1);
+      var event_url_id  = event_url_ids[`${event_user_id}-${event_title}`];
+
+      var option_txt = ev.currentTarget.innerText;
+      if (option_txt.trim() == "Copy link") {
+        navigator.clipboard.writeText(encodeURI(`https://tomcalendar.com/event?e=${event_url_id}`));
+        snackbar_notification_message = `Link copied for ${event_title}`;
+        snackbarNotify();
+      } else if (option_txt.trim() == 'Edit') {
+        onCreate();
+        document.getElementById("create_form_title_input").style.pointerEvents = 'none';
+        is_event_updating = true;
+        var current_event_card = feed_events[container_id];
+        data_selected_value = JSON.parse(JSON.stringify(current_event_card['form_state']['data_selected_value']));
+        if (!data_selected_value['repeat_n_wheel']) {
+          data_selected_value['repeat_n_wheel'] = '0';
+        }
+        if (!data_selected_value['time_span_wheel']) {
+          data_selected_value['time_span_wheel'] = 'days';
+        }
+        document.getElementById("create_form_title_input").value     = current_event_card['title'];
+        document.getElementById("start_datepicker_txt").value        = current_event_card['start_date'];
+        document.getElementById("start_timepicker_txt").value        = current_event_card['start_time'];
+        document.getElementById("end_datepicker_txt").value          = current_event_card['end_date'];
+        document.getElementById("end_timepicker_txt").value          = current_event_card['end_time'];
+        document.getElementById("date_type_txt").value               = current_event_card['date_type'];
+        document.getElementById("event_repeat_select_txt").value     = current_event_card['repeats'];
+        document.getElementById("event_repeats_on_select_txt").value = current_event_card['repeats_on'];
+        document.getElementById("event_location_txt").value          = current_event_card['location'];
+        document.getElementById("event_description_txt").value       = current_event_card['description'];
+        document.getElementById("event_image_txt").value             = `${current_event_card['title']}.${current_event_card['image_extension']}`;
+        document.getElementById("time_zone_txt").value               = `${parseTimeZone(current_event_card['time_zone'])} Time`;
+
+        user_selected_time_zone = current_event_card['time_zone'];
+
+        wheel_indexes = JSON.parse(JSON.stringify(current_event_card['form_state']['wheel_indexes']));
+
+        if (wheel_indexes['end_month_wheel'] || wheel_indexes['end_day_wheel'] || wheel_indexes['end_year_wheel']) {
+          sync_end_date = false;
+        }
+        if (wheel_indexes['end_hour_wheel'] || wheel_indexes['end_minute_wheel']) {
+          sync_end_time = false;
+        }
+
+        if (current_event_card['repeats_on']) {
+          document.getElementById("event_repeats_on_select").style.display = "inline-block";
+        }
+        if (current_event_card['is_general_event']) {
+          is_general_event = true;
+          ReactDOM.unmountComponentAtNode(document.getElementById("create_event_switch_react_container"));
+          ReactDOM.render(React.createElement(ToggleSwitch), document.getElementById("create_event_switch_react_container"));
+          handleToggleSwitchChange();
+        }
+
+        const day_regex   = new RegExp('day');
+        const week_regex  = new RegExp('week');
+        const month_regex = new RegExp('month');
+        const year_regex  = new RegExp('year');
+        if ( parseInt(data_selected_value['repeat_n_wheel']) == 1 ) {
+          document.getElementById("time_span_days").innerText = "day";
+          document.getElementById("time_span_weeks").innerText = "week";
+          document.getElementById("time_span_months").innerText = "month";
+          document.getElementById("time_span_years").innerText = "year";
+        } else {
+          document.getElementById("time_span_days").innerText = "days";
+          document.getElementById("time_span_weeks").innerText = "weeks";
+          document.getElementById("time_span_months").innerText = "months";
+          document.getElementById("time_span_years").innerText = "years";
+        }
+
+        eventDescriptionTxtResize('event_description_txt');
+      } else if (option_txt.trim() == 'Delete') {
+        alert_dialog_notification_message = "This can NOT be undone and the event will be removed from your profile, the explore feed, and from TomCalendar search results.";
+        alert_dialog_title = "Delete Event?";
+        alert_ok_text = "Delete";
+        alertDialogCallback = function() {
+          if (alert_dialog_decision == 'OK') {
+            var http2 = new XMLHttpRequest();
+            http2.open('POST', 'https://tomcalendar.com/delete_event', true);
+            http2.onload = function() {
+              var current_event_card = feed_events[container_id];
+              Object.keys(load_feed).forEach(function(feed){
+                var current_event_card_container = document.getElementById(`event_card_react_container_${feed.substring(0,3)}_${current_event_card['google_id']}-${current_event_card['title']}`);
+                if (current_event_card_container) {
+                  ReactDOM.unmountComponentAtNode(current_event_card_container);
+                  current_event_card_container.remove();
+                }
+              });
+              delete feed_events[container_id];
+            };
+            http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+            http2.send(JSON.stringify({ google_id: event_user_id, title: event_title }));
+          }
+        };
+        alertDialog();
+      } else if (option_txt.trim() == 'Report') {
+        snackbar_notification_message = `${event_title} has been reported`;
+        snackbarNotify();
+
+        var http = new XMLHttpRequest();
+        http.open('POST', 'https://tomcalendar.com/report_event', true);
+        http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+        http.send(container_id);
+      }
+    }
+    function updateWheelScrollTopFromIndex(id) {
+      var wheel = document.getElementById(id);
+      var index = parseInt(wheel_indexes[id]);
+      wheel.scrollTop = (index - 1) * wheel.childNodes[0].offsetHeight;
+      var all_wheel_elements = wheel.getElementsByTagName("li");
+      if (index < all_wheel_elements.length) {
+        if ( (index >= 0) && (index < all_wheel_elements.length) ) {
+          data_selected_value[id] = all_wheel_elements[index].innerText;
+        }
+      }
+    }
+    function onFeedScroll(id) {
+      var wheel = document.getElementById(id);
+      var scroll_amount = (wheel.scrollTop / (wheel.scrollHeight - wheel.clientHeight)) * 10;
+      if ( (scroll_amount >= 7) && load_feed[id] ) {
+        load_feed[id] = false;
+        if (id == 'user_profile_event_feed') {
+          var up_xhr = new XMLHttpRequest();
+          up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+          up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          up_xhr.onload = function() {
+            if (up_xhr.status == 200) {
+              var user_event_response = JSON.parse(up_xhr.responseText);
+              var user_event_cards = user_event_response['events'];
+              insertEventCardsToFeed('user_profile_event_feed', user_event_cards);
+              if (user_event_response['last_evaluated_key']) {
+                current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          up_xhr.send(JSON.stringify( {user_id: '', last_evaluated_key: current_user_event_last_evaluated_key} ));
+        } else if (id == 'other_user_profile_event_feed') {
+          var oup_xhr = new XMLHttpRequest();
+          oup_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+          oup_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          oup_xhr.onload = function() {
+            if (oup_xhr.status == 200) {
+              var user_event_response = JSON.parse(oup_xhr.responseText);
+              var user_event_cards = user_event_response['events'];
+              insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+              if (user_event_response['last_evaluated_key']) {
+                other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          oup_xhr.send(JSON.stringify( {user_id: other_user_profile['google_id'], last_evaluated_key: other_current_user_event_last_evaluated_key} ));
+        } else if (id == 'search_event_feed') {
+          var s_xhr = new XMLHttpRequest();
+          s_xhr.open('POST', 'https://tomcalendar.com/search_events', true);
+          s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          s_xhr.onload = function() {
+            if (s_xhr.status == 200) {
+              var search_event_response = JSON.parse(s_xhr.responseText);
+              var search_event_cards = search_event_response['events'];
+              insertEventCardsToFeed('search_event_feed', search_event_cards);
+              if (search_event_response['last_evaluated_key']) {
+                current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: current_search_event_last_evaluated_key} ));
+        } else if (id == 'explore_event_feed') {
+          var exp_xhr = new XMLHttpRequest();
+          exp_xhr.open('POST', 'https://tomcalendar.com/get_explore_events', true);
+          exp_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          exp_xhr.onload = function() {
+            if (exp_xhr.status == 200) {
+              var explore_event_response = JSON.parse(exp_xhr.responseText);
+              var explore_event_cards = explore_event_response['events'];
+              insertEventCardsToFeed('explore_event_feed', explore_event_cards);
+              if (explore_event_response['last_evaluated_key']) {
+                current_explore_event_last_evaluated_key = explore_event_response['last_evaluated_key'];
+                load_feed[id] = true;
+              } else {
+                load_feed[id] = false;
+              }
+            }
+          };
+          exp_xhr.send(JSON.stringify({last_evaluated_key: current_explore_event_last_evaluated_key}));
+        }
+      }
+    }
+    function onSearchBarSelect() {
+      if (document.getElementById("search_event_feed").style.display != 'none') {
+        document.getElementById("search_no_events_txt").style.display = "none";
+        document.getElementById("search_event_feed").style.display = "none";
+        document.getElementById("search_results").style.display    = "";
+        load_feed['search_event_feed'] = true;
+        current_search_event_last_evaluated_key = '';
+        var search_event_card_containers = document.querySelectorAll(`[id^=event_card_react_container_${'search_event_feed'.substring(0,3)}_]`);
+        search_event_card_containers.forEach(function(search_event_card_container) {
+          if (search_event_card_container) {
+            ReactDOM.unmountComponentAtNode(search_event_card_container);
+            search_event_card_container.remove();
+          }
+        });
+      }
+    }
+    function onSearchKeyUp(id) {
+      var input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById(id);
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("search_results");
+
+      if (document.getElementById("search_event_feed").style.display != 'none') {
+        onSearchBarSelect();
+      }
+
+      if (!input.value || input.value.trim() == '') {
+        return;
+      }
+
+      if(event.key === 'Enter') {
+        document.getElementById("search_no_events_txt").style.display = "none";
+        onEventSearchResultClick(input.value);
+        input.blur();
+        return;
+      }
+
+      const is_event_regex = new RegExp('event');
+
+      if ( !autocomplete_queries[input.value.trim()] || ( ((Date.now() / 1000) - autocomplete_queries[input.value.trim()]) > 60 ) ) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://tomcalendar.com/search_autocomplete', true);
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        xhr.onload = function() {
+          if (xhr.status == 200) {
+            var search_results;
+            if (xhr.responseText) {
+              search_results = JSON.parse(xhr.responseText);
+              search_user_start_from[input.value.trim()] = 10;
+            } else {
+              search_results = [];
+            }
+            var search_bar_list = document.getElementById("search_results");
+
+            search_results.forEach(function(search_result){
+              if (search_result['title']) { // if event result
+                if (!autocomplete_event_results[search_result['title']]) {
+                  search_bar_list.insertAdjacentHTML("beforeend", `
+                    <li id="event_${search_result['title']}"><a onclick="onEventSearchResultClick('${search_result['title']}')"><i class="material-icons md-36">search</i>${search_result['title']}</a></li>
+                  `);
+                  autocomplete_event_results[search_result['title']] = search_result;
+                } else {
+                  autocomplete_event_results[search_result['title']]['description'] += ` ${search_result['description']}`
+                }
+              } else {  // if user result
+                if (!autocomplete_user_results[search_result['google_id']]) {
+                  search_bar_list.insertAdjacentHTML("beforeend", `
+                    <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                  `);
+                  autocomplete_user_results[search_result['google_id']] = search_result;
+                }
+              }
+            });
+          }
+
+          li = ul.getElementsByTagName('li');
+          for (i = 0; i < li.length; i++) {
+            a = li[i].getElementsByTagName("a")[0];
+            txtValue = a.textContent || a.innerText;
+
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              li[i].style.display = "";
+            } else {
+              var keywords;
+              if (is_event_regex.test(li[i].id)) {
+                keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
+              } else {
+                keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
+              }
+
+              if (keywords.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+              } else {
+                li[i].style.display = "none";
+              }
+            }
+          }
+        };
+        xhr.send(JSON.stringify( {user_start_from: '0', query_input_str: input.value.trim()} ));
+        autocomplete_queries[input.value.trim()] = Date.now() / 1000;
+      } else {
+        // copy and pasted from above
+        li = ul.getElementsByTagName('li');
+        for (i = 0; i < li.length; i++) {
+          a = li[i].getElementsByTagName("a")[0];
+          txtValue = a.textContent || a.innerText;
+
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+          } else {
+            var keywords;
+            if (is_event_regex.test(li[i].id)) {
+              keywords = `${autocomplete_event_results[li[i].id.substring(6)]['title']} ${autocomplete_event_results[li[i].id.substring(6)]['description']}`;
+            } else {
+              keywords = `${autocomplete_user_results[li[i].id.substring(5)]['name']} ${autocomplete_user_results[li[i].id.substring(5)]['email']}`;
+            }
+
+            if (keywords.toUpperCase().indexOf(filter) > -1) {
+              li[i].style.display = "";
+            } else {
+              li[i].style.display = "none";
+            }
+          }
+        }
+      }
+    }
+    function onSearchResultsScroll(id) {
+      var wheel = document.getElementById(id);
+      var scroll_amount = (wheel.scrollTop / (wheel.scrollHeight - wheel.clientHeight)) * 10;
+
+      if ( (scroll_amount >= 7) && load_feed[id] ) {
+        load_feed[id] = false;
+        var input = document.getElementById('search_input');
+
+        if (!input.value || input.value.trim() == '') {
+          return;
+        }
+
+        if ( !autocomplete_queries[`${input.value.trim()}${search_user_start_from[input.value.trim()]}`] || ( ((Date.now() / 1000) - autocomplete_queries[input.value.trim()]) > 60 ) ) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', 'https://tomcalendar.com/search_autocomplete', true);
+          xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+          xhr.onload = function() {
+            if (xhr.status == 200) {
+              var search_results;
+              if (xhr.responseText) {
+                search_results = JSON.parse(xhr.responseText);
+
+                if (search_results.length > 0) {
+                  var search_bar_list = document.getElementById("search_results");
+                  search_results.forEach(function(search_result) {
+                    if (!autocomplete_user_results[search_result['google_id']]) {
+                      search_bar_list.insertAdjacentHTML("beforeend", `
+                        <li id="user_${search_result['google_id']}"><a onclick="onUserSearchResultClick('${search_result['google_id']}')"><i class="material-icons md-36" style="display:none;">search</i><span class="search_result_icon" style="background:url('${search_result['picture']}');background-repeat:no-repeat;background-size:cover;align:center;"></span>${search_result['name']}</a></li>
+                      `);
+                      autocomplete_user_results[search_result['google_id']] = search_result;
+                    }
+                  });
+
+                  search_user_start_from[input.value.trim()] = search_user_start_from[input.value.trim()] + search_results.length;
+                  load_feed[id] = true;
+                } else {
+                  load_feed[id] = false;
+                }
+              } else {
+                search_results = [];
+              }
+            }
+          };
+          xhr.send(JSON.stringify( {user_start_from: search_user_start_from[input.value.trim()].toString(), query_input_str: input.value.trim()} ));
+          autocomplete_queries[`${input.value.trim()}${search_user_start_from[input.value.trim()]}`] = Date.now() / 1000;
+        }
+      }
+    }
+    function onUserSearchResultClick(user_id) {
+      document.getElementById("spinner_react_container").style.display = "block";
+      var data_load_profile = false;
+      var data_load_events  = false;
+
+      var http2 = new XMLHttpRequest();
+      http2.open('POST', 'https://tomcalendar.com/get_user_profile', true);
+      http2.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+      http2.onload = function() {
+        if (http2.status == 200) {
+          other_user_profile = JSON.parse(http2.responseText);
+          document.getElementById('other_user_profile_image').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').src = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_header_img_src').style.backgroundImage = `url(${other_user_profile['picture']})`;
+          document.getElementById('other_user_profile_name_txt').innerText = other_user_profile['name'];
+          document.getElementById('other_user_header_img').style.backgroundImage = `url(${other_user_profile['picture']})`;
+
+          data_load_profile = true;
+          if (data_load_events) {
+            var profile_popup = document.getElementById("other_user_profile");
+            var popup_close_layer = document.getElementById("popup_close_layer");
+            popup_close_layer.style.visibility = "hidden";
+            profile_popup.style.visibility = "hidden";
+            popup_close_layer.style.display = "block";
+            profile_popup.style.display = "block";
+            setTimeout(function() {
+              document.getElementById("spinner_react_container").style.display = "none";
+              popup_close_layer.style.visibility = "visible";
+              profile_popup.style.visibility = "visible";
+            }, 33);
+          }
+        }
+        data_load_profile = true;
+      };
+      http2.send(user_id);
+
+      var up_xhr = new XMLHttpRequest();
+      up_xhr.open('POST', 'https://tomcalendar.com/get_user_events', true);
+      up_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      up_xhr.onload = function() {
+        if (up_xhr.status == 200) {
+          var user_event_response = JSON.parse(up_xhr.responseText);
+          var user_event_cards = user_event_response['events'];
+          if (user_event_cards.length > 0) {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "none";
+            other_current_user_event_last_evaluated_key = user_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('other_user_profile_event_feed', user_event_cards);
+
+            data_load_events = true;
+            if (data_load_profile) {
+              var profile_popup = document.getElementById("other_user_profile");
+              var popup_close_layer = document.getElementById("popup_close_layer");
+              profile_popup.style.visibility = "hidden";
+              popup_close_layer.style.visibility = "hidden";
+              popup_close_layer.style.display = "block";
+              profile_popup.style.display = "block";
+              setTimeout(function() {
+                document.getElementById("spinner_react_container").style.display = "none";
+                popup_close_layer.style.visibility = "visible";
+                profile_popup.style.visibility = "visible";
+              }, 33);
+            }
+          } else {
+            document.getElementById("other_user_profile_no_post_txt").style.display = "";
+          }
+        }
+        data_load_events = true;
+      };
+      up_xhr.send(JSON.stringify( {user_id: user_id, last_evaluated_key: ''} ));
+
+      // @hack: bug when user has no events and tried 3 times
+      setTimeout(function() {
+        var profile_popup = document.getElementById("other_user_profile");
+        var popup_close_layer = document.getElementById("popup_close_layer");
+        if(!(popup_close_layer.style.display == "block" && (profile_popup.style.display == "block"))) {
+          document.getElementById("other_user_profile_no_post_txt").style.display = "";
+          var profile_popup = document.getElementById("other_user_profile");
+          var popup_close_layer = document.getElementById("popup_close_layer");
+          profile_popup.style.visibility = "hidden";
+          popup_close_layer.style.visibility = "hidden";
+          popup_close_layer.style.display = "block";
+          profile_popup.style.display = "block";
+          setTimeout(function() {
+            document.getElementById("spinner_react_container").style.display = "none";
+            popup_close_layer.style.visibility = "visible";
+            profile_popup.style.visibility = "visible";
+          }, 33);
+        }
+      }, 250);
+    }
+    function onEventSearchResultClick(event_title) {
+      document.getElementById("spinner_react_container").style.display = "block";
+      current_search_event_title = event_title;
+
+      var s_xhr = new XMLHttpRequest();
+      s_xhr.open('POST', 'https://tomcalendar.com/search_events', true);
+      s_xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+      s_xhr.onload = function() {
+        if (s_xhr.status == 200) {
+          var search_event_response = JSON.parse(s_xhr.responseText);
+          var search_event_cards = search_event_response['events'];
+
+          if (search_event_cards.length > 0) {
+            document.getElementById("search_no_events_txt").style.display = "none";
+            current_search_event_last_evaluated_key = search_event_response['last_evaluated_key'];
+            insertEventCardsToFeed('search_event_feed', search_event_cards);
+            document.getElementById("search_event_feed").style.visibility = "hidden";
+            document.getElementById("search_event_feed").style.display = "block";
+
+            setTimeout(function() {
+              document.getElementById("search_event_feed").style.visibility = "visible";
+              document.getElementById("search_event_feed").style.display = "block";
+              document.getElementById("search_results").style.display    = "none";
+              document.getElementById("spinner_react_container").style.display = "none";
+            }, 300);
+          } else {
+            document.getElementById("search_event_feed").style.display = "block";
+            document.getElementById("search_event_feed").style.visibility = "visible";
+            document.getElementById("search_results").style.display    = "none";
+            document.getElementById("search_no_events_txt").style.display = "";
+            document.getElementById("spinner_react_container").style.display = "none";
+          }
+        }
+      };
+      s_xhr.send(JSON.stringify( {title: current_search_event_title, last_evaluated_key: ''} ));
+    }
+  </script>
+  <style>
+    html {
+      /* start of css */
+      text-align: center;
+      border: none;
+      font-family: 'Roboto', sans-serif;
+      font-size: 4px;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      //background-color: #FEFFFE;
+      overflow: auto;
+    }
+    ul {
+      padding-inline-start: 0;
+    }
+    select {
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      text-indent: 1px;
+    }
+    option {
+      background-color: #FEFFFE;
+      color: #292A2D;
+    }
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FEFFFE;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    #create_form::-webkit-scrollbar {
+      display: none;
+    }
+    #other_user_profile::-webkit-scrollbar {
+      display: none;
+    }
+    .event_feed::-webkit-scrollbar {
+      display: none;
+    }
+    #navbar {
+      margin: 0;
+      background-color: rgba(254, 255, 254, .9);
+      color: #E8E8EB;
+      width: 100%;
+      overflow: auto;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1;
+    }
+    #background {
+      border: none;
+      transition: filter 5s;
+    }
+    .navbar_space {
+      width: #{12 * VW_FACTOR}vw;
+      display: inline-block;
+    }
+    .event_feed {
+      position: fixed;
+      overflow-y: scroll;
+      width: #{( IS_DESKTOP ? '32' : '100' )}%;
+      height: 100%;
+      top: 0;
+      left: #{( IS_DESKTOP ? '34%' : '0' )};
+      bottom: 0;
+      right: 0;
+      text-align: center;
+      z-index: 0;
+      background-color: #E8E8EB;
+    }
+    #create_form, #time_zones_react_container, #other_user_profile {
+      display: none;
+      position: fixed;
+      overflow-y: scroll;
+      width: #{( IS_DESKTOP ? '80' : '100' )}%;
+      height: #{( IS_DESKTOP ? '80' : '100' )}%;
+      margin-top: #{( IS_DESKTOP ? '5' : '0' )}%;
+      margin-left: #{( IS_DESKTOP ? '10' : '0' )}%;
+      text-align: center;
+      border-radius: #{( IS_DESKTOP ? '25' : '0' )}px;
+      border-color: #FEFFFE;
+      background-color: #FEFFFE;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 2;
+    }
+    #other_user_profile {
+      width: #{IS_DESKTOP ? 50 : 100}%;
+      margin-left: #{( IS_DESKTOP ? '25' : '0' )}%;
+    }
+    #popup_close_layer, #spinner_react_container {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      background-color: rgba(0, 0, 0, 0.75);
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 1;
+    }
+    #spinner_react_container { /* also defined with popup_close_layer */
+      transform: scale(1.2, 1.2);
+      z-index: 2;
+    }
+    .spinner_circle { /* from react component */
+      margin-top: #{40 * VH_FACTOR}vh;
+      color: #4285F4;
+    }
+    .page {
+      display: block;
+      position: absolute;
+      border: none;
+      left: 0;
+      right: 0;
+      margin-top: #{7 * VH_FACTOR}vh;
+    }
+    .material-icons {
+      cursor: default;
+    }
+    .material-icons.nav {
+      margin-top: #{1.5 * VH_FACTOR}vh;
+      margin-bottom: #{0.75 * VH_FACTOR}vh;
+      font-size: #{7 * FONT_FACTOR}rem;
+      //color: #000000;
+      color: #0F1419;
+      text-align: center;
+      transition: color .175s;
+      transition-timing-function: ease-out;
+    }
+    .material-icons.nav.select {
+      //color: #000000;
+      color: #0F1419;
+      cursor: pointer;
+    }
+    .material-icons.nav.create {
+      color: #34A853;
+      //color: #0F9D58;
+      //background-color: rgba(254, 255, 254, 1);
+      border-style: solid;
+      border-color: #4285F4;
+      border-width: #{( IS_DESKTOP ? '3' : '2' )}px;
+      border-radius: #{0.5 * VH_FACTOR}vh; 
+      padding-right:  #{3 * VW_FACTOR}vw;
+      margin-right:   #{9 * VW_FACTOR}vw;
+      padding-left:   #{3 * VW_FACTOR}vw;
+      margin-left:    #{9 * VW_FACTOR}vw;
+      cursor: pointer;
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+    }
+    .material-icons.nav.create:hover {
+      background-color: #ebf6ee;
+      //background-color: #EEEEEE;
+    }
+    .material-icons.create_close, .material-icons.time_zones_close {
+      float: left;
+      margin-left: #{IS_DESKTOP ? (2 * VW_FACTOR) : (4 * VW_FACTOR)}vw;
+      margin-top: #{IS_DESKTOP ? (2 * VH_FACTOR) : (1.8 * VH_FACTOR)}vh;
+      cursor: pointer;
+      border-radius: 50px;
+      font-size: #{6.25 * FONT_FACTOR}rem;
+      color: #585C61;
+      padding: 6px;
+    }
+    .material-icons.create_close:hover, .material-icons.time_zones_close:hover {
+      background-color: #EEEEEE;
+    }
+    .material-icons.public, .material-icons.refresh {
+      font-size: #{7 * FONT_FACTOR}rem;
+    }
+    #navbar input[type=text]:focus {
+      outline: none;
+    }
+    #navbar input::placeholder {
+      color: black;
+      opacity: .75;
+    }
+    #log_out_btn {
+      display: inline-block;
+      width: 100%;
+      height: #{5.25 * VH_FACTOR}vh;
+      font-size: #{4 * FONT_FACTOR}rem;
+      font-weight: bold;
+      outline: none;
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      text-align: center;
+      margin-top: #{4 * VH_FACTOR}vh;
+      //color: #0F82FF;
+      //color: #4285F4;
+      color: #1A65D0;
+    }
+    #log_out_btn:hover {
+      //background-color: #EEEEEE;
+      //background-color: #f1fff1;
+      background-color: #C0C0C1;
+    }
+    #log_out_btn:active {
+      background-color: #FEFFFE;
+    }
+    #create_form_title input[type=text] {
+      float: left;
+      border-top-style: hidden;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-bottom-color: #ECEEF0;
+      border-radius: 0;
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      font-size: #{6 * FONT_FACTOR}rem;
+      margin-top: #{1 * VH_FACTOR}vh;
+      color: #26272A;
+      background-color: #FEFFFE;
+      text-align: center;
+    }
+    #create_form_title input[type=text]:focus {
+      border-color: #1A73E8;
+      outline: none;
+    }
+    #create_form_title input::placeholder {
+      color: #575B61;
+    }
+    #start_date {
+      display: inline-block;
+      float: left;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 2;
+    }
+    #date_type {
+      display: none;
+      float: left;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 2;
+    }
+    #end_date {
+      display: inline-block;
+      float: left;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 2;
+      margin-top: #{1.25 * VH_FACTOR}vh
+    }
+    #event_location, #event_description, #event_image {
+      min-height: #{4 * VH_FACTOR}vh;
+      width: 100%;
+      margin-top: #{2 * VH_FACTOR}vh;
+    }
+    #event_divider {
+      border-top-style: hidden;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-bottom-color: #ECEEF0;
+      border-radius: 0;
+      width: 100%;
+      display: inline-block;
+      height: 1px;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+    }
+    #start_date input[type=text], #end_date input[type=text], #date_type input[type=text] {
+      border: none;
+      width: #{38 * VW_FACTOR}vw;
+      height: #{4 * VH_FACTOR}vh;
+      background-color: #FEFFFE;
+      color: #292A2D;
+      font-size: #{4 * FONT_FACTOR}rem;
+      float: left;
+      cursor: pointer;
+    }
+    #start_date input::placeholder, #start_time input::placeholder, #end_date input::placeholder, #end_time input::placeholder, #date_type input::placeholder, #event_location input::placeholder, textarea::placeholder, #event_image input::placeholder {
+      color: #72757A;
+    }
+    #start_date input[type=text]:focus, #start_time input[type=text]:focus, #end_date input[type=text]:focus, #end_time input[type=text]:focus, #date_type input[type=text]:focus, #event_location input[type=text]:focus, #event_image input[type=text]:focus {
+      outline: none;
+    }
+    #start_time {
+      display: inline-block;
+      float: right;
+      right: 0;
+      margin-top: #{1.25 * VH_FACTOR}vh;
+      z-index: 2;
+    }
+    #end_time {
+      display: inline-block;
+      float: right;
+      right: 0;
+      z-index: 2;
+      margin-top: #{1.25 * VH_FACTOR}vh
+    }
+    #start_time input[type=text], #end_time input[type=text] {
+      border: none;
+      width: #{38 * VW_FACTOR}vw;
+      height: #{4 * VH_FACTOR}vh;
+      background-color: #FEFFFE;
+      color: #292A2D;
+      font-size: #{4 * FONT_FACTOR}rem;
+      text-align: right;
+      margin-right: 4vw;
+      cursor: pointer;
+    }
+    .sessions_page_header {
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      margin-top: #{0.75 * VH_FACTOR}vh;
+    }
+    .settings_btn {
+      display: inline-block;
+      width: #{100 - (6 * VW_FACTOR)}vw;
+      height: #{5.25 * VH_FACTOR}vh;
+      font-size: #{4 * FONT_FACTOR}rem;
+      outline: none;
+      text-align: left;
+      line-height: #{5.25 * VH_FACTOR}vh;
+      padding-left: #{6 * VW_FACTOR}vw;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-top-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      //color: #0F1419;
+      color: #010101;
+    }
+    .settings_btn:hover {
+      background-color: #EEEEEE;
+      //background-color: rgb(238, 238, 238,0.2);
+      background-color: rgb(241, 242, 241,1);
+    }
+    .settings_btn:active {
+      background-color: #EEEEEE;
+      //background-color: rgb(238, 238, 238,1);
+    }
+    .settings_next {
+      font-size: #{4 * FONT_FACTOR}rem;
+      float: right;
+      line-height: #{5.75 * VH_FACTOR}vh;
+      vertical-align: middle;
+      margin-right: #{4 * VW_FACTOR}vw;
+      color: #616161;
+      cursor: pointer;
+    }
+    .settings_navigate_before {
+      float:left;
+      margin-left: #{4 * VW_FACTOR}vw;
+      line-height: #{6 * VH_FACTOR}vh;
+      font-size: #{8 * FONT_FACTOR}rem;
+      //color: #0F82FF;
+      color: #1A65D0;
+      cursor: pointer;
+      vertical-align: middle;
+      display:inline-block;
+    }
+    .settings_page_title {
+      text-align: center;
+      font-size: #{8 * FONT_FACTOR}rem;
+      line-height: #{6 * VH_FACTOR}vh;
+      float:left;
+      vertical-align: middle;
+      margin-left: #{5 * VW_FACTOR}vw;
+      font-weight: bold;
+    }
+    .session_widget {
+      display: inline-block;
+      width: #{100 - (6 * VW_FACTOR)}vw;
+      height: #{7 * VH_FACTOR}vh;
+      font-size: #{4 * FONT_FACTOR}rem;
+      outline: none;
+      text-align: left;
+      line-height: #{7 * VH_FACTOR}vh;
+      padding-left: #{6 * VW_FACTOR}vw;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-top-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      background-color: rgba(254, 255, 254, 1);
+      color: #010101;
+    }
+    .material-icons.session_icon {
+      font-size: #{10 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      color: #010101;
+    }
+    .session_device_type {
+      font-size: #{3.5 * FONT_FACTOR}rem;
+      color: #010101;
+    }
+    .session_last_updated {
+      font-size: #{3 * FONT_FACTOR}rem;
+      color: #757575;
+    }
+    .session_log_out {
+      display: inline-block;
+      font-size: #{3.75 * FONT_FACTOR}rem;
+      color: #EA4335;
+      float: right;
+      padding-right: #{8 * VW_FACTOR}vw;
+      padding-left: #{4 * VW_FACTOR}vw;
+      cursor: pointer;
+    }
+    #all_sessions_log_out {
+      display: inline-block;
+      width: 100%;
+      height: #{5 * VH_FACTOR}vh;
+      font-size: #{4 * FONT_FACTOR}rem;
+      outline: none;
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: solid;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      cursor: pointer;
+      background-color: rgba(254, 255, 254, 1);
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      text-align: center;
+      line-height: #{5 * VH_FACTOR}vh;
+      //color: #0F82FF;
+      color: #1A65D0;
+    }
+    #all_sessions_log_out:hover {
+      background-color: #C0C0C1;
+    }
+    #all_sessions_log_out:active {
+      background-color: #FEFFFE;
+    }
+    #deactivate_btn {
+      display: inline-block;
+      height: #{5 * VH_FACTOR}vh;
+      font-size: #{4.25 * FONT_FACTOR}rem;
+      outline: none;
+      cursor: pointer;
+      text-align: center;
+      line-height: #{5 * VH_FACTOR}vh;
+      //color: #0F82FF;
+      color: #1A65D0;
+    }
+    #save_event_btn {
+      margin: 0;
+      padding: 0;
+      float: right;
+      background-color: #1A73E8;
+      color: white;
+      border: none;
+      border-radius: #{0.5 * VH_FACTOR}vh;
+      height: #{4 * VH_FACTOR}vh;
+      line-height: #{3.5 * VH_FACTOR}vh;
+      width: #{15 * VW_FACTOR}vw;
+      font-size: #{3.75 * FONT_FACTOR}rem;
+      text-align: center;
+      margin-right: #{5.25 * VW_FACTOR}vw;
+      margin-top: #{2 * VH_FACTOR}vh;
+      cursor: pointer;
+      outline: none;
+      font-weight: 425;
+    }
+    #save_event_btn:hover {
+      background-color: #3986eb;
+    }
+    .date_wheel_picker, .time_wheel_picker, .repeat_wheel_picker, .repeat_month_wheel_picker, .seasonal_quarterly_picker {
+      display: none;
+      height: #{18 * VH_FACTOR}vh;  /* ( li height + li top and bottom padding ) x number of elements seen on wheel */
+      width: 100%;
+    }
+    .month_wheel, .day_wheel, .year_wheel, .hour_wheel, .minute_wheel, .period_wheel, .repeat_n_wheel, .time_span_wheel, .repeat_month_wheel, .sq_wheel, .sq_year_wheel {
+      display: inline-block;
+      height: 100%;
+      overflow:hidden;
+      overflow-y:scroll;
+      -ms-scroll-snap-type: y mandatory;
+      scroll-snap-type: y mandatory;
+      text-align: center;
+    }
+    .month_wheel::-webkit-scrollbar, .day_wheel::-webkit-scrollbar, .year_wheel::-webkit-scrollbar, .hour_wheel::-webkit-scrollbar, .minute_wheel::-webkit-scrollbar, .period_wheel::-webkit-scrollbar, .repeat_n_wheel::-webkit-scrollbar, .time_span_wheel::-webkit-scrollbar, .repeat_month_wheel::-webkit-scrollbar, .sq_wheel::-webkit-scrollbar, .sq_year_wheel::-webkit-scrollbar {
+      display: none;
+    }
+    .month_wheel {
+      width: #{25 * VW_FACTOR}vw;
+      //width: #{20 * VW_FACTOR}vw;
+      text-align: right;
+    }
+    .sq_wheel {
+      width: #{20 * VW_FACTOR}vw;
+      text-align: right;
+      margin-right: #{8 * VW_FACTOR}vw;
+    }
+    .repeat_month_wheel {
+      width: #{60 * VW_FACTOR}vw;
+      text-align: left;
+      margin-left: #{13.5 * VW_FACTOR}vw;
+    }
+    .month_wheel_desktop_cover, .year_wheel_desktop_cover, .time_span_wheel_desktop_cover, .sq_year_wheel_desktop_cover, .sq_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{25 * VW_FACTOR}vw;
+      //width: #{20 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 2;
+      opacity: 0;
+    }
+    .hour_wheel_desktop_cover, .minute_wheel_desktop_cover, .period_wheel_desktop_cover, .day_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{10 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 2;
+      opacity: 0;
+    }
+    .repeat_n_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{24 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 2;
+      opacity: 0;
+    }
+    .repeat_month_wheel_desktop_cover {
+      display: inline-block;
+      position: absolute;
+      height: #{18 * VH_FACTOR}vh;
+      width: #{60 * VW_FACTOR}vw;
+      margin-left: #{13.5 * VW_FACTOR}vw;
+      background-color: yellow;
+      z-index: 2;
+      opacity: 0;
+    }
+    .day_wheel, .day_wheel_desktop_cover {
+      width: #{10 * VW_FACTOR}vw;
+      margin-left: #{4 * VW_FACTOR}vw;
+      margin-right: #{4 * VW_FACTOR}vw;
+    }
+    .year_wheel, .sq_year_wheel {
+      width: #{20 * VW_FACTOR}vw;
+      text-align: left;
+    }
+    .hour_wheel, .minute_wheel, .period_wheel {
+      width: #{10 * VW_FACTOR}vw;
+    }
+    .hour_wheel {
+      text-align: right;
+    }
+    .minute_wheel, .minute_wheel_desktop_cover {
+      margin-left: #{4 * VW_FACTOR}vw;
+      margin-right: #{4 * VW_FACTOR}vw;
+    }
+    .period_wheel {
+      text-align: left;
+    }
+    .repeat_n_wheel {
+      width: #{24 * VW_FACTOR}vw;
+    }
+    .time_span_wheel {
+      width: #{20 * VW_FACTOR}vw;
+      text-align: left;
+    }
+    .month_wheel li, .day_wheel li, .year_wheel li, .hour_wheel li, .minute_wheel li, .period_wheel li, .time_span_wheel li, .repeat_n_wheel li, .repeat_month_wheel li, .sq_wheel li, .sq_year_wheel li {
+      list-style-type: none;
+      padding-top: #{1.5 * VH_FACTOR}vh;
+      padding-bottom: #{1.5 * VH_FACTOR}vh;
+      font-size: #{3.75 * FONT_FACTOR}rem;
+      scroll-snap-align: start;
+      height: #{3 * VH_FACTOR}vh;
+      line-height: #{3 * VH_FACTOR}vh;
+      vertical-align: middle;
+      color: #505154;
+    }
+    .date_wheel_select_box, .time_wheel_select_box, .repeat_wheel_select_box, .repeat_month_wheel_select_box, .sq_wheel_select_box {
+      width: 95%;
+      height: #{6 * VH_FACTOR}vh;
+      background-color: rgba(238, 238, 239, 1);
+      position: absolute;
+      z-index: -1;
+      border-radius: 8px;
+      right: 0;
+      left: 0;
+      margin: auto;
+      margin-top: #{6 * VH_FACTOR}vh;
+    }
+    .date_wheel_select_box_cover_top, .time_wheel_select_box_cover_top, .repeat_wheel_select_box_cover_top, .repeat_month_wheel_select_box_cover_top, .sq_wheel_select_box_cover_top {
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      position: absolute;
+      right: 0;
+      left: 0;
+      margin: auto;
+      background-color: rgba(254, 255, 254, .5);
+      pointer-events:none;
+    }
+    .date_wheel_select_box_cover_bottom, .time_wheel_select_box_cover_bottom, .repeat_wheel_select_box_cover_bottom, .repeat_month_wheel_select_box_cover_bottom, .sq_wheel_select_box_cover_bottom {
+      width: 100%;
+      height: #{6 * VH_FACTOR}vh;
+      position: absolute;
+      right: 0;
+      left: 0;
+      margin: auto;
+      margin-top: #{12 * VH_FACTOR}vh;
+      background-color: rgba(254, 255, 254, .5);
+      pointer-events:none;
+    }
+    #time_zone, #event_repeat_select {
+      height: #{4 * VH_FACTOR}vh;
+      width: 100%;
+      margin-top: #{1.25 * VH_FACTOR}vh
+    }
+    #date_type_toggle {
+      height: #{4 * VH_FACTOR}vh;
+      width: 100%;
+      margin-top: #{15 * VH_FACTOR}vh;
+      cursor: default;
+    }
+    #time_zone_icon, #event_repeat_select_icon, #date_type_icon, #event_location_icon, #description_icon, #event_image_icon {
+      display: inline-block;
+      float: left;
+      height: #{4 * VH_FACTOR}vh;
+      width: #{4 * VW_FACTOR}vw;
+      margin-left: #{5 * VW_FACTOR}vw;
+      margin-right: #{5 * VW_FACTOR}vw;
+      line-height: #{4 * VH_FACTOR}vh;
+      color: #595D62;
+    }
+    #time_zone input[type=text], #event_repeat_select input[type=text], #event_repeats_on_select [type=text], #date_type_toggle input[type=text], #event_location input[type=text], #event_description_txt, #event_image input[type=text] {
+      border: none;
+      width: #{80 * VW_FACTOR}vw;
+      height: #{4 * VH_FACTOR}vh;
+      background-color: #FEFFFE;
+      color: #292A2D;
+      font-size: #{4 * FONT_FACTOR}rem;
+      float: left;
+      outline: none;
+      line-height: #{4 * VH_FACTOR}vh;
+      cursor: pointer;
+    }
+    #event_location input[type=text] {
+      width: 85%;  /* override */
+    }
+    #event_description_txt {
+      height: #{3.75 * VH_FACTOR}vh;
+      line-height: #{2.5 * VH_FACTOR}vh;  /* override */
+      resize: none;
+      overflow:hidden;
+      width: 85%;  /* override */
+      margin-top: #{0.5 * VH_FACTOR}vh;
+    }
+    #date_type_toggle input[type=text], #date_type_txt input[type=text] {
+      cursor: default;
+      width: #{64 * VW_FACTOR}vw;
+    }
+    #time_zones_react_container {
+      /* also defined with create_form */
+      overflow:hidden;
+      overflow-y:scroll;
+    }
+    #time_zones_react_container::-webkit-scrollbar {
+      display: none;
+    }
+    #time_zones_react_container .MuiList-root {
+      margin-top: #{8 * VH_FACTOR}vh;
+    }
+    #time_zones_react_container .material-icons {
+      font-size: #{7 * FONT_FACTOR}rem;
+      color: #595D62;
+    }
+    #time_zones_react_container .MuiAvatar-colorDefault {
+      background-color: #FEFFFE;
+      color: #595D62;
+    }
+    #time_zones_react_container .MuiTypography-root {
+      font-size: #{3.5 * FONT_FACTOR}rem;
+    }
+    #time_zones_title {
+      float: left;
+      font-size: #{5 * FONT_FACTOR}rem;
+      margin-top: #{2.75 * VH_FACTOR}vh;
+      margin-left: #{3 * VW_FACTOR}vw;
+    }
+    #event_repeats_on_select {
+      display: none;
+      float: left;
+      margin-top: #{1 * VH_FACTOR}vh;
+      margin-left: #{14 * VW_FACTOR}vw;
+      z-index: 2;
+    }
+    #repeat_on_select_checkbox {
+      text-align: center;
+      width: 100%;
+      display: none;
+    }
+    .repeat_on_select_checkbox_day {
+      border: solid;
+      border-radius: 4px;
+      color: #585C61;
+      border-color: #EEEEEE;
+      background-color: #EEEEEE;
+      width: #{6 * VW_FACTOR}vw;
+      height: #{3 * VH_FACTOR}vh;
+      font-size: #{3 * FONT_FACTOR}rem;
+      line-height: #{3 * VH_FACTOR}vh;
+      border-width: thin;
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+      margin-top: #{2 * VH_FACTOR}vh;
+      margin-left: #{2 * VW_FACTOR}vw;
+    }
+    #create_event_switch_react_container {
+      display: inline-block;
+      float: right;
+      right: 0;
+      z-index: 2;
+      margin-right: 4vw;
+      height: #{ IS_DESKTOP ? '30px' : "#{4 * VH_FACTOR}vh"};
+      border-radius: #{2 * VH_FACTOR}vh;
+      #{ IS_DESKTOP ? 'transform: scale(0.9, 0.9)' : 'transform: scale(0.8, 0.8)'};
+    }
+    #create_event_switch_react_container .MuiSwitch-root {
+      height: #{ IS_DESKTOP ? '38px' : "#{4.5 * VH_FACTOR}vh"};
+      border-radius: #{ IS_DESKTOP ? 2 * VH_FACTOR : 2.25 * VH_FACTOR}vh;
+      background-color: #E1E1E2;
+      transition: background-color .15s;
+    }
+    #create_event_switch_react_container .MuiSwitch-track {
+      background-color: #E1E1E2;
+      transition: background-color .15s;
+    }
+    #create_event_switch_react_container .MuiSwitch-thumb {
+      transform: scale(1.6, 1.6);
+      box-shadow: none;
+      color: #FEFFFE;
+    }
+    #create_event_switch_react_container .MuiSwitch-switchBase {
+      background-color: #E1E1E2;
+      bottom: 0;
+      left: 0;
+      top: 0;
+      transition: background-color .15s;
+    }
+    .pac-container {
+      box-shadow: none;
+      border: none;
+      border-radius: 8px;
+      color: #505154;
+      font-family: 'Roboto', sans-serif;
+      background-color: #EEEEEE;
+    }
+    .pac-icon {
+      display: none;
+    }
+    .pac-item {
+      color: #292A2D;
+      border: none;
+      background-color: #EEEEEE;
+    }
+    .pac-item:hover, .pac-item-selected {
+      color: #FEFFFE;
+      background-color: #1A73E8;
+    }
+    .pac-matched {
+      color: #26272A;
+    }
+    .pac-container:after {
+      background-image: none !important;
+      height: 0px;
+      padding: 0;
+      margin: 0;
+    }
+    .event_card_react_container .MuiCard-root {
+      width: 95.5%;
+      margin-right: 2.25%;
+      margin-left: 2.25%;
+      margin-bottom: 2.25%;
+      padding-bottom: #{1.25 * VH_FACTOR}vh;
+      background-color: #FEFFFE;
+    }
+    .event_card_react_container .MuiAvatar-root {
+      font-size: #{1 * FONT_FACTOR}rem;
+      background-color: #F44336;
+      cursor: pointer;
+    }
+    .event_card_react_container .MuiCardHeader-root {
+      height: #{2.75 * VH_FACTOR}vh;
+      cursor: default;
+    }
+    .event_card_react_container .MuiCardHeader-title {
+      //margin-top: #{0.5 * VW_FACTOR}vh;
+      color: #292A2D;
+      font-size: #{4.25 * FONT_FACTOR}rem;
+    }
+    .event_card_react_container .MuiCardHeader-avatar {
+      margin-right: #{2 * VW_FACTOR}vw;
+      //margin-bottom: #{2 * VH_FACTOR}vh;
+      //height: 10px;
+      //width: 10px;
+    }
+    .event_card_react_container .MuiCardHeader-avatar img {
+    }
+    .event_card_react_container .MuiTypography-root {
+      height: #{2.75 * VH_FACTOR}vh;
+      font-size: #{3.2 * FONT_FACTOR}rem;
+      line-height: #{2.75 * VH_FACTOR}vh;
+      vertical-align: middle;
+      text-align: left;
+      font-family: 'Roboto', sans-serif;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .material-icons {
+      font-size: #{3.3 * FONT_FACTOR}rem;
+      vertical-align: top;
+      transform: scale(1.75, 1.75);
+      margin-right: #{1 * VW_FACTOR}vw;
+      cursor: pointer;
+      border-radius: 50px;
+      color: #585C61;
+      padding: 4px;
+    }
+    .event_card_react_container .material-icons:hover {
+      background-color: #EEEEEE;
+    }
+    .event_card_react_container .MuiTypography-h6 {
+      line-height: #{2.5 * VH_FACTOR}vh;
+      font-size: #{3.9 * FONT_FACTOR}rem;
+      font-family: 'Roboto', sans-serif;
+      vertical-align: middle;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
+      margin-top: #{0.25 * VH_FACTOR}vh;
+      cursor: default;
+      //transform: scale(1.025, 1.025);
+      color:#26272A;
+      font-weight:500;
+      white-space: nowrap;
+      text-align: left;
+    }
+    .event_card_react_container .MuiCardContent-root {
+      padding-top: #{1 * VH_FACTOR}vh;
+      padding-right: #{0 * VW_FACTOR}vw;
+      height: #{2.5 * VH_FACTOR}vh;
+      padding-bottom: #{1.25 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiCardActions-root {
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
+    }
+    .event_card_react_container .MuiButtonBase-root {
+      line-height: #{2.75 * VH_FACTOR}vh;
+      font-size: #{3.5 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
+      margin-top: #{0.01 * VH_FACTOR}vh;
+      color: #0F82FF;
+    }
+    .event_card_react_container .MuiCardActionArea-root {
+      padding-top: #{0 * VH_FACTOR}vh;
+      padding-bottom: #{0 * VH_FACTOR}vh;
+      margin-bottom: #{0 * VH_FACTOR}vh;
+      cursor: default;
+    }
+    .MuiTouchRipple-root {
+      display: none;
+    }
+    .MuiCardActionArea-focusHighlight {
+      display: none;
+    }
+    .event_card_react_container img {
+      cursor: pointer;
+      max-height: #{40 * VH_FACTOR}vh;
+      transition-property: max-height;
+      transition-timing-function: linear;
+      transition-delay: 0s;
+      transition-duration: 0s;
+    }
+    .event_card_react_container .MuiCardActionArea-root p {
+      margin: 0;
+      margin-top: #{IS_DESKTOP ? 1 : 2}px;
+      padding: 0;
+      font-size: #{3.2 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      color: #292A2D;
+    }
+    .event_card_react_container .MuiCardActionArea-root .material-icons {
+      margin-left: 13px;
+      margin-right: 6px;
+      cursor: default;
+      font-size: #{2.75 * FONT_FACTOR}rem;
+      vertical-align: middle;
+      padding-top: #{0.25 * VH_FACTOR}vh;
+      border-radius: 0px;
+      color: #585C61;
+    }
+    .event_card_react_container .MuiCardActionArea-root .material-icons:hover {
+      background-color: rgba(1, 1, 1, 0);
+    }
+    .event_card_react_container .date_range_txt, .event_card_react_container .location_txt {
+      white-space: nowrap;
+      overflow-x: scroll;
+      overflow-y: hidden;
+    }
+    .event_card_react_container .description_txt {
+      white-space: pre-wrap;
+      overflow: hidden;
+      height: max-content;
+      width: 96%;
+      text-align: left;
+      float: right;
+    }
+    .event_card_react_container .description_txt .material-icons {
+      left: 0px;
+      margin-left: 0px;
+      display: none;
+    }
+    .event_card_react_container .date_range_txt::-webkit-scrollbar, .event_card_react_container .location_txt::-webkit-scrollbar, .event_card_react_container .description_txt::-webkit-scrollbar {
+      height: 4px;
+    }
+    .MuiMenu-paper {
+      margin-top: #{IS_DESKTOP ? 5 * VH_FACTOR : 6.5 * VH_FACTOR}vh;
+      margin-left: -#{IS_DESKTOP ? 24 * VW_FACTOR : 0}vw;
+      width: #{32 * VW_FACTOR}vw;
+      background-color: #FEFFFE;
+      color: #292A2D;
+    }
+    .MuiMenuItem-root {
+      height: #{4 * VH_FACTOR}vh;
+      font-size: #{IS_DESKTOP ? 3.25 * FONT_FACTOR : 3.75 * FONT_FACTOR}rem;
+    }
+    .MuiMenuItem-root:hover {
+      background-color: #EEEEEE;
+    }
+    .MuiSnackbarContent-message {
+      font-size: #{3.75 * FONT_FACTOR}rem;
+    }
+    .MuiSnackbar-root {
+      pointer-events:none;
+    }
+    .MuiDialog-container p {
+      font-size: #{3.75 * FONT_FACTOR}rem;
+      text-align: left;
+    }
+    .MuiDialog-container h2 {
+      font-size: #{6 * FONT_FACTOR}rem;
+    }
+    .MuiDialog-container button {
+      font-size: #{3.5 * FONT_FACTOR}rem;
+    }
+    #ok_btn {
+      color: #0F82FF;
+    }
+    #cancel_btn {
+      color: #8F8F8F;
+    }
+    #user_profile_image::before, #other_user_profile_image::before {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-filter: blur(25px);
+      z-index: -1;
+      content: "";
+      display: block;
+      width: 100vw;
+      height: 22vh;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+    #user_profile_image, #other_user_profile_image {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-filter: blur(12px);
+    }
+    #user_header_img, #other_user_header_img {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      display: inline-block;
+      margin-top: -8vh;
+      z-index: 1;
+      position: relative;
+      border-radius: #{0.5 * VH_FACTOR}vh; 
+    }
+    #user_profile_name_txt, #other_user_profile_name_txt {
+      font-size: 8rem;
+      font-weight: 500;
+      word-break: break-all;
+      margin-top: 5vh;
+      margin-bottom: 3vh;
+      padding-top: 0;
+      color: #0F1419;
+    }
+    #user_profile_border, #other_user_profile_border {
+      border-top-style: solid;
+      border-right-style: hidden;
+      border-left-style: hidden;
+      border-bottom-style: hidden;
+      border-width: thin;
+      border-color: #E8E8EB;
+      border-radius: 0;
+      margin-top: -2.5vh;
+    }
+    #user_profile_no_post_txt, #other_user_profile_no_post_txt, #search_no_events_txt {
+      margin-top: 12vh;
+      font-size: 5.25rem;
+      font-weight: 500;
+      color: #0F1419;
+    }
+    #other_user_profile_create_close {
+      position: fixed;
+      left: #{IS_DESKTOP ? (103 * VW_FACTOR) : (0 * VW_FACTOR)}vw;
+      z-index: 1;
+      background-color: rgb(15,20,25,0.75);
+      color: #FEFFFE;
+    }
+    #other_user_profile_create_close:hover {
+      background-color: rgb(15,20,25,1);
+    }
+    #other_user_profile_event_feed {
+      position: relative;
+      width: 100%;
+      left: 0;
+    }
+    #search_input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 93%;
+      border-radius: 25px;
+      font-size: 17px;
+      padding: 7px 10px 7px 15px;
+      border: 1px solid #F5F6F8;
+      margin-bottom: 8px;
+      margin-top: 6px;
+      outline: none;
+      background-color: #F0F2F5;
+      color: #404041;
+      z-index: 1;
+      position: relative;
+    }
+    ::placeholder {
+      color: #6F7175;
+    }
+    ::-ms-input-placeholder {
+      color: #6F7175;
+    }
+    #search_results {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      //margin-top: 1vh;
+      height: 70vh;
+      overflow-y: scroll;
+    }
+    #search_results li a {
+      padding: 12px;
+      text-decoration: none;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      text-align: left;
+      vertical-align: middle;
+      background-color: #FEFFFE;
+      color: #151515;
+      cursor: pointer;
+    }
+    #search_results li a i {
+      color: #828589;
+      transform: scale(1.35, 1.35);
+      margin-left: 8px;
+      margin-right: 18px;
+      cursor: pointer;
+    }
+    #search_results li a:hover:not(.header) {
+      background-color: #EEEEEE;
+    }
+    .search_result_icon {
+      background-repeat: no-repeat;
+      height: 38px;
+      width: 38px;
+      border-radius: 50px;
+      background-size: cover;
+      align: center;
+      margin-left: 2px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    #search_page {
+      margin-top: #{0 * VH_FACTOR}vh;
+    }
+  </style>
+</html>
+).freeze

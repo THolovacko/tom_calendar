@@ -1,0 +1,13 @@
+#! /usr/bin/ruby
+
+print %(Content-type: text/html
+
+
+User-agent: Googlebot
+Disallow: /nogooglebot/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://tomcalendar.com/public/sitemap.xml
+)

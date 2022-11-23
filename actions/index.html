@@ -1,16 +1,12 @@
 #! /usr/bin/ruby
 
-# @remember: use image(screenshot)?
-# @remember: maybe say something like "Stay updated for things you are interested in"
-# @remember: google sign in button says "signed in with google" when using chrome
-
-
 cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id.nil?
-  print "Content-type: text/html\n\n"
-  print %(
+  print %(Content-type: text/html\n\n
+
+
   <html lang="en">
     <head>
       <meta http-equiv="Refresh" content="0; URL=https://tomcalendar.com/dashboard">
@@ -20,36 +16,47 @@ unless cookie_session_id.nil?
   return
 end
 
-
 query_str = ENV['QUERY_STRING']
 code      = query_str.match(/code=([^&]*)/)&.to_s&.sub('code=','')
 code      = nil if (code == '') || (code == ' ')
 
-user_agent_str = ENV['HTTP_USER_AGENT'].downcase
+login_redirect = query_str.match(/eid=([^&]*)/)&.to_s&.sub('eid=','')
+login_redrect  = nil if (login_redrect == '') || (login_redrect == ' ')
+
+user_agent_str = ENV['HTTP_USER_AGENT']&.downcase || ''
 IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
 VH_FACTOR   = IS_DESKTOP ? 1.5 : 1
 FONT_FACTOR = IS_DESKTOP ? 2 : 1
 SCALE       = IS_DESKTOP ? 1.25 : 1
 
+print %(Content-type: text/html
 
-print "Content-type: text/html\n\n"
-print %(
+
 <html lang="en">
-  <title>Login</title>
   <head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <!-- <div id="loading_screen" style="background-color:#DB4437;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"><div style="position:absolute;width:100%;top:40%;font-size:#{12 * FONT_FACTOR}rem;text-align:center;font-weight:bold;color:#FEFFFE;">TomCalendar</div></div> -->
+    <div id="loading_screen" style="background-color:#FEFFFE;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"></div>
+    <title>Login</title>
+    <meta property="og:title" content="Login">
+    <meta property="og:site_name" content="TomCalendar">
+    <meta property="og:image" content="https://tomcalendar.com/public/TomCalendar.jpg">
+    <meta name="description" content="A crowdsourced notification service integrated with Google Calendar.">
+    <meta property="og:description" content="A crowdsourced notification service integrated with Google Calendar.">
+    <meta property="og:url" content="https://tomcalendar.com">
     <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
+    <script src="https://tomcalendar.com/public/google_api_platform.js" async defer></script>
     <meta name="google-signin-client_id" content="#{ENV['GOOGLE_OAUTH_CLIENT_ID']}">
     <meta name="viewport" content="width=device-width,initial-scale=1">
   </head>
   <body id="background" onload="init();">
     <div id="description_and_button">
-      <div id="logo_txt"><h1>TomCalendar</h1></div>
+      <div id="logo_txt"><p>TomCalendar</p></div>
       <div id="description">
         <div id="description_content">
-          <h1>You've earned your audience's attention, keep it.</h1><br>
-          <h1>Stay in the know, without spam.</h1>
+          <p>A crowdsourced notification service integrated with Google Calendar.</p><br>
         </div>
         <div id="google_button_wrapper">
           <div id="my-signin2" #{( IS_DESKTOP ? 'onmousedown' : 'ontouchstart' )}="redirectLogin();"></div>
@@ -57,18 +64,64 @@ print %(
       </div>
       <br>
     </div>
+    <div style="position:absolute;bottom:1vh;right:1vh;font-size:#{6 * FONT_FACTOR}rem;text-align:right;font-weight:bold;color:#0F1419;">ALPHA</div>
   </body>
   <script>
-    authorization_url  = "https://tomcalendar.com";  // default value
-    authorization_code = #{code ? "\"#{code}\"" : 'null'};
+    var authorization_url  = "https://tomcalendar.com";  // default value
+    var authorization_code = #{code ? "\"#{code}\"" : 'null'};
+    var login_redirect_id  = "#{login_redirect || ''}";
+
+    // background code
+    //const colors = ["#4285F4", "#DB4437", "#F4B400", "#0F9D58"];
+    const colors = ["#EA4335", "#FBBC05", "#34A853", "#4285F4"];
+    const numBalls = 500 / #{IS_DESKTOP ? 1 : 3};
+    //const numBalls = 1000 / #{IS_DESKTOP ? 1 : 3};
+    const balls = [];
+    for (let i = 0; i < numBalls; i++) {
+      let ball = document.createElement("div");
+      ball.classList.add("ball");
+      ball.style.background = colors[Math.floor(Math.random() * colors.length)];
+      ball.style.left = `${Math.floor(Math.random() * 100)}vw`;
+      ball.style.top = `${Math.floor(Math.random() * 100)}vh`;
+      ball.style.transform = `scale(${Math.random()})`;
+      ball.style.width = `${Math.random() * 24}em`;
+      ball.style.height = ball.style.width;
+      
+      balls.push(ball);
+      document.body.append(ball);
+    }
+    balls.forEach((el, i, ra) => {
+      let to = {
+        x: Math.random() * (i % 2 === 0 ? -11 : 11),
+        y: Math.random() * 12
+      };
+
+      let anim = el.animate(
+        [
+          { transform: "translate(0, 0)" },
+          { transform: `translate(${to.x}rem, ${to.y}rem)` }
+        ],
+        {
+          duration: (Math.random() + 1) * 2000,
+          direction: "alternate",
+          fill: "both",
+          iterations: Infinity,
+          easing: "ease-in-out"
+        }
+      );
+    });
 
     function init() {
       if ( localStorage.getItem("session_id") ) {
         var today_time = new Date().getTime();
         var expiration_date = new Date();
         expiration_date.setTime(today_time + (31 * 86400000));
-        document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() +";secure";
+        document.cookie = "session_id=" + localStorage.getItem("session_id") + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
         window.location = "https://tomcalendar.com/dashboard";
+      }
+
+      if (login_redirect_id) {
+        localStorage.setItem("login_redirect", `https://tomcalendar.com/event?e=${login_redirect_id}`);
       }
 
       gapi.signin2.render('my-signin2', {
@@ -86,18 +139,20 @@ print %(
         onSignIn(authorization_code);
       }
       else {
+        setTimeout(function() {
+          document.getElementById("loading_screen").style.display = "none";
+        }, 33);
+
         // get authorization url
         var http = new XMLHttpRequest();
-        http.open('POST', 'generate_authorization_url', true);
+        http.open('POST', 'https://tomcalendar.com/generate_authorization_url', true);
         http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
         http.onload = function() {
-          if(http.status == 200) {
+          if (http.status == 200) {
             authorization_url = http.responseText;
+            //gapi.auth2.getAuthInstance().signOut();
           }
-          else {
-            // @remember: handle error
-          }
-        }
+        };
         http.send('');
       }
     }
@@ -115,25 +170,31 @@ print %(
       // function has to exist for google api button to be rendered
     }
     function onSignIn(auth_code) {
+      //document.getElementById("loading_screen").style.display = "block";
+
       var http = new XMLHttpRequest();
-      http.open('POST', 'authorize_gmail', true);
+      http.open('POST', 'https://tomcalendar.com/authorize_gmail', true);
       http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
       http.onload = function() {
         if(http.status == 200) {
-          result = http.responseText;
+          var result = http.responseText;
           var today_time = new Date().getTime();
           var expiration_date = new Date();
           expiration_date.setTime(today_time + (31 * 86400000));
           localStorage.setItem("session_id", result);
-          document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() +";secure";
-          window.location = "https://tomcalendar.com/dashboard";
+          document.cookie = "session_id=" + result + ";expires=" + expiration_date.toUTCString() + ";secure;" + " path=/";
+          if ( localStorage.getItem("login_redirect") ) {
+            var on_sign_in_window_location = localStorage.getItem("login_redirect");
+            localStorage.removeItem('login_redirect');
+            window.location = on_sign_in_window_location;
+          } else {
+            window.location = 'https://tomcalendar.com/dashboard';
+          }
         }
-        else {
-          // @remember: handle error
-        }
-      }
+      };
       http.send(auth_code);
-      document.getElementById("background").style.webkitFilter = "blur(100px)";
+      //document.getElementById("background").style.transition   = "all 10s";
+      //document.getElementById("background").style.webkitFilter = "blur(100px)";
     }
   </script>
   <style type="text/css">
@@ -146,32 +207,43 @@ print %(
       margin: 0;
     }
     body {
-      transition: all 10s;
       transition-timing-function: ease-out;
+      background-color: #FEFFFE;
+      overflow: hidden;
     }
     #description_and_button {
-      margin-top: #{24 * VH_FACTOR}vh;
+      margin-top: #{22 * VH_FACTOR}vh;
     }
     #logo_txt {
-      font-size: #{6 * FONT_FACTOR}rem;
+      font-size: #{16 * FONT_FACTOR}rem;
       font-weight: bold;
       width: 100%;
+      color: #0F1419;
+      text-shadow: 2px 3px 10px rgba(81,67,21,0.8);
     }
     #description {
       display: inline-block;
     }
     #description_content {
       text-align: center;
-      font-size: #{2 * FONT_FACTOR}rem;
-      margin-top: #{4 * VH_FACTOR}vh;
+      font-size: #{6 * FONT_FACTOR}rem;
       font-weight: normal;
       width: 100%;
+      color: #0F1419;
+      margin-top: -#{10 * VH_FACTOR}vh;
+      text-shadow: 2px 3px 10px rgba(81,67,21,0.8);
     }
     #google_button_wrapper {
       display: inline-block;
-      margin-top: #{6 * VH_FACTOR}vh;
+      margin-top: #{1 * VH_FACTOR}vh;
       border: none;
       transform: scale(#{SCALE}, #{SCALE});
+    }
+    .ball {
+      position: absolute;
+      border-radius: 100%;
+      opacity: 0.75;
+      z-index: -1;
     }
   </style>
 </html>

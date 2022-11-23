@@ -1,0 +1,366 @@
+#! /usr/bin/ruby
+
+url_id = TomEnv::get('QUERY_STRING')
+url_id = url_id.split('=')[1]
+
+event = nil
+cache_result = TomMemcache::get("url_id#{url_id}").freeze
+if cache_result
+  event = JSON.parse(cache_result)
+else
+  exponential_backoff do
+    dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+    result_item = dynamodb.get_item({ table_name: 'EventURLIDs', key: {url_id: url_id} })&.item
+    return StatusCodeStr::bad_request_error_message('event has no url') unless result_item
+    event_id = result_item['event_id']
+    event_id = event_id.split('-',2)
+    creator_id = event_id[0]
+    title = event_id[1]
+    event = dynamodb.get_item({ table_name: 'Events', key: {google_id: creator_id, title: title} })&.item
+  end
+
+  TomMemcache::set("url_id#{url_id}", event.to_json, 30).freeze
+end
+
+is_logged_in = false
+session_id = get_session_id_from_cookies()
+
+if session_id
+  is_logged_in = true
+  current_google_id = session_id['google_id']
+  is_reminder_set_hash = generate_is_reminder_set_hash(current_google_id,[event])
+  if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
+    event['is_reminder_set'] = true
+  else
+    event['is_reminder_set'] = false
+  end
+end
+
+event['form_state'] = ''
+
+user_agent_str = TomEnv::get('HTTP_USER_AGENT')&.downcase || ''
+IS_DESKTOP  = !( /phone|android/.match(user_agent_str) )
+
+return %(Content-type: text/html
+
+
+<html lang="en">
+  <head>
+    <title>#{event['title']}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <div id="loading_screen" style="background-color:#FEFFFE;position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:100;"></div>
+    <meta property="og:title" content="#{event['title']}">
+    <meta property="og:site_name" content="TomCalendar">
+    <meta name="description" content="#{event['description']}">
+    <meta property="og:description" content="#{event['description']}">
+    <meta property="og:url" content="https://tomcalendar.com/event?e=#{url_id}">
+    <meta property="og:image" content="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="event['title']">
+    <link rel="preload" as="image" href="https://tomcalendar.com/public/favicon.ico">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="preload" as="style" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"/>
+  </head>
+  <body onload="init();">
+    <div id="event_image" align="center"></div>
+    <div id="header_img">
+      <img src="https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}" style="height:33vh;max-width:90vw;visibility:hidden;">
+    </div>
+    <p style="font-size:4rem;font-weight:500;word-break:break-all;color:#26272A;margin-top:3vh;margin-bottom:3vh;padding-top:0;">#{event['title']}</p>
+    <div class="event_date_attribute" id="event_days">
+      <i style="display:inline-block;" class="material-icons md-36">date_range</i>
+      <span id="event_days_txt" class="event_date_attribute_txt">TBD</span>
+    </div>
+    <div class="event_date_attribute" id="event_times">
+      <i style="display:inline-block;visibility:hidden;" class="material-icons md-36">date_range</i>
+      <span class="event_date_attribute_txt" id="event_times_txt">TBD</span>
+    </div>
+    <div class="event_date_attribute" id="event_time_zone">
+      <i style="display:inline-block;visibility:hidden;" class="material-icons md-36">public</i>
+      <span class="event_date_attribute_txt" id="event_time_zone_txt">TBD</span>
+    </div>
+    <div class="event_date_attribute" id="event_repeat">
+      <i style="display:inline-block;" class="material-icons md-36">refresh</i>
+      <span class="event_date_attribute_txt" id="event_repeat_txt">Does not repeat</span>
+    </div>
+    <div class="event_date_attribute" id="event_location">
+      <i style="display:inline-block;" class="material-icons md-36">location_on</i>
+      <span class="event_date_attribute_txt" id="event_location_txt">none</span>
+    </div>
+    <div class="event_date_attribute" id="event_author">
+      <i style="display:inline-block;" class="material-icons md-36">perm_identity</i>
+      <span class="event_date_attribute_txt" id="event_author_txt">none</span>
+    </div>
+    <div class="event_date_attribute" id="event_description">
+      <i style="display:inline-block;" class="material-icons md-36">notes</i>
+      <span class="event_date_attribute_txt" id="event_description_txt">none</span>
+    </div>
+    <button id="set_reminder_btn" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="onSetReminder()" #{IS_DESKTOP ? '' : 'disabled'}>#{event['is_reminder_set'] ? 'REMINDER ON' : 'SET REMINDER'}</button>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <div class="event_attribute_space"></div>
+    <!-- <div id="logo_link" style="pointer-events:none;text-decoration:none;font-size:2.5rem;font-wieght:bold;text-align:right;display:inline-block;width:100%;height:4vh;position:fixed;bottom:2vh;right:4vw"><i style="display:inline-block;color:#DB4437;font-size:3.25rem;margin-right:2vw;pointer-events:auto;" class="material-icons md-36" #{( IS_DESKTOP ? 'onclick' : 'ontouchend' )}="window.location='https://tomcalendar.com';" id="logo_link_icon">home</i></div> -->
+  </body>
+  <script>
+    const CURRENT_EVENT = #{event.to_json};
+    const IS_LOGGED_IN  = #{is_logged_in};
+    var is_currently_syncing_event = false;
+
+    function init() {
+      document.addEventListener('scroll', function(e) {
+        onBodyScroll(e);
+      }, {passive: true});
+
+      update_event_txt();
+    }
+    function parseTimeZone(target_time_zone) {
+      if (!target_time_zone) {
+        return '';
+      }
+      var time_zone_parts = target_time_zone.split('/');
+      if (time_zone_parts.length > 1) {
+        var time_zone_str = time_zone_parts[time_zone_parts.length - 1].replace(/_/g, ' ');
+        if (time_zone_parts.length > 2) {
+          time_zone_str += `, ${time_zone_parts[time_zone_parts.length - 2].replace(/_/g, ' ')}`;
+        }
+      }
+      else {
+        var time_zone_str = time_zone_parts[0].replace(/_/g, ' ');
+      }
+      return time_zone_str;
+    }
+    function update_event_txt() {
+      var button_text   = document.getElementById('set_reminder_btn');
+      var is_creating   = button_text.textContent == "SET REMINDER";
+      if (is_creating) {
+        button_text.style.color = "";
+      } else {
+        button_text.style.color = "#8F8F8F";
+        button_text.style.borderColor = "#8F8F8F";
+      }
+
+      var event_days_txt      = document.getElementById('event_days_txt');
+      var event_times_txt     = document.getElementById('event_times_txt');
+      var event_time_zone_txt = document.getElementById('event_time_zone_txt');
+      var event_repeat_txt    = document.getElementById('event_repeat_txt');
+      var time_zone = `${parseTimeZone(CURRENT_EVENT['time_zone'])} Time`;
+
+      document.getElementById('event_days').style.display = "table";
+      if (CURRENT_EVENT['is_general_event']) {
+        if (CURRENT_EVENT['date_type']) {
+          event_days_txt.innerText = CURRENT_EVENT["date_type"];
+        } else {
+          event_days_txt.innerText = 'TBD';
+        }
+      } else if (!CURRENT_EVENT['start_date']) {
+        event_days_txt.innerText = 'TBD';
+      }
+      else {
+        var event_date_time = CURRENT_EVENT["start_date"];
+
+        if (CURRENT_EVENT['end_date'] && (CURRENT_EVENT['end_date'] != CURRENT_EVENT['start_date'])) {
+          event_date_time += ` - ${CURRENT_EVENT['end_date']}`;
+        }
+        event_days_txt.innerText = event_date_time;
+
+        if (CURRENT_EVENT['start_time'] && CURRENT_EVENT['end_time']) {
+          document.getElementById('event_times').style.display     = "table";
+          document.getElementById('event_time_zone').style.display = "table";
+          event_times_txt.innerText = `${CURRENT_EVENT['start_time'].toLowerCase().replace(' ','')} - ${CURRENT_EVENT['end_time'].toLowerCase().replace(' ','')}`;
+          event_time_zone_txt.innerText = `${time_zone}`;
+        }
+
+        if ( CURRENT_EVENT['repeats'] && (CURRENT_EVENT['repeats'] != 'Does not repeat') ) {
+          document.getElementById('event_repeat').style.display = "table";
+
+          var repeat_str = CURRENT_EVENT['repeats'];
+          if (CURRENT_EVENT['repeats_on']) {
+            repeat_str += ` ${CURRENT_EVENT['repeats_on'].charAt(0).toLowerCase() + CURRENT_EVENT['repeats_on'].slice(1)}`;
+          }
+          event_repeat_txt.innerText = repeat_str;
+        }
+      }
+
+      if (CURRENT_EVENT['location']) {
+        document.getElementById('event_location').style.display = "table";
+        event_location_txt.innerText = CURRENT_EVENT['location'];
+      }
+
+      if (CURRENT_EVENT['description']) {
+        document.getElementById('event_description').style.display = "table";
+        event_description_txt.innerText = CURRENT_EVENT['description'];
+      }
+
+      if (CURRENT_EVENT['creator_email']) {
+        document.getElementById('event_author').style.display = "table";
+        event_author_txt.innerText = CURRENT_EVENT['creator_email'];
+      }
+
+      setTimeout(function() {
+        document.getElementById("loading_screen").style.display = "none";
+
+        if ((document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight) > #{IS_DESKTOP ? 200 : 500}) {
+          //document.getElementById("logo_link").style.opacity = "0";
+        } else {
+          //document.getElementById("logo_link").style.opacity = "1";
+        }
+
+      }, 66);
+    }
+    function onSetReminder() {
+      var button_text   = document.getElementById('set_reminder_btn');
+      var event_user_id = CURRENT_EVENT['google_id'];
+      var event_title   = CURRENT_EVENT['title'];
+      var is_creating   = button_text.textContent == "SET REMINDER";
+
+      if (IS_LOGGED_IN) {
+        if (!is_currently_syncing_event) {
+          is_currently_syncing_event = true;
+          var http = new XMLHttpRequest();
+          http.open('POST', 'https://tomcalendar.com/create_or_delete_reminder', true);
+          http.setRequestHeader('Content-type', 'application/octet-stream; charset=utf-8');
+          http.onload = function() {
+            if(http.status == 200) {
+              is_currently_syncing_event = false;
+            }
+          };
+          http.send(JSON.stringify( [event_user_id, event_title, is_creating] ));
+
+          if (is_creating) {
+            button_text.textContent = "REMINDER ON";
+            button_text.style.color = "#8F8F8F";
+            button_text.style.borderColor = "#8F8F8F";
+          } else {
+            button_text.textContent = "SET REMINDER";
+            button_text.style = "";
+          }
+        }
+      } else {
+        window.location = "https://tomcalendar.com?eid=#{url_id}";
+      }
+
+      #{ IS_DESKTOP ? '' : 'setTimeout(function() { button_text.style.backgroundColor = "FEFFFE"; }, 100);'}
+    }
+    function onBodyScroll(e) {
+      var scroll_position = document.documentElement.scrollTop || document.body.scrollTop;
+      var scroll_amount = (scroll_position / (document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight));
+
+      if (scroll_position < 0) {
+        document.getElementById("event_image").style.opacity = "1.0";
+      } else {
+        if ((document.getElementsByTagName("body")[0].scrollHeight - document.getElementsByTagName("body")[0].clientHeight) > #{IS_DESKTOP ? 200 : 500}) {
+          document.getElementById("event_image").style.opacity = `${1 - (scroll_amount * #{IS_DESKTOP ? 1.2 : 2.75})}`;
+          //document.getElementById("logo_link").style.opacity = `${scroll_amount * #{IS_DESKTOP ? 1.2 : 2.75}}`;
+        }
+      }
+    }
+  </script>
+  <style type="text/css">
+    html {
+      text-align: center;
+      font-family: 'Roboto', sans-serif;
+      font-size: #{IS_DESKTOP ? '11' : '16'}px;
+      color: #292A2D;
+    }
+    body {
+      background-color: #FEFFFE;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+    #event_image::before {
+      background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-filter: blur(25px);
+      z-index: -1;
+      content: "";
+      display: block;
+      height: 32vh;
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
+    #header_img {
+      background-image: url("https://tomcalendareventimages.s3.us-east-2.amazonaws.com/#{event['image_id']}.#{event['image_extension']}");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      display: inline-block;
+      margin-top: 2vh;
+      z-index: 3;
+      position: relative;
+    }
+    .event_date_attribute {
+      display: none;
+      text-align: left;
+      font-size: 2.35rem;
+      margin-left: 5vw;
+      line-height: 3.1vh;
+      margin-bottom: 2vh;
+    }
+    .event_date_attribute_txt {
+      display: table-cell;
+      vertical-align: middle;
+    }
+    .material-icons {
+      margin-top: 0px;
+      font-size: 3.5rem;
+      margin-right: 5vw;
+      vertical-align: middle;
+      color: #595D62;
+    }
+    .event_attribute_space {
+      width: 100%;
+      display: inline-block;
+      height: 1vh;
+    }
+    #set_reminder_btn {
+      display: inline-block;
+      width: 80vw;
+      height: 6vh;
+      font-size: 2.5rem;
+      outline: none;
+      border-style: solid;
+      border-color: blue;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #FEFFFE;
+      transition: background-color .175s;
+      transition-timing-function: ease-out;
+      text-align: center;
+      margin-top: 2vh;
+      margin-bottom: 4vh;
+      color: #0F82FF;
+    }
+    #set_reminder_btn:hover {
+      background-color: rgb(232,241,252,0.6);
+    }
+    #set_reminder_btn:active {
+      background-color: rgb(232,241,252,1);
+      outline: none;
+    }
+    #set_reminder_btn:focus {
+      outline: none;
+    }
+    #logo_link {
+      cursor: pointer;
+      z-index: 6;
+      opacity: 1;
+    }
+    #logo_link_icon {
+      background-color: #EEEEEE;
+      padding: 12px;
+      border-radius: 8px;
+      color: #585C61;
+      opacity: 0.8;
+    }
+  </style>
+</html>
+)

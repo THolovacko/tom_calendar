@@ -1,0 +1,23 @@
+#! /usr/bin/ruby
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+cache_result = TomMemcache::get("recac").freeze
+if cache_result
+  return "Content-type: application/json\n\n#{cache_result}"
+end
+
+search_results = nil
+exponential_backoff do
+  search_results = Autocomplete::get_recent_searched(10)
+end
+
+search_results.map!{|result| result['_source']}
+search_results_json = search_results.to_json.freeze
+TomMemcache::set("recac", search_results_json, 3600)  # 1 hour cache
+return "Content-type: application/json\n\n#{search_results_json}"

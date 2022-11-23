@@ -1,0 +1,3 @@
+#! /usr/bin/ruby
+
+RubyVM::InstructionSequence.load_from_binary( File.open(ARGV[0], 'r').readlines.join('') ).eval

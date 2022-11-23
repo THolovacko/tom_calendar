@@ -1,0 +1,83 @@
+#! /usr/bin/ruby
+
+session_id = get_session_id_from_cookies()
+
+unless session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+request_input = TomEnv::get('MESSAGE')
+request_input.strip!
+if (request_input == '') || (request_input == ' ')
+  last_evaluated_key = nil
+else
+  request_input = JSON.parse(request_input)
+  last_evaluated_key = request_input['last_evaluated_key']
+  last_evaluated_key['id'] = last_evaluated_key['id']&.to_i if last_evaluated_key
+  last_evaluated_key['index'] = last_evaluated_key['index'].to_i if last_evaluated_key
+  last_evaluated_key = nil if last_evaluated_key.to_s.strip == '' if last_evaluated_key
+end
+
+cache_result = TomMemcache::get("exp#{last_evaluated_key['id'] if last_evaluated_key}").freeze
+cache_result = nil
+if cache_result
+  return "Content-type: application/json\n\n#{cache_result}"
+end
+cache_index = "exp#{last_evaluated_key['id'] if last_evaluated_key}"
+
+batch_events_result = nil
+explore_event_ids   = nil
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
+
+  # currently mostly recent and sort of random events (not trending); redundant stuff going on here
+
+  scan_result = dynamodb.scan({
+    table_name: 'ExploreFeed',
+    exclusive_start_key: last_evaluated_key,
+    limit: 10
+  })
+  explore_event_ids = scan_result&.items || []
+
+  scan_result_last_evaluated_key = scan_result&.last_evaluated_key
+  scan_result_last_evaluated_key['id'] = scan_result_last_evaluated_key['id'].to_i if scan_result_last_evaluated_key
+  scan_result_last_evaluated_key['index'] = scan_result_last_evaluated_key['index'].to_i if scan_result_last_evaluated_key
+  if last_evaluated_key != scan_result_last_evaluated_key
+    last_evaluated_key = scan_result_last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
+
+  explore_event_ids.sort_by! { |explore_event_key| explore_event_key['id'].to_i }
+  explore_event_keys = explore_event_ids.map { |item| { google_id: item['google_id'], title: item['title'] } }
+  explore_event_keys.uniq!
+
+  batch_events_result = dynamodb.batch_get_item({
+    request_items: {
+      "Events" => {
+        keys: explore_event_keys,
+      },
+    },
+  })
+end
+
+batch_events = batch_events_result.responses["Events"]
+explore_events = []
+explore_event_ids.each do |explore_event_id|
+  batch_events.each do |batch_event|
+    if (explore_event_id['google_id'] == batch_event['google_id']) && (explore_event_id['title'] == batch_event['title'])
+      explore_events.push(batch_event)
+      break
+    end
+  end
+end
+
+is_reminder_set_hash = generate_is_reminder_set_hash(session_id['google_id'],explore_events)
+explore_events.each do |event|
+  event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
+end
+
+result = { events: explore_events, last_evaluated_key: last_evaluated_key }
+result_to_json = result.to_json.freeze
+TomMemcache::set("exp#{cache_index}", result_to_json, 86400).freeze
+return "Content-type: application/json\n\n#{result_to_json}"

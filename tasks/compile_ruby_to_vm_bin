@@ -1,0 +1,13 @@
+#! /usr/bin/ruby
+
+source_code = File.open(ARGV[0], 'r')
+
+RubyVM::InstructionSequence.compile_option = true
+#$stdout.reopen("/dev/null", "w")
+#$stderr.reopen("/dev/null", "w")
+compiled_code = RubyVM::InstructionSequence.compile(source_code)
+binary_code = compiled_code.to_binary
+
+binary_file = File.open(ARGV[0].split('.').first + '.rvmbin', 'w+')
+binary_file.puts binary_code
+binary_file.close

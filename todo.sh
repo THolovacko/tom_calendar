@@ -1,7 +1,4 @@
 #! /usr/bin/bash
 
-grep -r @remember --color
-grep -r @optimize --color
-grep -r @test --color
-grep -r @refactor --color
-grep -r @current --color
+grep -Er '@remember|@optimize|@test|@refactor|@hack' --color -n --exclude-dir=html --exclude=todo.sh
+grep -Er '@current' --color -n --exclude-dir=html --exclude=todo.sh

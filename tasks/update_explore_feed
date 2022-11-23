@@ -1,0 +1,65 @@
+#! /usr/bin/ruby
+
+require '/home/ubuntu/tom_calendar/lib/tomcalendar.rb'
+
+end_time   = Time.now.to_i
+start_time = end_time - 86400 # 24 hours ago
+
+event_id_to_count = {}
+dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+begin
+  last_evaluated_key ||= nil
+  db_attempts ||= 0
+
+  reminders_params = {
+    table_name: 'EventReminders',
+    index_name: "status-last_updated_timestamp-index",
+    key_condition_expression: "#s = :status AND last_updated_timestamp BETWEEN :start_time AND :end_time",
+    expression_attribute_names: { "#s" => "status" },
+    expression_attribute_values: { ":status" => '1', ":start_time" => start_time, ":end_time" => end_time },
+    limit: 1000,
+    exclusive_start_key: last_evaluated_key
+  }
+
+  query_result = dynamodb.query(reminders_params)
+  query_result.items.each do |reminder|
+    if event_id_to_count[reminder['event_id']].nil?
+      event_id_to_count[reminder['event_id']] = 1
+    else
+      event_id_to_count[reminder['event_id']] = event_id_to_count[reminder['event_id']] + 1
+    end
+  end
+
+  if query_result.last_evaluated_key != last_evaluated_key
+    last_evaluated_key = query_result.last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
+rescue Exception => e
+  if db_attempts < 8
+    db_attempts = db_attempts + 1
+    sleep 1
+    retry
+  else
+    raise "Failed to update explore feed"
+  end
+end
+
+sorted_ids = event_id_to_count.sort.map{|v| v[0]}
+sorted_ids.reverse!
+
+random_events = Autocomplete::get_random_events(100)
+random_events.each do |random_event|
+  random_event_id = "#{random_event['_source']['google_id']}-#{random_event['_source']['title']}"
+  sorted_ids.push(random_event_id) if event_id_to_count[random_event_id].nil?
+end
+
+index = 0
+exponential_backoff do
+  sorted_ids.each do |sorted_id|
+    event_user_id = sorted_id.split('-',2)[0]
+    event_title   = sorted_id.split('-',2)[1]
+    dynamodb.put_item({ table_name: 'ExploreFeed', item: {id: index, index: index, google_id: "#{event_user_id}", title: "#{event_title}"} })
+    index = index + 1
+  end
+end

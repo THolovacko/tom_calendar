@@ -1,101 +1,118 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
-require "google/apis/calendar_v3"
-
-cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
-session_id            = JSON.parse(cookie_session_id)
-dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_id             = session_id['google_id']
-google_authorizer     = get_google_authorizer(dynamodb)
-service               = Google::Apis::CalendarV3::CalendarService.new
-service.authorization = google_authorizer.get_credentials(google_id)
-code                  = ARGF.first.to_s
-service.client_options.application_name = 'TomCalendar'.freeze
-
-# validate code
-begin
-  params = {
-    table_name: 'DeactivationCodes',
-    key: { google_id: google_id }
-  }
-
-  result_item = dynamodb.get_item(params)&.item || {}
-  valid_code = result_item['code']
-rescue Exception => e
-  print StatusCodeStr::error_message(e.message)
-  return
+cache_result = TomMemcache::get("deactivate_tc#{cookie_session_id}").freeze
+if cache_result
+  return StatusCodeStr::OK
 end
 
-unless code == valid_code
-  print StatusCodeStr::BAD_REQUEST
-  return
-end
+exponential_backoff do
+  session_id            = JSON.parse(cookie_session_id)
+  dynamodb              = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_id             = session_id['google_id']
+  google_authorizer     = get_google_authorizer(dynamodb)
+  service               = Google::Apis::CalendarV3::CalendarService.new
+  service.authorization = google_authorizer.get_credentials(google_id)
+  code                  = TomEnv::get('MESSAGE')
+  service.client_options.application_name = 'TomCalendar'.freeze
 
-# get google calendar id
-begin
-  params = {
-    table_name: 'GoogleCalendarIDs',
-    key: { google_id: google_id }
-  }
-
-  result_item = dynamodb.get_item(params)&.item || {}
-  google_calendar_id = result_item['google_calendar_id']
-rescue Exception => e
-  print StatusCodeStr::error_message(e.message)
-  return
-end
-
-# delete google calendar if exists
-if google_calendar_id
-  service.delete_calendar(google_calendar_id)
-
-  params = {
-    table_name: 'GoogleCalendarIDs',
-    key: { google_id: google_id }
-  }
-
+  # validate code
   begin
-    dynamodb.delete_item(params)
-  rescue
-    print StatusCodeStr::error_message('Unable to delete google calendar id')
-    return
-  end
-end
-
-# delete all sessions
-begin
-  sessions_params = {
-      table_name: 'Sessions',
-      key_condition_expression: "#gid = :google_id",
-      expression_attribute_names: {
-          "#gid" => "google_id"
-      },
-      expression_attribute_values: {
-          ":google_id" => google_id
-      }
-  }
-
-  query_result = dynamodb.query(sessions_params)
-  query_result.items.each do |session|
-    delete_params = {
-     table_name: 'Sessions',
-     key: { google_id: session['google_id'], device_id: session['device_id'] }
+    params = {
+      table_name: 'DeactivationCodes',
+      key: { google_id: google_id }
     }
-    dynamodb.delete_item(delete_params)
+
+    result_item = dynamodb.get_item(params)&.item || {}
+    valid_code = result_item['code']
+  rescue Exception => e
+    return StatusCodeStr::error_message(e.message)
   end
-rescue Aws::DynamoDB::Errors::ServiceError => error
-  print StatusCodeStr::error_message(e.message)
-  return
+
+  unless code.to_i == valid_code.to_i
+    return StatusCodeStr::BAD_REQUEST
+  end
+
+  # get google calendar id
+  begin
+    params = {
+      table_name: 'GoogleCalendarIDs',
+      key: { google_id: google_id }
+    }
+
+    result_item = dynamodb.get_item(params)&.item || {}
+    google_calendar_id = result_item['google_calendar_id']
+  rescue Exception => e
+    return StatusCodeStr::error_message(e.message)
+  end
+
+  # delete google calendar if exists
+  if google_calendar_id
+    service.delete_calendar(google_calendar_id)
+
+    params = {
+      table_name: 'GoogleCalendarIDs',
+      key: { google_id: google_id }
+    }
+
+    begin
+      dynamodb.delete_item(params)
+    rescue
+      return StatusCodeStr::error_message('Unable to delete google calendar id')
+    end
+  end
+
+  # delete all sessions
+  begin
+    last_evaluated_key ||= nil
+    db_attempts ||= 0
+
+    sessions_params = {
+        table_name: 'Sessions',
+        key_condition_expression: "#gid = :google_id",
+        expression_attribute_names: {
+            "#gid" => "google_id"
+        },
+        expression_attribute_values: {
+            ":google_id" => google_id
+        },
+        exclusive_start_key: last_evaluated_key
+    }
+
+    query_result = dynamodb.query(sessions_params)
+    query_result.items.each do |session|
+      delete_params = {
+       table_name: 'Sessions',
+       key: { google_id: session['google_id'], device_id: session['device_id'] }
+      }
+      dynamodb.delete_item(delete_params)
+    end
+    if query_result.last_evaluated_key != last_evaluated_key
+      last_evaluated_key = query_result.last_evaluated_key
+    else
+      last_evaluated_key = nil
+    end
+  rescue Aws::DynamoDB::Errors::ServiceError => error
+    if db_attempts < 3
+      db_attempts = db_attempts + 1
+      sleep 1
+      retry
+    else
+      return StatusCodeStr::error_message(e.message)
+    end
+  end
+
+  google_authorizer.revoke_authorization(google_id)
+
+  auto_complete_params = { google_id: google_id }
+  queue_background_task('autocomplete_delete_user', {auto_complete_params: auto_complete_params})
 end
 
-google_authorizer.revoke_authorization(google_id)
-
-print StatusCodeStr::OK
+TomMemcache::set("deactivate_tc#{cookie_session_id}", 'OK', 5).freeze
+return StatusCodeStr::OK

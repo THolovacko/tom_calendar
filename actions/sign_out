@@ -1,29 +1,33 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
-
-
-cookie_session_id = ENV['HTTP_COOKIE']&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
 cookie_session_id = nil if cookie_session_id == ''
 
 unless cookie_session_id
-  print StatusCodeStr::BAD_REQUEST
-  return
+  return StatusCodeStr::BAD_REQUEST
 end
 
-session_id = JSON.parse(cookie_session_id)
-dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-device_id  = ARGF.first
-device_id  = session_id['device_id'] if device_id.nil? || (device_id == '') || (device_id == ' ')
-
-begin
-  delete_params = {
-   table_name: 'Sessions',
-   key: { google_id: session_id['google_id'], device_id: device_id }
-  }
-  dynamodb.delete_item(delete_params)
-rescue Aws::DynamoDB::Errors::ServiceError => error
-  print StatusCodeStr::BAD_REQUEST
+cache_result = TomMemcache::get("sign_out#{cookie_session_id}").freeze
+if cache_result
+  return StatusCodeStr::OK
 end
 
-print StatusCodeStr::OK
+exponential_backoff do
+  session_id = JSON.parse(cookie_session_id)
+  dynamodb   = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  device_id  = TomEnv::get('MESSAGE')
+  device_id  = session_id['device_id'] if device_id.nil? || (device_id == '') || (device_id == ' ')
+
+  begin
+    delete_params = {
+     table_name: 'Sessions',
+     key: { google_id: session_id['google_id'], device_id: device_id }
+    }
+    dynamodb.delete_item(delete_params)
+  rescue Aws::DynamoDB::Errors::ServiceError => error
+    return StatusCodeStr::BAD_REQUEST
+  end
+end
+
+TomMemcache::set("sign_out#{cookie_session_id}", 'OK', 3)
+return StatusCodeStr::OK

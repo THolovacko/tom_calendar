@@ -1,0 +1,120 @@
+#! /usr/bin/ruby
+
+# @remember: should alert user if repeating event starts and ends on same day
+# @remember: if user changes profile picture then all users events
+# @remember: currently can't remove event image after set (can only replace)
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+session_id    = JSON.parse(cookie_session_id)
+request_input = JSON.parse(TomEnv::get('MESSAGE'))
+
+event = request_input
+event['title'] = event['title']&.strip
+event['google_id'] = session_id['google_id']
+if event['image_extension'] && (event['image_extension'] != '') && event['is_updating_image']
+  event['image_id'] = Digest::SHA256.hexdigest("#{event['google_id']}#{event['title']}")
+end
+
+unless ( event['title'] && (event['title'] != '') )
+  return StatusCodeStr::bad_request_error_message('invalid title')
+end
+
+begin
+  if ( event['start_date'] && (event['start_date'] != '') ) && ( event['end_date'] && (event['end_date'] != '') )
+    start_date_time = Time.parse("#{event['start_date']} #{event['start_time']}").xmlschema[0..18]
+    end_date_time   = Time.parse("#{event['end_date']} #{event['end_time']}").xmlschema[0..18]
+    unless start_date_time <= end_date_time
+      return StatusCodeStr::bad_request_error_message('invalid date')
+    end
+  end
+rescue Exception => e
+  # keep going
+end
+
+upload_url = nil
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+
+  check_event_params = {
+    table_name: 'Events',
+    key: { google_id: event['google_id'], title: event['title'] }
+  }
+
+  check_event = dynamodb.get_item(check_event_params)&.item
+  if (check_event && !event['is_updating'])
+    return StatusCodeStr::bad_request_error_message('invalid title')
+  end
+
+  if event['is_updating_image']
+    aws_client = Aws::S3::Client.new(
+      region:               ENV['AWS_REGION'],
+      access_key_id:        ENV['AWS_ACCESS_KEY_ID'],
+      secret_access_key:    ENV['AWS_SECRET_ACCESS_KEY']
+    )
+    s3 = Aws::S3::Resource.new(client: aws_client)
+    bucket = s3.bucket('tomcalendareventimages')
+    obj = bucket.object("#{event['image_id']}.#{event['image_extension']}")
+    tmp_upload_url = obj.presigned_url(:put)
+  elsif !event['is_updating_image'] && !event['is_updating']
+    tmp_upload_url = ''
+    if !event['is_updating']
+      event['image_id'] = "default"
+      event['image_extension'] = "gif"
+    end
+  elsif event['is_updating'] && !event['is_updating_image']
+    tmp_upload_url = ''
+    event['image_id'] = check_event['image_id']
+    event['image_extension'] = check_event['image_extension']
+  else
+    tmp_upload_url = ''
+  end
+
+  profile_item = dynamodb.get_item({ table_name: 'GoogleProfiles', key: {google_id: event['google_id']} })&.item
+  event['creator_email'] = profile_item['email']
+  event['creator_picture'] = profile_item['picture']
+
+  params = {
+    table_name: 'GoogleCalendarIDs',
+    key: { google_id: event['google_id'] }
+  }
+
+  result_item = dynamodb.get_item(params)&.item || {}
+  google_calendar_id = result_item['google_calendar_id']
+  if !event['is_updating']
+    event_url_id_lower = Digest::SHA256.hexdigest("#{event['google_id']}-#{event['title']}")[0..( (rand * 10).to_i + 12 )]
+    event_url_id = ''
+    event_url_id_lower.each_char do |c|
+      c.upcase! if c.match?(/[[:alpha:]]/) && ((rand() * 10) > 5)
+      event_url_id << c
+    end
+    event['url_id'] = event_url_id
+  else
+    event['url_id'] = check_event['url_id']
+  end
+
+  dynamodb.transact_write_items({
+    transact_items: [
+      { put: { table_name: 'Events', item: event } },
+      { put: { table_name: 'EventReminders', item: {event_id: "#{event['google_id']}-#{event['title']}", last_updated_timestamp: Time.now.to_i, status: '1', subscriber_id: event['google_id']} } },
+      ( { put: { table_name: 'EventURLIDs', item: {url_id: event_url_id, event_id: "#{event['google_id']}-#{event['title']}"} } } if !event['is_updating'] )
+    ].compact
+  })
+
+  delete_google_calendar_events([event],google_calendar_id,session_id['google_id']) if event['is_updating']
+  create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
+  queue_background_task('update_all_event_subscribed_reminders', {event: event}) if event['is_updating']
+  upload_url = tmp_upload_url
+
+  auto_complete_params = event.slice('google_id','title','description')
+  queue_background_task('autocomplete_add_event', {auto_complete_params: auto_complete_params})
+end
+
+return StatusCodeStr::INTERNAL_SERVER_ERROR unless upload_url
+
+return StatusCodeStr::plain_text(upload_url)

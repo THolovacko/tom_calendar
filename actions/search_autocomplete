@@ -1,0 +1,38 @@
+#! /usr/bin/ruby
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+request_input   = JSON.parse(TomEnv::get('MESSAGE'))
+query_str       = request_input['query_input_str']
+user_start_from = request_input['user_start_from']
+
+cache_result = TomMemcache::get("searchac#{query_str}#{user_start_from}").freeze
+if cache_result
+  return StatusCodeStr::OK
+end
+
+search_events = (user_start_from == '0')
+events          = nil
+users           = nil
+search_results  = []
+exponential_backoff do
+  users = nil
+  search_users_thread = Thread.new {
+    users = Autocomplete::search_users(query_str,user_start_from)
+  }
+
+  events = Autocomplete::search_events(query_str) if search_events
+  search_users_thread.join
+end
+
+search_results.concat(events.map!{|result| result['_source']}) if search_events
+search_results.concat(users.map!{|result| result['_source']})
+
+search_results_json = search_results.to_json.freeze
+TomMemcache::set("searchac#{query_str}", search_results_json, 10)
+return "Content-type: application/json\n\n#{search_results_json}"

@@ -1,0 +1,48 @@
+#! /usr/bin/ruby
+
+session_id = get_session_id_from_cookies()
+request_input = TomEnv::get('MESSAGE')
+request_input.strip!
+if (request_input == '') || (request_input == ' ')
+  current_google_id  = session_id['google_id']
+  last_evaluated_key = nil
+else
+  request_input = JSON.parse(request_input)
+  current_google_id  = request_input['user_id']
+  last_evaluated_key = request_input['last_evaluated_key']
+
+  current_google_id  = session_id['google_id'] if current_google_id.nil? || (current_google_id&.strip == '')
+  last_evaluated_key = nil if last_evaluated_key.to_s.strip == ''
+end
+
+user_events = []
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: TomEnv::get('AWS_REGION'))
+
+  user_events_params = {
+    table_name: 'Events',
+    key_condition_expression: "#gid = :google_id",
+    expression_attribute_names: { "#gid" => "google_id" },
+    limit: 10,
+    exclusive_start_key: last_evaluated_key,
+    expression_attribute_values: { ":google_id" => current_google_id }
+  }
+
+  query_result = dynamodb.query(user_events_params)
+  user_events = (query_result&.items || [])
+  if query_result.last_evaluated_key != last_evaluated_key
+    last_evaluated_key = query_result.last_evaluated_key
+  else
+    last_evaluated_key = nil
+  end
+end
+
+is_reminder_set_hash = generate_is_reminder_set_hash(session_id['google_id'],user_events)
+user_events.each do |event|
+  event['is_reminder_set'] = true if is_reminder_set_hash["#{event['google_id']}-#{event['title']}"]
+end
+
+result = { events: user_events, last_evaluated_key: last_evaluated_key }
+
+result_to_json = result.to_json.freeze
+return "Content-type: application/json\n\n#{result_to_json}"

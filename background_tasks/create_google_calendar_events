@@ -1,0 +1,7 @@
+#! /usr/bin/ruby
+
+events = JSON.parse($background_task_params[:events])
+google_calendar_id = $background_task_params[:google_calendar_id]
+google_id = $background_task_params[:google_id] || events[0]['google_id']
+
+create_google_calendar_events(events,google_calendar_id,google_id)

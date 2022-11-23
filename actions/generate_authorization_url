@@ -1,9 +1,10 @@
 #! /usr/bin/ruby
 
-require_relative '../lib/tom_calendar.rb'
+authorization_url = nil
+exponential_backoff do
+  dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_authorizer = get_google_authorizer(dynamodb)
+  authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
+end
 
-dynamodb          = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
-google_authorizer = get_google_authorizer(dynamodb)
-authorization_url = google_authorizer.get_authorization_url base_url: 'https://tomcalendar.com'
-
-print StatusCodeStr::plain_text(authorization_url)
+return StatusCodeStr::plain_text(authorization_url)

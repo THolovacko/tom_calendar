@@ -1,0 +1,32 @@
+#! /usr/bin/ruby
+
+cookie_session_id = TomEnv::get('HTTP_COOKIE')&.split(';')&.find{ |cookie| cookie.match?('session_id') }&.sub('session_id=','')&.strip
+cookie_session_id = nil if cookie_session_id == ''
+
+unless cookie_session_id
+  return StatusCodeStr::BAD_REQUEST
+end
+
+session_id    = JSON.parse(cookie_session_id)
+request_input = JSON.parse(TomEnv::get('MESSAGE'))
+event_user_id = request_input[0]
+event_title   = request_input[1]
+is_creating   = request_input[2]
+
+exponential_backoff do
+  dynamodb = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
+  google_calendar_id = dynamodb.get_item({ table_name: 'GoogleCalendarIDs', key: {google_id: session_id['google_id']} })&.item['google_calendar_id']
+  event = dynamodb.get_item({ table_name: 'Events', key: {google_id: event_user_id, title: event_title} })&.item
+  event_reminder = dynamodb.get_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })&.item
+  if is_creating
+    return StatusCodeStr::OK if event_reminder
+    dynamodb.put_item({ table_name: 'EventReminders', item: {event_id: "#{event_user_id}-#{event_title}", last_updated_timestamp: Time.now.to_i, status: '1', subscriber_id: session_id['google_id']} })
+    create_google_calendar_events([event],google_calendar_id,session_id['google_id'])
+  else
+    return StatusCodeStr::OK unless event_reminder
+    dynamodb.delete_item({ table_name: 'EventReminders', key: {subscriber_id: session_id['google_id'], event_id: "#{event_user_id}-#{event_title}"} })
+    delete_google_calendar_events([event],google_calendar_id,session_id['google_id'])
+  end
+end
+
+return StatusCodeStr::OK

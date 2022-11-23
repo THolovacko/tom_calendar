@@ -1,24 +1,21 @@
 #! /usr/bin/ruby
 
-require 'jwt'
-require_relative '../lib/tom_calendar.rb'
+# @remember: Send user email if google refresh token fails during background task (need to resync google calendar when user gives permission again to handle changed events)
 
-# @remember: need submit consent screen for OAuth verification
-# @remember: need to notify user when refresh token is not valid while auto updating google calendar  ex) if subscribed event changes date and user changed gmail password
-# @remember: need to handle out of sync events between the old token expiring and getting a new refresh token (synchronizing missed changes should be its own post request)
-
-begin
+session_id = {}
+google_profile_params = nil
+exponential_backoff do
   # create google tokens (store credentials) and  create session
   dynamodb           = Aws::DynamoDB::Client.new(region: ENV['AWS_REGION'])
   google_authorizer  = get_google_authorizer(dynamodb)
-  authorization_code = ARGF.first
-  raise 'invalid authorization code' unless authorization_code
+  authorization_code = TomEnv::get('MESSAGE')
+  return StatusCodeStr::UNAUTHORIZED 'invalid authorization code' unless authorization_code
   credentials        = google_authorizer.get_credentials_from_code(user_id: 'default', code: authorization_code)
 
   user_data = JWT.decode(credentials.id_token, nil, false).first
-  raise 'invalid iss' unless user_data['iss'] == 'https://accounts.google.com'.freeze
-  raise 'invalid aud' unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
-  raise 'invalid exp' unless user_data['exp'] > 0
+  return StatusCodeStr::UNAUTHORIZED unless user_data['iss'] == 'https://accounts.google.com'.freeze
+  return StatusCodeStr::UNAUTHORIZED unless user_data['aud'] == ENV['GOOGLE_OAUTH_CLIENT_ID']
+  return StatusCodeStr::UNAUTHORIZED unless user_data['exp'] > 0
 
   google_id  = user_data['sub']
   device_id  = Digest::SHA256.hexdigest "#{ENV['SESSION_HASH_LEFT_PADDING']}#{Time.now}#{rand}#{ENV['SESSION_HASH_RIGHT_PADDING']}"
@@ -28,13 +25,23 @@ begin
 
   session_params = {
     table_name: 'Sessions',
-    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: ENV['HTTP_USER_AGENT'] }
+    item: { google_id: google_id, device_id: device_id, last_updated: Time.now.to_s, user_agent: TomEnv::get('HTTP_USER_AGENT') }
   }
 
-  dynamodb.put_item(session_params)
-rescue Exception => e
-  print StatusCodeStr::UNAUTHORIZED
-  return
+  google_profile_params = {
+    table_name: 'GoogleProfiles',
+    item: { google_id: google_id, email: user_data['email'], name: user_data['name'], picture: user_data['picture'], given_name: user_data['given_name'], family_name: user_data['family_name'], locale: user_data['locale'] }
+  }
+
+  dynamodb.transact_write_items({
+    transact_items: [
+      { put: session_params },
+      { put: google_profile_params }
+    ]
+  })
 end
 
-print "Content-type: application/json\n\n#{session_id.to_json}"
+auto_complete_params = google_profile_params[:item].slice(:google_id,:email,:name,:picture)
+queue_background_task('autocomplete_add_user', {auto_complete_params: auto_complete_params})
+
+return "Content-type: application/json\n\n#{session_id.to_json}"
